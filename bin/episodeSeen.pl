@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use LWP::UserAgent;
+use LWP::Simple;
+use XML::Simple;
+use Frontier::Client;
+use Data::Dumper;
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use betaSeries;
+
+my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $logFile = "";
+my $verbose = 0;
+my $betaSeriesKey = "";
+my $betaSeriesLogin = "";
+my $betaSeriesPassword = "";
+my $outputDir = "";
+
+
+# Read config file 
+sub readConfigFile
+{
+	my $verbose = $_[0];
+	my $readingShows = 0;
+	# Open config file
+	if ($verbose >= 1) {print "Read config file\n"};
+	open my $CONF, '<', $config or die "Cannot open $config";
+	my @conf = <$CONF>;
+	close $CONF;
+	foreach (@conf)
+	{
+	    chomp($_);
+	    if ($_ =~ /^#/) {next;}			
+
+	    if ($_ =~ /seenLogFile=(.*\.log)/)
+	    {
+		    $logFile = $1;
+    	}
+    	elsif ($_ =~ /betaSeriesKey=(.*)$/)
+		{
+			$betaSeriesKey = $1;
+		}
+		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
+		{
+			$betaSeriesLogin = $1;
+		}
+		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
+		{
+			$betaSeriesPassword = $1;
+		}
+		elsif ($_ =~ /outDirectory=(.*)$/)
+		{
+			$outputDir = $1;
+		}
+	}
+}
+
+if ($#ARGV < 0) {die "Usage: episodeSeen episode-sXeXX-epId [verbose]\n";}
+my $serie = ""; my $episode = ""; my $epId = ""; my $saison = "";
+foreach my $arg (@ARGV)
+{
+	if ($arg eq '-v') {$verbose = 1;}
+	elsif ($arg eq '-vv'){$verbose = 2;}
+	else {$verbose = 0;}
+}
+if ($verbose >= 1) {print "$ARGV[0]\n";}
+if ($ARGV[0] =~ /(.*)-(.*)-(.*)/)
+{
+	$serie = $1; $episode = $2; $epId = $3;
+	if ($verbose >= 1) {print "$serie - $episode - $epId\n";}
+}
+if ($serie eq "" or $episode eq "" or $epId eq "") {die "Bad episode info formating: $ARGV[0]\n";}
+# Read config file
+readConfigFile($verbose);
+
+if ($verbose >= 1)
+{
+	# Print BetaSeries infos
+	print "BetaSeries login: $betaSeriesLogin\n";
+	print "BetaSeries key: $betaSeriesKey\n";	
+	print "Output Dir: $outputDir\n";
+	print "\n";
+}
+
+# open log file
+open my $LOG, '>>', $logFile;
+
+# Start writing logs with date and time
+my $time = localtime;
+print $LOG "##### $time #####\n";
+
+# Set episode as seen
+my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
+&betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
+print $LOG "Episode marked as watched\n";
+
+# Get file to copy
+$serie = lc($serie);
+$serie =~ s/_/ /g;
+# Specific Marvel's agents of shield
+$serie =~ s/s.h.i.e.l.d./S.H.I.E.L.D./i;
+print $LOG "$outputDir\/$serie - $episode.*\n";
+
+my $filename = "$outputDir\/$serie - $episode\.mp4";
+if ($verbose >= 1){print "$filename\n";}
+if (-e $filename)
+{
+	# Get serie/season directory
+	if ($episode =~ /s(\d)e\d/) {$saison = $1;}
+	my $serieDir = $serie;
+	# Specific Marvel's agents of shield
+	$serieDir =~ s/s.h.i.e.l.d./SHIELD/i;
+	$serieDir = $serieDir." - Saison ".$saison;
+	$serieDir =~ s/^(\w)/\U$1/;
+	print $LOG "$outputDir\/$serieDir\/.\n";
+	if($verbose >= 1){print "$outputDir\/$serieDir\/.\n";}
+	
+	# Copy file to its serie/season directory
+	my $commandMp4 = "mv \"$outputDir\/$serie - $episode.mp4\" \"$outputDir\/$serieDir\"\/.";
+	my $commandSrt = "mv \"$outputDir\/$serie - $episode.srt\" \"$outputDir\/$serieDir\"\/.";
+	my $commandMeta = "mv \"$outputDir\/$serie - $episode.metathumb\" \"$outputDir\/$serieDir\"\/.";
+	my $commandXml = "mv \"$outputDir\/$serie - $episode.xml\" \"$outputDir\/$serieDir\"\/.";
+	my $commandBackdrop = "mv \"$outputDir\/.$serie - $episode.backdrop\" \"$outputDir\/$serieDir\"\/";
+	if($verbose >= 1){print "$commandMp4\n";}
+	system($commandMp4);
+	system($commandSrt);
+	system($commandMeta);
+	system($commandXml);
+	system($commandBackdrop);
+}
+print $LOG "\n";
+close $LOG;

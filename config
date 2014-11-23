@@ -1,0 +1,107 @@
+# This file configure the scripts that download and rename subtitles
+
+# Log files
+downloadLogFile=/home/tom/SubtitleManagement/logs/downloadSubs.log
+copyLogFile=/home/tom/SubtitleManagement/logs/copy.log
+unseenLogFile=/home/tom/SubtitleManagement/logs/unseen.log
+seenLogFile=/home/tom/SubtitleManagement/logs/seen.log
+
+# In and out directories
+inDirectory=/media/divers/Downloads
+outDirectory=/media/divers/Videos/Series
+copyDirectory=/media/others/Videos
+
+# Downloads list file
+downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
+
+# Site
+htmlPage=/home/tom/SubtitleManagement/bin/seriesStatus.html
+outputHtmlPage=/home/tom/www/series/index.html
+bannersPath=/home/tom/www/series/images
+
+# The TVDB
+tvdbApiKey=C6EFC8AFBFAC6048
+
+# BetaSeries
+betaSeriesKey=ba121e466d79
+betaSeriesLogin=Tomtomfx
+betaSeriesPassword=faafea7e15825ed90d83cbd9a476e998
+
+# List of followed shows
+shows 
+alcatraz,
+are you there chelsea,
+arrow,
+awake,
+breaking in,
+breakout kings,
+burn notice,
+camelot,
+castle,
+chaos,
+chase,
+chuck,
+covert affairs,
+defiance,
+doctor who,
+elementary,
+episodes,
+eureka,
+forever,
+game of thrones,
+gotham,
+graceland,
+hawaii five-0,
+homeland,
+house of lies,
+how i met your mother,
+how to be a gentleman,
+human target,
+intelligence,
+leverage,
+lie to me,
+love bites,
+mad love,
+marvel agents of S.H.I.E.L.D.,
+mind games,
+misfits,
+mixology,
+nikita,
+once upon a time,
+one tree hill,
+new girl,
+no ordinary family,
+person of interest,
+persons unknown,
+pretty little liars,
+revolution,
+ringer,
+rush,
+scorpion,
+selfie,
+suits,
+sherlock,
+the 100,
+the big bang theory,
+the blacklist,
+the cape,
+the crazy ones,
+the event,
+the finder,
+the firm,
+the leftovers,
+the lying game,
+the mentalist,
+the river,
+the tomorrow people,
+torchwood,
+touch,
+true detective,
+under the dome,
+undercovers,
+unforgettable,
+warehouse 13,
+white collar,
+whitney,
+/shows
+
