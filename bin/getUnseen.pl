@@ -159,6 +159,7 @@ foreach my $ep (@episodeToDownload)
 		my $serie = $1; my $episode = $2;
 		print $LOG "$serie - $episode";
 		push (@torrentUrl, getTorrentUrl($serie, $episode, $verbose));
+		if ($torrentUrl[0] eq "") {print $LOG " --> Failed\n"; next;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
 		
 		my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.3/RPC2');
