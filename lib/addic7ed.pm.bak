@@ -26,15 +26,14 @@ sub downloadSubtitles
 
 	# Remove file extension
 	$filename =~ s/\.mp4//i; $filename =~ s/\.avi//i;
-	
+
 	# Specific for Rush
-	$filename =~ s/\WUS\W/\./i;
+	$filename =~ s/\WUS\W//i;
 	$filename =~ s/rush/rush 2014/i;
 	
 	# Manage US/UK and year tags
 	$filename =~ s/(\W)US(\W)/$1\(US\)$2/i; 
 	$filename =~ s/(\W)UK(\W)/$1\(UK\)$2/i; 
-	
 	if ($filename =~ /(2\d{3})/)
 	{
 		my $year = $1;
@@ -42,7 +41,6 @@ sub downloadSubtitles
 		# Specific for Castle
 		$filename =~ s/Castle.*\(2\d{3}\)/Castle/i;
 	}
-	
 	# Specific for Marvel's agents of S.H.I.E.L.D
 	$filename =~ s/marvels/marvel's/i;
 	$filename =~ s/marvel.s/marvel's/i;
