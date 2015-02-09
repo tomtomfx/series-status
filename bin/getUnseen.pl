@@ -86,6 +86,10 @@ sub getTorrentUrl
 	}
 	if ($verbose >= 1) {print ("kickass = $kickass\nnewTorrents = $newtorrents\n1337 = $t1337\n");}
 	
+	if ($kickass ne "" && get($kickass) eq "") {$kickass = "";}
+	if ($newtorrents ne "" && get($newtorrents) eq "") {$newtorrents = "";}
+	if ($t1337 ne "" && get($t1337) eq "") {$t1337 = "";}
+	
 	if ($kickass ne "")
 	{
 		@url = split("\n", get($kickass));
