@@ -80,7 +80,7 @@ sub getTorrentUrl
 	@url = split("\n", get($torrentzLink));
 	foreach (@url)
 	{
-		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/){$kickass = $1;}
+		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kickass.to\/[\w|\-]*\.html)\"/){$kickass = $1;}
 		if($_ =~ /href=\"(http:\/\/www.newtorrents.info\/torrent\/.*\/.*\.html\?nopop=1)\"/){$newtorrents = $1;}
 		if($_ =~ /href=\"(http:\/\/1337x.to\/torrent\/\d*\/.*\/)\".*1337x.to<\/span>/){$t1337 = $1;}
 	}
