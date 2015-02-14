@@ -244,50 +244,6 @@ foreach (@list)
 		}
 		else {next;}
 	}
-	
-	if ($status{$serie}{$epNumber} !~ "Failed to launch download")
-	{
-		# Open downloads subtitles logs
-		open my $DOWN, '<', $downloadLogFile or die "Cannot open download log file: $downloadLogFile\n";
-		my @down = <$DOWN>;
-		close $DOWN;
-		my $serieFound = 0;
-		my $serie; my $season; my $ep;
-		$dateFound = 0;
-		foreach (@down)
-		{
-			if ($dateFound == 0 && $_ =~ /$date/) 
-			{
-				$dateFound = 1;
-				if ($verbose >=1) {print "$_\n";}
-			}
-			elsif ($dateFound == 1 && $_ =~ /Looking for \"(.*)" season (\d*) episode (\d*)/)
-			{
-				$serie = $1; $season = $2; $ep = $3;
-				$serie = lc($serie);
-				# Specific for Marvel's agents of S.H.I.E.L.D.
-				$serie =~ s/marvel\'s/marvel/i;
-				if ($episode =~ /$serie/i)
-				{
-					if ($episode =~ /($season)e($ep)/i)	
-					{
-						$serieFound = 1;
-					}
-				}
-			}
-			elsif ($dateFound == 1 && $serieFound == 1 && $_ =~ /Found subtitle for/)
-			{	
-				$status{$serie}{$epNumber} = "<mark>To be watched<\/mark>";
-				$serieFound = 0;
-			}
-			elsif ($dateFound == 1 && $serieFound == 1 && $_ =~ /No subtitle found for/)
-			{	
-				$status{$serie}{$epNumber} = "<strong>No subtitles found<\/strong>";
-				$serieFound = 0;
-			}
-			else {next;}
-		}
-	}
 }
 
 # Get files to be read

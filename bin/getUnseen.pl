@@ -7,6 +7,7 @@ use LWP::Simple;
 use XML::Simple;
 use Frontier::Client;
 use Data::Dumper;
+use Sys::Hostname;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
@@ -148,28 +149,33 @@ if ($verbose >= 1)
 # open log file
 open my $LOG, '>>', $logFile;
 
-# Start writing logs with date and time
-my $time = localtime;
-print $LOG "##### $time #####\n";
+# Get hostname
+my $host = hostname;
 
 # Get episodes to download
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 my @episodeToDownload = &betaSeries::getEpisodeToDownload($verbose, $token, $betaSeriesKey);
 foreach my $ep (@episodeToDownload)
 {
+	my $time = localtime;
+
 	if ($ep =~ /(.*) - (.*) - /)
 	{
 		my @torrentUrl;
+		my $result = 0;
 		my $serie = $1; my $episode = $2;
-		print $LOG "$serie - $episode";
 		push (@torrentUrl, getTorrentUrl($serie, $episode, $verbose));
-		if ($torrentUrl[0] eq "") {print $LOG " --> Failed\n"; next;}
+		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
+		print $LOG "[$time] $host - Download - serie=$serie - $episode - url=$torrentUrl[0]\n";
+		if ($torrentUrl[0] ne "")
+		{
+			my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.3/RPC2');
+			$result = $xmlrpc->call("load_start", @torrentUrl);
+		}
+		if ($result eq "0") {print $LOG "[$time] $host - Download - SUCCESS - serie=$serie - $episode --> OK\n";}
+		else {print $LOG "[$time] $host - Download - ERROR - serie=$serie - $episode --> Failed\n"; next;}
 		
-		my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.3/RPC2');
-		my $result = $xmlrpc->call("load_start", @torrentUrl);
-		if ($result eq "0"){ print $LOG " --> OK\n";}
-		else { print $LOG " --> Failed\n";}
 		sleep(20);
 	}
 }

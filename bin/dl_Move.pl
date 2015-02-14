@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use XML::Simple;
+use Sys::Hostname;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
@@ -19,6 +20,7 @@ my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $verbose = 0;
+my $time = localtime;
 
 # Read config file 
 sub readConfigFile
@@ -102,9 +104,8 @@ if ($verbose >= 1)
 # open log file
 open my $LOG, '>>', $logFile;
 
-# Start writing logs with date and time
-my $time = localtime;
-print $LOG "##### $time #####\n";
+# Get hostname
+my $host = hostname;
 
 # Get the episodes to download from betaSeries
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
@@ -117,6 +118,7 @@ my @dlDir = readdir(DL);
 close DL;
 foreach my $file (@dlDir)
 {
+	$time = localtime;
 	my $serieDir = "$downloadDir\/$file";
 	if (-d $serieDir && $file ne '.' && $file ne '..' && $file ne 'Config' && $file ne 'Films' && $file ne 'Series' && $file ne 'Temp' && $file ne 'Torrents')
 	{
@@ -150,13 +152,14 @@ close DL;
 
 foreach my $file (@dlDir)
 {
+	$time = localtime;
 	if ($file !~ /\.avi/ and $file !~ /\.mp4/)
 	{
 		next;
 	}
 	print "$file";
 	if ($verbose >= 2) {print "\n";} 
-	print $LOG "Search subtilte file for $file\n";
+	print $LOG "[$time] $host - Get Subtitles - INFO - Search subtilte file for $file\n";
 	
 	my $extension;
 	if ($file =~ /\.avi/){$extension = "avi"}
@@ -166,7 +169,7 @@ foreach my $file (@dlDir)
 	my $sub;
 	my @infos = &utils::GetInfos($file, @tvShows);
 	$infos[1] = $infos[1] + 0;
-	print $LOG "Looking for \"$infos[0]\" season $infos[1] episode $infos[2]\n";
+	print $LOG "[$time] $host - Get Subtitles - INFO - Looking for \"$infos[0]\" season $infos[1] episode $infos[2]\n";
 	if ($infos[0] ne "void")
 	{
 		# Set file as downloaded on betaseries
@@ -217,15 +220,17 @@ foreach my $file (@dlDir)
 		}
 		if ($foundSub == 1)
 		{
+			$time = localtime;
 			my $outFilename = "$outputDir\/$infos[0] - s$infos[1]e$infos[2]";
-			print $LOG "Found subtitle for $file, new filename is $outFilename\n";
+			print $LOG "[$time] $host - Get Subtitles - SUCCESS - Found subtitle for \"$infos[0] - s$infos[1]e$infos[2]\"\n";
 			system("mv \"$downloadDir\/$file\" \"$outFilename.$extension\"");
 			system("mv \"$downloadDir\/$sub\" \"$outFilename.srt\"");
 			print " --> OK\n";
 		}
 		else 
 		{ 
-			print $LOG "No subtitle found for $file\n"; 
+			$time = localtime;
+			print $LOG "[$time] $host - Get Subtitles - ERROR - No subtitle found for $file\n"; 
 			print " --> Failed\n";
 		}
 	}
