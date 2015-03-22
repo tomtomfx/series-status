@@ -73,13 +73,12 @@ footer
     width: 100%;
 	
 	/* background */
-	background-color: #334A59;
+	/* background-color: #334A59; */
 	
 	/* Text */
-    color: white;
+    color: #334A59;
 	font-family: Calibri, Verdana, Serif;
 	font-size: 0.7em;
-	color: white;	
 }
 #footer_left
 {
@@ -182,6 +181,16 @@ td
 	border-radius: 5px 0px 0px 0px;
 	width: 270px;
 	height: 50px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	display: block; 
+}
+
+#footer_img
+{
+	border-radius: 0px 0px 0px 0px;
+	width: 90px;
+	height: 150px;
 	margin-bottom: 0px;
 	margin-left: 0px;
 	display: block; 
