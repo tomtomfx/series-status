@@ -7,6 +7,7 @@ use LWP::Simple;
 use XML::Simple;
 use Frontier::Client;
 use Data::Dumper;
+use Sys::Hostname
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
@@ -76,6 +77,9 @@ if ($serie eq "" or $episode eq "" or $epId eq "") {die "Bad episode info format
 # Read config file
 readConfigFile($verbose);
 
+# Get hostname
+my $host = hostname;
+
 if ($verbose >= 1)
 {
 	# Print BetaSeries infos
@@ -90,19 +94,18 @@ open my $LOG, '>>', $logFile;
 
 # Start writing logs with date and time
 my $time = localtime;
-print $LOG "##### $time #####\n";
 
 # Set episode as seen
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 &betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
-print $LOG "Episode marked as watched\n";
+print $LOG "[$time] $host - EpisodeSeen - INFO - Episode \"$serie - $episode\" marked as watched\n";
 
 # Get file to copy
 $serie = lc($serie);
 $serie =~ s/_/ /g;
+
 # Specific Marvel's agents of shield
 $serie =~ s/s.h.i.e.l.d./S.H.I.E.L.D./i;
-print $LOG "$outputDir\/$serie - $episode.*\n";
 
 my $filename = "$outputDir\/$serie - $episode\.mp4";
 if ($verbose >= 1){print "$filename\n";}
