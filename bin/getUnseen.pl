@@ -167,18 +167,18 @@ foreach my $ep (@episodeToDownload)
 		push (@torrentUrl, getTorrentUrl($serie, $episode, $verbose));
 		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
-		print $LOG "[$time] $host - Download - INFO - serie=$serie - $episode - url=$torrentUrl[0]\n";
+		print $LOG "[$time] $host Download INFO \"$serie - $episode\" $torrentUrl[0]\n";
 		if ($torrentUrl[0] ne "")
 		{
 			my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.3/RPC2');
 			$result = $xmlrpc->call("load_start", @torrentUrl);
 		}
-		if ($result eq "0") {print $LOG "[$time] $host - Download - SUCCESS - serie=$serie - $episode --> OK\n";}
-		else {print $LOG "[$time] $host - Download - ERROR - serie=$serie - $episode --> Failed\n"; next;}
+		if ($result eq "0") {print $LOG "[$time] $host Download INFO \"$serie - $episode\" --> OK\n";}
+		else {print $LOG "[$time] $host Download ERROR \"$serie - $episode\" --> Failed\n"; next;}
 		
 		sleep(20);
 	}
 }
 
-print $LOG "\n";
+#print $LOG "\n";
 close $LOG;

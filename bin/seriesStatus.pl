@@ -195,7 +195,7 @@ foreach (@list)
 		$episode = lc($episode);
 		# Specific for Marvel's agents of S.H.I.E.L.D.
 		$episode =~ s/marvel\'s/marvel/i;	
-		# Remove 0 if saeson less than 10
+		# Remove 0 if season less than 10
 		if ($episode =~ /(.*) - s(\d+)e(\d+)/i)
 		{
 			my $ep = 0 + $2;
@@ -221,12 +221,17 @@ foreach (@list)
 			$dateFound = 1;
 			if ($verbose >=1) {print "$_";}
 		}
-		elsif ($dateFound == 1 && $_ =~ /(.*) --> (.*)/)
+		if ($dateFound == 1 && $_ =~ /(.*) --> (.*)/)
 		{
 			my $ep = lc ($1);
 			my $epStatus = $2;
+			
+			# Remove " if any
+			$ep =~ s/"//g;
+			
 			# Specific for Marvel's agents of S.H.I.E.L.D.
-			$ep =~ s/marvel\'s/marvel/i;	
+			$ep =~ s/marvel\'s/marvel/i;
+			
 			if ($ep =~ /(.*) \(US\) - s(\d+)e(\d+)/i) {$ep = "$1 - s$2e$3";}
 			if ($verbose >= 1) {print "$ep --> $epStatus\n";}
 			# Remove 0 if season less than 10
@@ -235,6 +240,9 @@ foreach (@list)
 				my $epNumber = 0 + $2;
 				$ep = "$1 - s$epNumber"."e$3";
 			}
+			
+			$ep =~ s/\(//g;$ep =~ s/\)//g;$episode =~ s/\(//g;$episode =~ s/\)//g;
+			
 			if ($ep =~ /$episode/i)
 			{
 				if ($epStatus eq "OK"){$status{$serie}{$epNumber} = "<mark>Download launched<\/mark>";}

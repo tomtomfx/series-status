@@ -98,7 +98,7 @@ my $time = localtime;
 # Set episode as seen
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 &betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
-print $LOG "[$time] $host - EpisodeSeen - INFO - Episode \"$serie - $episode\" marked as watched\n";
+print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
 
 # Get file to copy
 $serie = lc($serie);
@@ -118,7 +118,6 @@ if (-e $filename)
 	$serieDir =~ s/s.h.i.e.l.d./SHIELD/i;
 	$serieDir = $serieDir." - Saison ".$saison;
 	$serieDir =~ s/^(\w)/\U$1/;
-	print $LOG "$outputDir\/$serieDir\/.\n";
 	if($verbose >= 1){print "$outputDir\/$serieDir\/.\n";}
 	
 	# Copy file to its serie/season directory
@@ -134,5 +133,5 @@ if (-e $filename)
 	system($commandXml);
 	system($commandBackdrop);
 }
-print $LOG "\n";
+#print $LOG "\n";
 close $LOG;

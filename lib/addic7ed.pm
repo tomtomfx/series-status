@@ -76,7 +76,7 @@ sub downloadSubtitles
 	{
 		my $host = hostname;
 		my $time = localtime;
-		print LOG "[$time] $host - Get Subtitles - ERROR - No show, season or episode found\n\n";
+		print LOG "[$time] $host GetSubtitles ERROR \"No show, season or episode found\"\n";
 		close LOG;
 		return 0;
 	}
@@ -98,11 +98,12 @@ sub tv
 {
 		my $filename = $_[0];
 		my $show = $_[1]; $show =~ s/ /_/g;
+		my $episode = "s$_[2]e$_[3]";
 		my $verbose = $_[5];
 		my $time = localtime;
 		my $host = hostname;
 		if ($verbose >= 2) {print "http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x\n";}
-		print LOG "[$time] $host - Get Subtitles - INFO - Addic7ed=http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x\n";
+		print LOG "[$time] $host GetSubtitles INFO \"$show - $episode\" Addic7ed=http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x\n";
 		my @url = split("\n", get("http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x"));
 		my $downloadDir = $_[4];
 		#open (WEB, ">", "web.txt");
@@ -191,7 +192,7 @@ sub tv
 		{
 			my $host = hostname;
 			my $time = localtime;
-			print LOG "[$time] $host - Get Subtitles - INFO - Subtitle version: $usedVersion\n";
+			print LOG "[$time] $host GetSubtitles INFO \"$show - $episode\" Subtitle version: $usedVersion\n";
 			# Download subtitle
 			my $sub = "curl -s --referer http://www.addic7ed.com/ http://www.addic7ed.com$downloadAddress -o \"$downloadDir\/$filename.srt\"";
 			$sub =~ s/\(//g;
