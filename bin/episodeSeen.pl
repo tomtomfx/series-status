@@ -7,7 +7,7 @@ use LWP::Simple;
 use XML::Simple;
 use Frontier::Client;
 use Data::Dumper;
-use Sys::Hostname
+use Sys::Hostname;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
