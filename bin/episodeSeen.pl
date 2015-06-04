@@ -104,9 +104,6 @@ print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
 $serie = lc($serie);
 $serie =~ s/_/ /g;
 
-# Specific Marvel's agents of shield
-$serie =~ s/s.h.i.e.l.d./S.H.I.E.L.D./i;
-
 my $filename = "$outputDir\/$serie - $episode\.mp4";
 if ($verbose >= 1){print "$filename\n";}
 if (-e $filename)
@@ -115,7 +112,7 @@ if (-e $filename)
 	if ($episode =~ /s(\d)e\d/) {$saison = $1;}
 	my $serieDir = $serie;
 	# Specific Marvel's agents of shield
-	$serieDir =~ s/s.h.i.e.l.d./SHIELD/i;
+	$serieDir =~ s/s.h.i.e.l.d./shield/i;
 	$serieDir = $serieDir." - Saison ".$saison;
 	$serieDir =~ s/^(\w)/\U$1/;
 	if($verbose >= 1){print "$outputDir\/$serieDir\/.\n";}

@@ -59,8 +59,13 @@ sub getTorrentUrl
 	my ($serie, $episodes, $verbose) = @_;
 	# Remove (year)
 	if ($serie =~ /(.*) \(\d{4}\)/){$serie = $1;}
+	
 	# Specific for marvel's agent of shield
 	$serie =~ s/\'s/s/i;
+	
+	# Specific for Mr. Robot
+	$serie =~ s/Mr\./Mr/i;
+	
 	my $torrentzLink = "http://torrentz.eu";
 	my $kickass = "";
 	my $newtorrents = "";
@@ -81,9 +86,9 @@ sub getTorrentUrl
 	@url = split("\n", get($torrentzLink));
 	foreach (@url)
 	{
-		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kickass.to\/[\w|\-]*\.html)\"/){$kickass = $1;}
+		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kickass.to\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kat.cr\/[\w|\-]*\.html)\"/){$kickass = $1;}
 		if($_ =~ /href=\"(http:\/\/www.newtorrents.info\/torrent\/.*\/.*\.html\?nopop=1)\"/){$newtorrents = $1;}
-		if($_ =~ /href=\"(http:\/\/1337x.to\/torrent\/\d*\/.*\/)\".*1337x.to<\/span>/){$t1337 = $1;}
+		if($_ =~ /href=\"(http:\/\/1337x.to\/torrent\/\d*\/.*\/)\".*1337x.to<\/span>/ || $_ =~ /href=\"(https:\/\/1337x.to\/torrent\/\d*\/.*\/)\" rel=\"e\">.*1337x\.to/){$t1337 = $1;}
 	}
 	if ($verbose >= 1) {print ("kickass = $kickass\nnewTorrents = $newtorrents\n1337 = $t1337\n");}
 	
