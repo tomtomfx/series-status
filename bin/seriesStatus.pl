@@ -127,6 +127,9 @@ sub getTitle
 			$epId = $5;
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$show =~ s/marvel\'s/marvel/i;	
+			# Specific for Mr Robot
+			$show =~ s/mr\./mr/i;		
+		
 			$epNumber = "s".$season."e".$episodeNumber; 
 			if ($verbose >= 1) {print "$show - $serie\n$ep - $epNumber\n";}
 		}
@@ -194,7 +197,9 @@ foreach (@list)
 		chomp($episode);
 		$episode = lc($episode);
 		# Specific for Marvel's agents of S.H.I.E.L.D.
-		$episode =~ s/marvel\'s/marvel/i;	
+		$episode =~ s/marvel\'s/marvel/i;
+		# Specific for Mr Robot
+		$episode =~ s/mr\./mr/i;		
 		# Remove 0 if season less than 10
 		if ($episode =~ /(.*) - s(\d+)e(\d+)/i)
 		{
@@ -231,6 +236,9 @@ foreach (@list)
 			
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$ep =~ s/marvel\'s/marvel/i;
+			
+			# Specific for Mr Robot
+			$ep =~ s/mr\./mr/i;		
 			
 			if ($ep =~ /(.*) \(US\) - s(\d+)e(\d+)/i) {$ep = "$1 - s$2e$3";}
 			if ($verbose >= 1) {print "$ep --> $epStatus\n";}
