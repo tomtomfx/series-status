@@ -86,6 +86,8 @@ sub downloadSubtitles
 
 	# Specific for Marvel's agents of S.H.I.E.L.D
 	$show =~ s/S_H_I_E_L_D/S\.H\.I\.E\.L\.D/i;
+	# Specific for Mr. Robot
+	$show =~ s/Mr_/Mr\._/i;
 	# Specific for Daredevil
 	if ($show =~ /daredevil/i) {$show = "Daredevil";}
 
