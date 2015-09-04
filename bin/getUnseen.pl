@@ -101,7 +101,7 @@ sub getTorrentUrl
 		@url = split("\n", get($kickass));
 		foreach (@url)
 		{
-			if ($_ =~ /title="Download verified torrent file" href="(http:\/\/.*)\" class=/) 
+			if ($_ =~ /title="Download verified torrent file" href="(http:\/\/.*)\"><i class=/) 
 			{
 				if ($verbose >= 1) {print "$1\n";}
 				return $1;
