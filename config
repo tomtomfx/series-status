@@ -3,13 +3,16 @@
 # Log files
 downloadLogFile=/home/tom/SubtitleManagement/logs/downloadSubs.log
 copyLogFile=/home/tom/SubtitleManagement/logs/copy.log
+copyUnseenLogFile=/home/tom/SubtitleManagement/logs/copyUnseen.log
 unseenLogFile=/home/tom/SubtitleManagement/logs/unseen.log
 seenLogFile=/home/tom/SubtitleManagement/logs/seen.log
+databaseLogFile=/home/tom/SubtitleManagement/logs/database.log
 
 # In and out directories
 inDirectory=/media/divers/Downloads
 outDirectory=/media/divers/Videos/Series
 copyDirectory=/media/others/Videos
+nfsDirectory=/media/divers/nfs/Videos/Series
 
 # Downloads list file
 downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
@@ -18,6 +21,10 @@ downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
 htmlPage=/home/tom/SubtitleManagement/bin/seriesStatus.html
 outputHtmlPage=/home/tom/www/series/index.html
 bannersPath=/home/tom/www/series/images
+graphsPath=/home/tom/www/series/highcharts
+
+# Database
+databasePath=/home/tom/SubtitleManagement/logs/series.db
 
 # The TVDB
 tvdbApiKey=C6EFC8AFBFAC6048
@@ -92,6 +99,7 @@ rush,
 scorpion,
 selfie,
 sense8,
+silicon valley,
 suits,
 sherlock,
 the 100,

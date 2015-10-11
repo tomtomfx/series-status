@@ -70,6 +70,8 @@ sub getTorrentUrl
 	my $kickass = "";
 	my $torlock = "";
 	my $t1337 = "";
+	my $yourbittorrent = "";
+	
 	$serie =~ s/ /+/g;
 	if ($verbose >= 1) {print "http://torrentz.eu/search?f=$serie+$episodes\n";}
 	# Get torrent URL
@@ -89,14 +91,20 @@ sub getTorrentUrl
 		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kickass.to\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kat.cr\/[\w|\-]*\.html)\"/){$kickass = $1;}
 		if($_ =~ /href=\"(http:\/\/www\.torlock\.com\/torrent\/.*\/.*\.html)\" rel=\"e\"><span.*torlock.com<\/span>/){$torlock = $1;}
 		if($_ =~ /href=\"(http:\/\/1337x.to\/torrent\/\d*\/.*\/)\".*1337x.to<\/span>/ || $_ =~ /href=\"(https:\/\/1337x.to\/torrent\/\d*\/.*\/)\" rel=\"e\">.*1337x\.to/){$t1337 = $1;}
+		if($_ =~ /href=\"http:\/\/www.yourbittorrent.com\/torrent\/(\d+)\/.*\.html\" rel=\"e\"><span.*yourbittorrent.com<\/span>/){$yourbittorrent = $1;}
 	}
-	if ($verbose >= 1) {print ("kickass = $kickass\ntorlock = $torlock\n1337 = $t1337\n");}
+	if ($verbose >= 1) {print ("kickass = $kickass\ntorlock = $torlock\n1337 = $t1337\nyourBittorrent = $yourbittorrent\n");}
 
 	if ($kickass ne "" && get($kickass) eq "") {$kickass = "";}
 	if ($torlock ne "" && get($torlock) eq "") {$torlock = "";}
 	if ($t1337 ne "" && get($t1337) eq "") {$t1337 = "";}
+	# if ($yourbittorrent ne "" && get($yourbittorrent) eq "") {$yourbittorrent = "";}
 	
-	if ($torlock ne "")
+	if ($yourbittorrent ne "")
+	{
+		return "http:\/\/yourbittorrent.com\/down\/$yourbittorrent.torrent";
+	}
+	elsif ($torlock ne "")
 	{
 		@url = split("\n", get($torlock));
 		foreach (@url)
@@ -175,7 +183,7 @@ foreach my $ep (@episodeToDownload)
 		print $LOG "[$time] $host Download INFO \"$serie - $episode\" $torrentUrl[0]\n";
 		if ($torrentUrl[0] ne "")
 		{
-			my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.3/RPC2');
+			my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.5/RPC2');
 			$result = $xmlrpc->call("load_start", @torrentUrl);
 		}
 		if ($result eq "0") {print $LOG "[$time] $host Download INFO \"$serie - $episode\" --> OK\n";}

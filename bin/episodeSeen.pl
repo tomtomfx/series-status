@@ -120,15 +120,15 @@ if (-e $filename)
 	# Copy file to its serie/season directory
 	my $commandMp4 = "mv \"$outputDir\/$serie - $episode.mp4\" \"$outputDir\/$serieDir\"\/.";
 	my $commandSrt = "mv \"$outputDir\/$serie - $episode.srt\" \"$outputDir\/$serieDir\"\/.";
-	my $commandMeta = "mv \"$outputDir\/$serie - $episode.metathumb\" \"$outputDir\/$serieDir\"\/.";
-	my $commandXml = "mv \"$outputDir\/$serie - $episode.xml\" \"$outputDir\/$serieDir\"\/.";
-	my $commandBackdrop = "mv \"$outputDir\/.$serie - $episode.backdrop\" \"$outputDir\/$serieDir\"\/";
+	#my $commandMeta = "mv \"$outputDir\/$serie - $episode.metathumb\" \"$outputDir\/$serieDir\"\/.";
+	#my $commandXml = "mv \"$outputDir\/$serie - $episode.xml\" \"$outputDir\/$serieDir\"\/.";
+	#my $commandBackdrop = "mv \"$outputDir\/.$serie - $episode.backdrop\" \"$outputDir\/$serieDir\"\/";
 	if($verbose >= 1){print "$commandMp4\n";}
 	system($commandMp4);
 	system($commandSrt);
-	system($commandMeta);
-	system($commandXml);
-	system($commandBackdrop);
+	#system($commandMeta);
+	#system($commandXml);
+	#system($commandBackdrop);
 }
 #print $LOG "\n";
 close $LOG;
