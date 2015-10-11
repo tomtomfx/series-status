@@ -63,7 +63,7 @@ if ($verbose >= 2)
 	print "\n";
 }
 # open log file
-open my $LOG, '>>', $logFile or die "Cannot open $logFile";
+open my $LOG, '>>', $logFile;
 
 # Get hostname
 my $host = hostname;

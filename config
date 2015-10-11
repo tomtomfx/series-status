@@ -12,7 +12,7 @@ databaseLogFile=/home/tom/SubtitleManagement/logs/database.log
 inDirectory=/media/divers/Downloads
 outDirectory=/media/divers/Videos/Series
 copyDirectory=/media/others/Videos
-nfsDirectory=/media/divers/nfs/Videos/Series
+nfsDirectory=/media/nfs/Videos/Series
 
 # Downloads list file
 downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
