@@ -71,6 +71,7 @@ sub getTorrentUrl
 	my $torlock = "";
 	my $t1337 = "";
 	my $yourbittorrent = "";
+	my $torrentbit = "";
 	
 	$serie =~ s/ /+/g;
 	if ($verbose >= 1) {print "http://torrentz.eu/search?f=$serie+$episodes\n";}
@@ -92,8 +93,9 @@ sub getTorrentUrl
 		if($_ =~ /href=\"(http:\/\/www\.torlock\.com\/torrent\/.*\/.*\.html)\" rel=\"e\"><span.*torlock.com<\/span>/){$torlock = $1;}
 		if($_ =~ /href=\"(http:\/\/1337x.to\/torrent\/\d*\/.*\/)\".*1337x.to<\/span>/ || $_ =~ /href=\"(https:\/\/1337x.to\/torrent\/\d*\/.*\/)\" rel=\"e\">.*1337x\.to/){$t1337 = $1;}
 		if($_ =~ /href=\"http:\/\/www.yourbittorrent.com\/torrent\/(\d+)\/.*\.html\" rel=\"e\"><span.*yourbittorrent.com<\/span>/){$yourbittorrent = $1;}
+		if($_ =~ /href=\"http:\/\/www.torrentbit.net\/torrent\/(\d*)\/.*\/\" rel=\"e\"><span.*torrentbit.net<\/span>/){$torrentbit = $1;}
 	}
-	if ($verbose >= 1) {print ("kickass = $kickass\ntorlock = $torlock\n1337 = $t1337\nyourBittorrent = $yourbittorrent\n");}
+	if ($verbose >= 1) {print ("kickass = $kickass\ntorlock = $torlock\n1337 = $t1337\nyourBittorrent = $yourbittorrent\ntorrentbit = $torrentbit\n");}
 
 	if ($kickass ne "" && get($kickass) eq "") {$kickass = "";}
 	if ($torlock ne "" && get($torlock) eq "") {$torlock = "";}
@@ -103,6 +105,10 @@ sub getTorrentUrl
 	if ($yourbittorrent ne "")
 	{
 		return "http:\/\/yourbittorrent.com\/down\/$yourbittorrent.torrent";
+	}
+	elsif ($torrentbit ne "")
+	{
+		return "http:\/\/www.torrentbit.net\/get\/$torrentbit";
 	}
 	elsif ($torlock ne "")
 	{

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+	<meta http-equiv="cache-control" content="no-cache">
+	<link rel="stylesheet" href="style.css" />
+    <title>Statistics</title>
+	<link rel="shortcut icon" href="favicon.ico">
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>		
+	<script type="text/javascript" src="./highchart/js/highcharts.js"></script>
+	<script type="text/javascript" src="./highchart/js/modules/data.js"></script>
+	<script type="text/javascript" src="./highchart/js/themes/tomtomfx.js"></script>
+</head>
+
+<body>
+<script type="text/javascript">
+$(function() {
+	$(document).ready(function() {
+		$.get('./highchart/episodesUnseen.csv', function(csv) {
+//			console.log( "Data Loaded: " + csv );
+			var options = {
+				chart: {
+					renderTo: 'container',
+					type: 'scatter',
+					zoomType: 'x'
+				},
+				title: {
+					text: "Number of unseen episodes"
+				},
+				credits: {
+					href: 'http://tomtomfx.dyndns.org/series',
+					text: 'Powered by Tomtomfx'
+				},
+				xAxis: {
+					title: {
+						text: "Date"
+					}
+				},
+				yAxis: {
+					title: {
+						text: "Number of episodes"
+					}
+				},
+				data: {
+					csv: csv
+				}
+			};
+			console.log(options);
+			var chart = new Highcharts.Chart(options);
+		}, "text");
+	});
+});		
+	</script>
+<script type="text/javascript">
+$(function() {
+	$(document).ready(function() {
+		$.get('./highchart/episodes.csv', function(csv) {
+//			console.log( "Data Loaded: " + csv );
+			var options = {
+				chart: {
+					renderTo: 'container1',
+					type: 'column',
+					zoomType: 'x'
+				},
+				title: {
+					text: "Episodes downloaded and seen"
+				},
+				credits: {
+					href: 'http://tomtomfx.dyndns.org/series',
+					text: 'Powered by Tomtomfx'
+				},
+				xAxis: {
+					title: {
+						text: "Date"
+					}
+				},
+				yAxis: {
+					title: {
+						text: "Number of episodes"
+					}
+				},
+				data: {
+					csv: csv
+				}
+			};
+			console.log(options);
+			var chart = new Highcharts.Chart(options);
+		}, "text");
+	});
+});		
+	</script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+		$.get('./highchart/episodesSeenMonthly.csv', function(csv) {
+//			console.log( "Data Loaded: " + csv );
+			var options = {
+				chart: {
+					renderTo: 'container2',
+					type: 'column'
+				},
+				title: {
+					text: "Number of episodes seen in the last month"
+				},
+				credits: {
+					href: 'http://tomtomfx.dyndns.org/series',
+					text: 'Powered by Tomtomfx'
+				},
+				xAxis: {
+					title: {
+						text: "Serie"
+					}
+				},
+				yAxis: {
+					title: {
+						text: "Number of episodes"
+					}
+				},
+				data: {
+					csv: csv
+				}
+			};
+			console.log(options);
+			var chart = new Highcharts.Chart(options);
+		}, "text");
+	});
+	</script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+		$.get('./highchart/episodesDelay.csv', function(csv) {
+//			console.log( "Data Loaded: " + csv );
+			var options = {
+				chart: {
+					renderTo: 'container3',
+					type: 'column'
+				},
+				title: {
+					text: "Mean watch delay per serie"
+				},
+				credits: {
+					href: 'http://tomtomfx.dyndns.org/series',
+					text: 'Powered by Tomtomfx'
+				},
+				xAxis: {
+					title: {
+						text: "Serie"
+					}
+				},
+				yAxis: {
+					title: {
+						text: "Delay"
+					}
+				},
+				data: {
+					csv: csv
+				}
+			};
+			console.log(options);
+			var chart = new Highcharts.Chart(options);
+		}, "text");
+	});
+	</script>
+
+   	<div id="bloc_page_statistics">
+		<header>
+			<div id="titre_principal">
+				<h1>Series status</h1></a><h3 id="episodeToSee">|</h3><h3 id="episodeToSee">Statistics</h3></a>
+			</div>
+		</header>
+		<section id="graphs">
+			<div class="graph" id="container" style="min-width: 310px; height: 400px; margin: 10 auto"></div>
+			<div class="graph" id="container1" style="min-width: 310px; height: 400px; margin: 10 auto"></div>
+			<div class="graph" id="container2" style="min-width: 310px; width: 100%; height: 400px; margin: 10 auto"></div>
+			<div class="graph" id="container3" style="min-width: 310px; width: 100%; height: 400px; margin: 10 auto"></div>
+		</section>
+   	</div>
+	<footer>
+		<id="footer_left"><img src="images/Tomtomfx_bot.png" alt="Powered by Tomtomfx">
+		<br>
+		<id="footer_left"><a href="./index.html">Series Status
+	</footer>
+</body>
+</html>

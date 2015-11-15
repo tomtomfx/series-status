@@ -43,7 +43,7 @@ sub downloadSubtitles
 		# Specific for Castle
 		$filename =~ s/Castle.*\(2\d{3}\)/Castle/i;
 		# Specific for The player
-		$filename =~ s/The.+player.*\(2\d{3}\)/The player/i;
+		$filename =~ s/The.*player.*\(2\d{3}\)/The player/i;
 	}
 	
 	# Specific for Marvel's agents of S.H.I.E.L.D

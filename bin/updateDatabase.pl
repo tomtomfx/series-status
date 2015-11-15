@@ -17,6 +17,7 @@ my $downloadLogFile = "";
 my $seenLogFile = "";
 my $databasePath = "";
 my $databaseLogFile = "";
+my $outputHtmlPage = "";
 
 # Database variables
 my $driver = "SQLite"; 
@@ -71,6 +72,10 @@ sub readConfigFile
 		elsif ($_ =~ /databasePath=(.*)$/)
 		{
 			$databasePath = $1;
+		}
+		elsif ($_ =~ /outputHtmlPage=(.*)$/)
+		{
+			$outputHtmlPage = $1;
 		}
 	}
 }
@@ -347,6 +352,60 @@ foreach my $ep (keys(%episodes))
 		print $LOG "[$time] $host database INFO \"$ep added\"\n";
 	}
 }
+
+#########################################################################################
+# Get series status and add it in the database
+# Open series status
+open my $STATUS, '<', $outputHtmlPage or die "Cannot open download list file: $outputHtmlPage\n";
+my @serieStatus = <$STATUS>;
+close $STATUS;
+
+my $nbUnseenEpisodes = 0;
+
+foreach (@serieStatus)
+{
+	if ($_ =~ /id=\"episodeToSee\">(\d+) unseen episode\(s\)<\/h3>/)	
+	{
+		$nbUnseenEpisodes = $1;
+		if ($verbose >= 1){print "Unseen Episodes: $nbUnseenEpisodes\n";}
+		last;
+	}
+	else {next;}
+}
+my $time = localtime;
+my $date = UnixDate($time, "%Y-%m-%d");
+
+# Create table SerieStatus if doesn't exist
+$exists = does_table_exist($dbh, "SerieStatus");
+if ($exists == 1)
+{
+	if ($verbose >= 1){print ("Table SerieStatus already exists\n");}
+}
+else
+{
+	if ($verbose >= 1){print ("SerieStatus table does not exist. Creating one.\n");}
+	$dbh->do("DROP TABLE IF EXISTS SerieStatus");
+	$dbh->do("CREATE TABLE SerieStatus(Date TEXT PRIMARY KEY, UnseenEpisodesNumber INT)");
+	my $time = localtime;
+	print $LOG "[$time] $host database INFO \"Table \"SerieStatus\" created in the database\"\n";
+}
+
+# Add new entry in the datbase
+my $status = "";
+# Query to check if the date already exists
+my $query = "SELECT COUNT(*) FROM SerieStatus WHERE Date=?";
+if ($verbose >= 2){print "$query\n";}
+my $sth = $dbh->prepare($query);
+$sth->execute($date);
+if (!$sth->fetch()->[0]) 
+{
+	my $seriesInfos = "\'$date\', \'$nbUnseenEpisodes\'";
+	if ($verbose >= 1){print "$seriesInfos\n";}
+	$dbh->do("INSERT INTO SerieStatus VALUES($seriesInfos)");
+	my $time = localtime;
+	print $LOG "[$time] $host database INFO \"$seriesInfos added\"\n";
+}
+$sth->finish();
 
 # Disconnect from database
 $dbh->disconnect();

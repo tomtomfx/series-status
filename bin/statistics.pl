@@ -168,7 +168,7 @@ my $episodesDelayCsv = "$graphsPath\/episodesDelay.csv";
 my %episodeDelaySeries;
 
 # Change date format and compare to the max watch date in the database
-my $startDate =  DateCalc("today","- 1 year");
+my $startDate =  DateCalc("today","- 3 month");
 if ($verbose >= 1) {print "Start date: $startDate\n";}
 
 # Get all downloaded and seen episodes per date
@@ -268,6 +268,31 @@ foreach my $serie (sort keys(%series))
 		print $EPS "$serie,$numberEpisodes\n";
 	}
 }
+close $EPS;
+
+#########################################################################################
+# Create the number of unseen episodes over time
+my $episodeUnseenCsv = "$graphsPath\/episodesUnseen.csv";
+my %series;
+
+# Open output file and write data
+open $EPS, '>', $episodeUnseenCsv or die "Cannot open download list file: $episodeUnseenCsv\n";
+
+# Write header
+print $EPS "Date,Number of unseen episodes\n";
+
+# Get all data from serieStatus
+$query = "SELECT * FROM serieStatus";
+$sth = $dbh->prepare($query);
+$sth->execute();
+while ($row = $sth->fetchrow_arrayref()) 
+{
+	my $date = @$row[0];
+	my $nbUnseenEpisodes = @$row[1];
+	print $EPS "$date,$nbUnseenEpisodes\n";
+}
+
+# Close file
 close $EPS;
 
 #########################################################################################
