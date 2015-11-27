@@ -26,10 +26,11 @@ Highcharts.theme = {
 		column: {
 			borderColor: "#334A59",
 			borderRadius: 3,
-			borderWidth: 1
+			borderWidth: 1,
+			shadow: true
 		},
 		line: {
-			
+			shadow: true
 		},
 	},
 	title: {

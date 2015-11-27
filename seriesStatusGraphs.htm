@@ -89,13 +89,50 @@ $(function() {
 	});
 });		
 	</script>
+<script type="text/javascript">
+$(function() {
+	$(document).ready(function() {
+		$.get('./highchart/episodesMonthly.csv', function(csv) {
+//			console.log( "Data Loaded: " + csv );
+			var options = {
+				chart: {
+					renderTo: 'container2',
+					type: 'column',
+				},
+				title: {
+					text: "Episodes downloaded and seen per month"
+				},
+				credits: {
+					href: 'http://tomtomfx.dyndns.org/series',
+					text: 'Powered by Tomtomfx'
+				},
+				xAxis: {
+					title: {
+						text: "Date"
+					}
+				},
+				yAxis: {
+					title: {
+						text: "Number of episodes"
+					}
+				},
+				data: {
+					csv: csv
+				}
+			};
+			console.log(options);
+			var chart = new Highcharts.Chart(options);
+		}, "text");
+	});
+});		
+	</script>
 	<script type="text/javascript">
 	$(document).ready(function() {
 		$.get('./highchart/episodesSeenMonthly.csv', function(csv) {
 //			console.log( "Data Loaded: " + csv );
 			var options = {
 				chart: {
-					renderTo: 'container2',
+					renderTo: 'container3',
 					type: 'column'
 				},
 				title: {
@@ -130,7 +167,7 @@ $(function() {
 //			console.log( "Data Loaded: " + csv );
 			var options = {
 				chart: {
-					renderTo: 'container3',
+					renderTo: 'container4',
 					type: 'column'
 				},
 				title: {
@@ -171,6 +208,7 @@ $(function() {
 			<div class="graph" id="container1" style="min-width: 310px; height: 400px; margin: 10 auto"></div>
 			<div class="graph" id="container2" style="min-width: 310px; width: 100%; height: 400px; margin: 10 auto"></div>
 			<div class="graph" id="container3" style="min-width: 310px; width: 100%; height: 400px; margin: 10 auto"></div>
+			<div class="graph" id="container4" style="min-width: 310px; width: 100%; height: 400px; margin: 10 auto"></div>
 		</section>
    	</div>
 	<footer>

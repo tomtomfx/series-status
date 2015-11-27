@@ -164,6 +164,7 @@ close $EPS;
 
 #########################################################################################
 # Get the mean number of days between download and watch per serie
+# Graph on the three last months (download time)
 my $episodesDelayCsv = "$graphsPath\/episodesDelay.csv";
 my %episodeDelaySeries;
 
@@ -273,7 +274,6 @@ close $EPS;
 #########################################################################################
 # Create the number of unseen episodes over time
 my $episodeUnseenCsv = "$graphsPath\/episodesUnseen.csv";
-my %series;
 
 # Open output file and write data
 open $EPS, '>', $episodeUnseenCsv or die "Cannot open download list file: $episodeUnseenCsv\n";
@@ -294,6 +294,63 @@ while ($row = $sth->fetchrow_arrayref())
 
 # Close file
 close $EPS;
+
+#########################################################################################
+# Create a csv file for the number of episodes seen and downloaded per month over a year
+my $episodesMonthlyCsv = "$graphsPath\/episodesMonthly.csv";
+
+# Number of episodes seen & number of episodes downloaded
+my %episodesMonthly;
+my $firstMonth = UnixDate(DateCalc("today","- 1 year"), "%Y-%m");
+if ($verbose >= 1) {print "First month: $firstMonth\n";}
+
+# Get all downloaded and seen episodes per date
+$query = "SELECT DownloadDate, WatchDate FROM Episodes ORDER BY DownloadDate DESC";
+$sth = $dbh->prepare($query);
+$sth->execute();
+while ($row = $sth->fetchrow_arrayref()) 
+{
+	my $downloadDate = @$row[0];
+	my $watchDate = @$row[1];
+	if ($downloadDate ne '')
+	{
+		my $downloadMonth = "";
+		if ($downloadDate =~ /(.*) .*/){$downloadMonth = UnixDate($1, "%Y-%m");}
+		if ($firstMonth eq "" || Date_Cmp($firstMonth, $downloadMonth) < 0)
+		{
+			if (exists($episodesMonthly{$downloadMonth}{"downloaded"})){$episodesMonthly{$downloadMonth}{"downloaded"} += 1;}
+			else {$episodesMonthly{$downloadMonth}{"downloaded"} = 1;}
+			if ($verbose >= 1) {print "$downloadMonth\t$episodesMonthly{$downloadMonth}{\"downloaded\"}\n";}
+		}
+	}
+	if ($watchDate ne '')
+	{
+		my $wtachMonth = "";
+		if ($watchDate =~ /(.*) .*/){$wtachMonth = UnixDate($1, "%Y-%m");}
+		if ($lastDate eq "" || Date_Cmp($firstMonth, $wtachMonth) < 0)
+		{
+			if (exists($episodesMonthly{$wtachMonth}{"seen"})){$episodesMonthly{$wtachMonth}{"seen"} += 1;}
+			else {$episodesMonthly{$wtachMonth}{"seen"} = 1;}
+			if ($verbose >= 1) {print "$wtachMonth\t$episodesMonthly{$wtachMonth}{\"seen\"}\n";}
+		}
+	}
+}
+
+#########################################################################################
+# Open output file and append new data
+open $EPS, '>', $episodesMonthlyCsv or die "Cannot open download list file: $episodesMonthlyCsv\n";
+#Write header if necessary
+print $EPS "Month,Episodes downloaded,Episodes seen\n";
+
+# Write new downloaded and seen number of episodes
+foreach my $key (sort keys(%episodesMonthly))
+{
+	if (!exists($episodesMonthly{$key}{"downloaded"})){$episodesMonthly{$key}{"downloaded"} = 0;}
+	if (!exists($episodesMonthly{$key}{"seen"})){$episodesMonthly{$key}{"seen"} = 0;}
+	print $EPS "$key,$episodesMonthly{$key}{\"downloaded\"},$episodesMonthly{$key}{\"seen\"}\n";
+}
+close $EPS;
+
 
 #########################################################################################
 # Disconnect from database
