@@ -56,7 +56,7 @@ sub readConfigFile
 
 sub getTorrentUrl
 {
-	my ($serie, $episodes, $verbose) = @_;
+	my ($serie, $episodes, $ua,$verbose) = @_;
 	# Remove (year)
 	if ($serie =~ /(.*) \(\d{4}\)/){$serie = $1;}
 	
@@ -74,9 +74,11 @@ sub getTorrentUrl
 	my $torrentbit = "";
 	
 	$serie =~ s/ /+/g;
-	if ($verbose >= 1) {print "http://torrentz.eu/search?f=$serie+$episodes\n";}
+	
 	# Get torrent URL
-	my @url = split("\n", get("http://torrentz.eu/search?f=$serie+$episodes+x264"));
+	if ($verbose >= 1) {print "https://torrentz.eu/search?f=$serie+$episodes\n";}
+	my $response = $ua->get("https://torrentz.eu/search?f=$serie+$episodes+x264");
+	my @url = split("\n", $response->decoded_content);
 	foreach (@url)
 	{
 		if ($_ =~ /<dl><dt><a href=\"(\/\w*)"><b>/)
@@ -86,7 +88,8 @@ sub getTorrentUrl
 			last;
 		}
 	}
-	@url = split("\n", get($torrentzLink));
+	$response = $ua->get($torrentzLink);
+	@url = split("\n", $response->decoded_content);
 	foreach (@url)
 	{
 		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kickass.to\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kat.cr\/[\w|\-]*\.html)\"/){$kickass = $1;}
@@ -97,9 +100,9 @@ sub getTorrentUrl
 	}
 	if ($verbose >= 1) {print ("kickass = $kickass\ntorlock = $torlock\n1337 = $t1337\nyourBittorrent = $yourbittorrent\ntorrentbit = $torrentbit\n");}
 
-	if ($kickass ne "" && get($kickass) eq "") {$kickass = "";}
-	if ($torlock ne "" && get($torlock) eq "") {$torlock = "";}
-	if ($t1337 ne "" && get($t1337) eq "") {$t1337 = "";}
+	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
+	if ($torlock ne "" && $ua->get($torlock) eq "") {$torlock = "";}
+	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
 	# if ($yourbittorrent ne "" && get($yourbittorrent) eq "") {$yourbittorrent = "";}
 	
 	if ($yourbittorrent ne "")
@@ -112,7 +115,7 @@ sub getTorrentUrl
 	}
 	elsif ($torlock ne "")
 	{
-		@url = split("\n", get($torlock));
+		@url = split("\n", $ua->get($torlock));
 		foreach (@url)
 		{
 			if ($_ =~ /href=\"\/(tor\/.*\.torrent)\"><img src=http:\/\/cdn.torlock.com\/dlbutton2\.png/) 
@@ -124,7 +127,7 @@ sub getTorrentUrl
 	}
 	elsif ($kickass ne "")
 	{
-		@url = split("\n", get($kickass));
+		@url = split("\n", $ua->get($kickass));
 		foreach (@url)
 		{
 			if ($_ =~ /title="Download verified torrent file" href="(http:\/\/.*)\"><i class=/) 
@@ -136,7 +139,7 @@ sub getTorrentUrl
 	}
 	elsif ($t1337 ne "")
 	{
-		@url = split("\n", get($t1337));
+		@url = split("\n", $ua->get($t1337));
 		foreach (@url)
 		{
 			if ($_ =~ /href="(http:\/\/torcache.net\/torrent\/.*\.torrent)/) 
@@ -171,6 +174,10 @@ open my $LOG, '>>', $logFile;
 # Get hostname
 my $host = hostname;
 
+# Create user agent for https
+my $ua = LWP::UserAgent->new( ssl_opts => { verify_hostname => 0 } );
+$ua->agent('Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Firefox/31.0 Iceweasel/31.3.0');
+
 # Get episodes to download
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 my @episodeToDownload = &betaSeries::getEpisodeToDownload($verbose, $token, $betaSeriesKey);
@@ -183,7 +190,7 @@ foreach my $ep (@episodeToDownload)
 		my @torrentUrl;
 		my $result = 0;
 		my $serie = $1; my $episode = $2;
-		push (@torrentUrl, getTorrentUrl($serie, $episode, $verbose));
+		push (@torrentUrl, getTorrentUrl($serie, $episode, $ua,$verbose));
 		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
 		print $LOG "[$time] $host Download INFO \"$serie - $episode\" $torrentUrl[0]\n";
