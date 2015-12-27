@@ -1,0 +1,104 @@
+body {
+  background-color: #E7E2D5;
+}
+.navbar-default {
+  background-color: #334A59;
+  border-radius: 6px;
+  border-color: #334A59;
+  margin-bottom: 0px;
+}
+.navbar-default .navbar-nav{
+	margin-left: 0px;
+	margin-right: 0px;
+}
+.navbar-default .navbar-nav > .active,
+.navbar-default .navbar-nav > .active > a, 
+.navbar-default .navbar-nav > .active > a:hover {
+    color: #000;
+    background: #2399A6;
+}
+.navbar-default .navbar-brand {
+    color: white;
+	text-shadow: 1px 1px 2px white;	
+}
+.page-header{
+	margin-top: 0px;
+}
+.label
+{
+	display: block;
+	text-align: left;
+	width: 95px;
+	white-space: normal;
+}
+@media (min-width: 992px){
+	.row > .col-md-4:nth-child(3n+1){
+		clear: left;
+	}
+}
+@media (min-width: 768px) and (max-width: 991px){
+	.row > .col-sm-6:nth-child(2n+1){
+		clear: left;
+	}
+	.row > .col-md-4:nth-child(3n+1){
+		clear: none;
+	}
+}
+#episodes{
+	margin-left: -15px;
+	margin-right: -15px;
+}
+#navig{
+	text-align: center;
+	color: white;	
+}
+#serieTitle{
+	margin-top: 0px;
+}
+#title{
+	text-align: center;
+	color: #334A59;
+	text-shadow: 4px 4px 5px #777;	
+}
+#series{
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-bottom: 10px;
+}
+#serie{
+	background: white;
+	padding: 0px;
+	border: 2px solid #334A59;
+	border-radius: 8px;
+	box-shadow: 2px 2px 0px #777;
+}
+#episode{
+	margin-bottom: 10px;
+	text-align: left;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+#banniere{
+	margin-bottom: 10px;
+	border-radius: 6px 6px 0px 0px;
+	border-bottom: 1px solid #334A59;
+}
+#eye{
+	color: #2399A6;
+}
+footer{
+	border-top: 1px solid #eee;
+	padding-top: 20px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	/* Text */
+    color: #334A59;
+	text-align: center;
+}
+a{
+	text-decoration: none;
+	color: #334A59;
+}
+a:hover{
+	text-decoration: none;
+}

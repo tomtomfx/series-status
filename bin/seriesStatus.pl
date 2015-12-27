@@ -211,7 +211,7 @@ foreach (@list)
 		if ($episode =~ /(.*) \(\d{4}\) - (.*)/i) {$serie = $1; $epNumber = $2;}
 		elsif ($episode =~ /(.*) \(US\) - (.*)/i) {$serie = $1; $epNumber = $2;}
 		elsif ($episode =~ /(.*) - (.*)/) {$serie = $1; $epNumber = $2;}
-		$status{$serie}{$epNumber} = "<strong>Download not launched yet<\/strong>";
+		$status{$serie}{$epNumber} = "<info>Download not launched yet<info>";
 	}
 	else {next;}
 	# Open unseen logs
@@ -253,8 +253,8 @@ foreach (@list)
 			
 			if ($ep =~ /$episode/i)
 			{
-				if ($epStatus eq "OK"){$status{$serie}{$epNumber} = "<mark>Download launched<\/mark>";}
-				else {$status{$serie}{$epNumber} = "<strong>Failed to launch download<\/strong>";}
+				if ($epStatus eq "OK"){$status{$serie}{$epNumber} = "<info>Download launched<info>";}
+				else {$status{$serie}{$epNumber} = "<danger>Failed to launch download<danger>";}
 				last;
 			}
 		}
@@ -271,7 +271,7 @@ foreach my $_ (@outDir)
 	if ($_ =~ /(.*) - (.*)\.mp4/i)
 	{
 		my $serie = lc($1);
-		$status{$serie}{$2} = "<mark>To be watched<\/mark>";
+		$status{$serie}{$2} = "<success>To be watched<success>";
 	}
 	else {next;}
 }
@@ -288,7 +288,7 @@ foreach my $file (@downDir)
 		my @infos = &utils::GetInfos($file, @tvShows);
 		$infos[1] = $infos[1] + 0;
 		if ($verbose >=1) {print "Looking for $infos[0] - s$infos[1]e$infos[2]\n";}
-		$status{$infos[0]}{"s$infos[1]e$infos[2]"} = "<strong>No subtitles found</strong>";
+		$status{$infos[0]}{"s$infos[1]e$infos[2]"} = "<warning>No subtitles found<warning>";
 	}
 }
 
@@ -316,7 +316,11 @@ foreach (@htmlSource)
 		$_ = "";
 		foreach my $serie (@keys)
 		{
-			my $banner = "$bannersPath\/$serie.jpg";
+			# create a new column for the serie
+			$_ = $_."\t\t\t\t<div class=\"col-xs-12 col-sm-6 col-md-4\" id=\"series\">\n";
+			$_ = $_."\t\t\t\t\t<div class=\"col-xs-12\" id=\"serie\">\n";
+			
+			my $banner = "$bannersPath\\$serie.jpg";
 			unless (-e $banner)
 			{
 				if ($verbose >=2) {print "$banner does not exist\n";}
@@ -326,7 +330,10 @@ foreach (@htmlSource)
 			}
 			my @episodes = sort keys %{$status{$serie}};
 			my $nbEpisodes = $#episodes + 1;
-			$_ = $_."\t\t\t\t<h3 id=\"serie\"><img id=banniere src=\"images/".$serie.".jpg\" alt=\"".$serie." \(".$nbEpisodes."\)\"></h3>\n\t\t\t\t<table id=\"episodes\">\n";
+			# Add line for the banner
+			$_ = $_."\t\t\t\t\t\t<div class=\"row\">\n";
+			$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-12\"><h3 id=\"serieTitle\"><img id=\"banniere\" class=\"img-responsive\" src=\"images/".$serie.".jpg\" alt=\"".$serie." \(".$nbEpisodes."\)\"></h3></div>\n";
+			$_ = $_."\t\t\t\t\t\t</div>\n";
 			if ($verbose >= 1) {print "$serie \($nbEpisodes\)\n"; print Dumper @episodes;}
 			foreach my $ep (@episodes)
 			{
@@ -334,16 +341,32 @@ foreach (@htmlSource)
 				my ($title, $epId) = split(/ - /, $output);
 				my $serieUnderscore = $serie;
 				$serieUnderscore =~ s/ /_/g;
-				if ($status{$serie}{$ep} eq "<mark>To be watched<\/mark>")
+				
+				my $epStatus = "";
+				my $label = "";
+				if ($status{$serie}{$ep} =~ /<(.*)>(.*)<.*>/)
 				{
-					$_ = $_."\t\t\t\t\t<tr><td id=\"puce\"><a href=\"..\/cgi-bin\/update.cgi?ep=".$serieUnderscore."-".$ep."-".$epId."\"><img src=\"images/puce1.gif\"\/><\/td><td id=\"episodeNumber\">".$ep.":<\/td><td id=\"episodeTitle\">".$title."<\/td><td id=\"status\">".$status{$serie}{$ep}."<\/td><\/tr>\n";
+					$label = $1;
+					$epStatus = $2;
+				}
+				
+				# Print each episode
+				$_ = $_."\t\t\t\t\t\t<div class=\"row\" id=\"episode\">\n";
+				if ($status{$serie}{$ep} eq "<success>To be watched<success>")
+				{
+					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><a href=\"..\/cgi-bin\/update.cgi?ep=".$serieUnderscore."-".$ep."-".$epId."\" class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></a></div>\n";
 				}
 				else
 				{
-					$_ = $_."\t\t\t\t\t<tr><td id=\"puce\"><img src=\"images/puce1.gif\"\/><\/td><td id=\"episodeNumber\">".$ep.":<\/td><td id=\"episodeTitle\">".$title."<\/td><td id=\"status\">".$status{$serie}{$ep}."<\/td><\/tr>\n";
+					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><span class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></span></div>\n";
 				}
+				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-2\">".$ep.":</div>\n";
+				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-5\">".$title."</div>\n";
+				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-4\"><span class=\"label label-".$label."\">".$epStatus."</span></div>\n";
+				$_ = $_."\t\t\t\t\t\t</div>\n";
 			}
-			$_ = $_."\t\t\t\t<\/table>\n";
+			$_ = $_."\t\t\t\t\t</div>\n";
+			$_ = $_."\t\t\t\t</div>\n";
 		}
 	}
 	if ($_ =~ /<date>/)
@@ -376,8 +399,8 @@ if ($sendMail && @keys)
 		$mailContent = $mailContent."$serie \($nbEpisodes\)\n";
 		foreach my $episode (@episodes)
 		{
-			$status{$serie}{$episode} =~ s/<strong>//; $status{$serie}{$episode} =~ s/<\/strong>//;
-			$status{$serie}{$episode} =~ s/<mark>//; $status{$serie}{$episode} =~ s/<\/mark>//;
+			$status{$serie}{$episode} =~ s/<danger>//; $status{$serie}{$episode} =~ s/<success>//;
+			$status{$serie}{$episode} =~ s/<warning>//; $status{$serie}{$episode} =~ s/<info>//;
 			$mailContent = $mailContent."\t$episode --> $status{$serie}{$episode}\n";
 		}
 	}
