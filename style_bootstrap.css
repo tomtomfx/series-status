@@ -60,6 +60,9 @@ body {
 	color: #334A59;
 	text-shadow: 4px 4px 5px #777;	
 }
+#title small{
+	color: #334A59;
+}
 #series{
 	padding-left: 5px;
 	padding-right: 5px;

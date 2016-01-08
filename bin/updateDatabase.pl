@@ -364,7 +364,7 @@ my $nbUnseenEpisodes = 0;
 
 foreach (@serieStatus)
 {
-	if ($_ =~ /id=\"episodeToSee\">(\d+) unseen episode\(s\)<\/h3>/)	
+	if ($_ =~ /<small> | (\d+) unseen episode(s)<\/small>/)	
 	{
 		$nbUnseenEpisodes = $1;
 		if ($verbose >= 1){print "Unseen Episodes: $nbUnseenEpisodes\n";}
