@@ -320,7 +320,7 @@ foreach (@htmlSource)
 			$_ = $_."\t\t\t\t<div class=\"col-xs-12 col-sm-6 col-md-4\" id=\"series\">\n";
 			$_ = $_."\t\t\t\t\t<div class=\"col-xs-12\" id=\"serie\">\n";
 			
-			my $banner = "$bannersPath\\$serie.jpg";
+			my $banner = "$bannersPath\/$serie.jpg";
 			unless (-e $banner)
 			{
 				if ($verbose >=2) {print "$banner does not exist\n";}
@@ -399,8 +399,8 @@ if ($sendMail && @keys)
 		$mailContent = $mailContent."$serie \($nbEpisodes\)\n";
 		foreach my $episode (@episodes)
 		{
-			$status{$serie}{$episode} =~ s/<danger>//; $status{$serie}{$episode} =~ s/<success>//;
-			$status{$serie}{$episode} =~ s/<warning>//; $status{$serie}{$episode} =~ s/<info>//;
+			$status{$serie}{$episode} =~ s/<.+danger>//; $status{$serie}{$episode} =~ s/<.+success>//;
+			$status{$serie}{$episode} =~ s/<.+warning>//; $status{$serie}{$episode} =~ s/<.+info>//;
 			$mailContent = $mailContent."\t$episode --> $status{$serie}{$episode}\n";
 		}
 	}
