@@ -399,8 +399,10 @@ if ($sendMail && @keys)
 		$mailContent = $mailContent."$serie \($nbEpisodes\)\n";
 		foreach my $episode (@episodes)
 		{
-			$status{$serie}{$episode} =~ s/<.+danger>//; $status{$serie}{$episode} =~ s/<.+success>//;
-			$status{$serie}{$episode} =~ s/<.+warning>//; $status{$serie}{$episode} =~ s/<.+info>//;
+			$status{$serie}{$episode} =~ s/<danger>//; $status{$serie}{$episode} =~ s/<success>//;
+			$status{$serie}{$episode} =~ s/<warning>//; $status{$serie}{$episode} =~ s/<info>//;
+			$status{$serie}{$episode} =~ s/<\/danger>//; $status{$serie}{$episode} =~ s/<\/success>//;
+			$status{$serie}{$episode} =~ s/<\/warning>//; $status{$serie}{$episode} =~ s/<\/info>//;
 			$mailContent = $mailContent."\t$episode --> $status{$serie}{$episode}\n";
 		}
 	}
