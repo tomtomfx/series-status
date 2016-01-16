@@ -19,9 +19,9 @@ downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
 
 # Site
 htmlPage=/home/tom/SubtitleManagement/bin/seriesStatus.html
-outputHtmlPage=/home/tom/www/series/index.html
-bannersPath=/home/tom/www/series/images
-graphsPath=/home/tom/www/series/highchart
+outputHtmlPage=/var/www/series/series.php
+bannersPath=/var/www/images
+graphsPath=/var/www/highchart
 
 # Database
 databasePath=/home/tom/SubtitleManagement/logs/series.db
