@@ -332,7 +332,7 @@ foreach (@htmlSource)
 			my $nbEpisodes = $#episodes + 1;
 			# Add line for the banner
 			$_ = $_."\t\t\t\t\t\t<div class=\"row\">\n";
-			$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-12\"><h3 id=\"serieTitle\"><img id=\"banniere\" class=\"img-responsive\" src=\"images/".$serie.".jpg\" alt=\"".$serie." \(".$nbEpisodes."\)\"></h3></div>\n";
+			$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-12\"><h3 id=\"serieTitle\"><img id=\"banniere\" class=\"img-responsive\" src=\"../images/".$serie.".jpg\" alt=\"".$serie." \(".$nbEpisodes."\)\"></h3></div>\n";
 			$_ = $_."\t\t\t\t\t\t</div>\n";
 			if ($verbose >= 1) {print "$serie \($nbEpisodes\)\n"; print Dumper @episodes;}
 			foreach my $ep (@episodes)
