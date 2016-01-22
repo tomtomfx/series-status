@@ -127,6 +127,8 @@ sub getTitle
 			$epId = $5;
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$show =~ s/marvel\'s/marvel/i;	
+			# Specific for DC's legends of tomorrow
+			$show =~ s/dc's/dc/i;	
 			# Specific for Mr Robot
 			$show =~ s/mr\./mr/i;		
 		
@@ -198,6 +200,8 @@ foreach (@list)
 		$episode = lc($episode);
 		# Specific for Marvel's agents of S.H.I.E.L.D.
 		$episode =~ s/marvel\'s/marvel/i;
+		# Specific for DC's legends of tomorrow
+		$show =~ s/dc's/dc/i;	
 		# Specific for Mr Robot
 		$episode =~ s/mr\./mr/i;		
 		# Remove 0 if season less than 10
@@ -236,7 +240,8 @@ foreach (@list)
 			
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$ep =~ s/marvel\'s/marvel/i;
-			
+			# Specific for DC's legends of tomorrow
+			$show =~ s/dc's/dc/i;				
 			# Specific for Mr Robot
 			$ep =~ s/mr\./mr/i;		
 			
