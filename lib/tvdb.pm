@@ -100,6 +100,7 @@ sub getBannerPath
 	if ($serie eq "castle") {$serie = "$serie (2009)";}
 	$serie =~ s/S\.H\.I\.E\.L\.D\./SHIELD/;
 	$serie =~ s/marvel/marvel's/;
+	$serie =~ s/dc/dc's/;
 	
 	# Get serie ID from theTVDB.com
 	if ($verbose >=1) {print "Get serie ID from theTVDB.com\n";}
