@@ -49,7 +49,11 @@ sub downloadSubtitles
 	# Specific for Marvel's agents of S.H.I.E.L.D
 	$filename =~ s/marvels/marvel's/i;
 	$filename =~ s/marvel.s/marvel's/i;
-	
+
+	# Specific for DC's Legends of Tomorrow
+	$filename =~ s/dcs/dc's/i;
+	$filename =~ s/dc.s/dc's/i;
+
 	if ($verbose >= 2) {print "$filename\n";}
 	
 	my $show, my $season, my $episode;

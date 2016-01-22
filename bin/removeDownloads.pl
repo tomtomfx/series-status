@@ -16,7 +16,7 @@ foreach my $arg (@ARGV)
 }
 
 # Set server
-my $xmlrpc = Frontier::Client->new('url' => 'http://tomtomfx.dyndns.org/RPC2');
+my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.5/RPC2');
 
 # Get completed downloads
 my @parameters = ("complete", "d.get_hash=");

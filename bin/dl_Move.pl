@@ -183,6 +183,9 @@ foreach my $file (@dlDir)
 			$serie =~ s/ \(\d{4}\)//;
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$serie =~ s/marvel\'s/marvel/i;
+			# Specific for DC's legends of tomorrow
+			$serie =~ s/dcs/dc/i;
+			$serie =~ s/dc\'s/dc/i;
 			# Remove (US)
 			$serie =~ s/ \(US\)//;
 			# Specific for Mr. Robot
