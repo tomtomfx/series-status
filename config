@@ -14,6 +14,12 @@ outDirectory=/media/divers/Videos/Series
 copyDirectory=/media/others/Videos
 nfsDirectory=/media/nfs/Videos/Series
 
+# Photos management
+photosDirectory=/media/divers/Photos/albums
+photosHTTPDirectory=http://localhost/photos
+photosDatabasePath=/home/tom/SubtitleManagement/databases/photos.db
+photosDatabaseLogFile=/home/tom/SubtitleManagement/logs/photosDatabase.log
+
 # Downloads list file
 downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
 
