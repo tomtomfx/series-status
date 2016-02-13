@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 use strict;
 use warnings;
 use Sys::Hostname;
@@ -6,7 +8,7 @@ use Data::Dumper;
 use DBI;
 
 my @tvShows;
-my $config = "C:\\Users\\tfayoux\\Documents\\Perso\\Subtitles\\Perl\\config";
+my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
 my $verbose = 0;
 my $photosDirectory = "";
 my $photosDatabasePath = "";
