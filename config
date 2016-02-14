@@ -17,7 +17,7 @@ nfsDirectory=/media/nfs/Videos/Series
 # Photos management
 photosDirectory=/media/divers/Photos/albums
 photosHTTPDirectory=../albums
-photosDatabasePath=/home/tom/SubtitleManagement/databases/photos.db
+photosDatabasePath=/var/www/photos.db
 photosDatabaseLogFile=/home/tom/SubtitleManagement/logs/photosDatabase.log
 
 # Downloads list file
