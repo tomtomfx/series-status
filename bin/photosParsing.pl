@@ -135,9 +135,9 @@ close $DIR;
 
 foreach (@directories)
 {
-	if (-d "$photosDirectory\\$_" && $_ ne '.' && $_ ne '..')
+	if (-d "$photosDirectory\/$_" && $_ ne '.' && $_ ne '..')
 	{
-		if ($verbose >= 1){print "$photosDirectory\\$_\n";}
+		if ($verbose >= 1){print "$photosDirectory\/$_\n";}
 		my $currentDir = $_;
 		if ($_ =~ /(.*) - (.*)$/)
 		{
@@ -145,7 +145,7 @@ foreach (@directories)
 			my $albumName = $2;
 			my $defaultPhotoName = "";
 			if ($verbose >= 1){print "Processing $albumName\n";}
-			opendir my $ALB, "$photosDirectory\\$_" or die "Cannot open album directory: $_\n";
+			opendir my $ALB, "$photosDirectory\/$_" or die "Cannot open album directory: $_\n";
 			my @album = readdir $ALB;
 			close $ALB;
 						
