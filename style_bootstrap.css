@@ -3,7 +3,7 @@ body {
 }
 .navbar-default {
   background-color: #334A59;
-  border-radius: 6px;
+  border-radius: 0px;
   border-color: #334A59;
   margin-bottom: 0px;
 }
@@ -24,12 +24,38 @@ body {
 .page-header{
 	margin-top: 0px;
 }
-.label
-{
+.label{
 	display: block;
 	text-align: left;
 	width: 95px;
 	white-space: normal;
+}
+.btn-default,
+.btn-default:hover{
+	background: #2399A6;
+	color: white;
+	margin-top: 10px;
+}
+.dropdown-menu{width: 300px;border-top:0px;margin-top:3px;}
+.dropdown-menu .col-sm-12{margin-bottom:7px;}
+.dropdown-menu:after{
+	content: '';
+	display: inline-block;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 6px solid #ffffff;
+	position: absolute;
+	top: -6px;
+	right: 10px;
+}
+a:hover{
+	text-decoration: none;
+}
+.thumbnail.caption{
+	padding: 0px;
+}
+.thumbnail:hover{
+	border-color: #2399A6;
 }
 @media (min-width: 992px){
 	.row > .col-md-4:nth-child(3n+1){
@@ -44,6 +70,10 @@ body {
 		clear: none;
 	}
 }
+h5, h6{
+	color: #334A59;
+	text-align: center;
+}
 #episodes{
 	margin-left: -15px;
 	margin-right: -15px;
@@ -51,6 +81,9 @@ body {
 #navig{
 	text-align: center;
 	color: white;	
+}
+#navLogin{
+	background: #2399A6;
 }
 #serieTitle{
 	margin-top: 0px;
@@ -62,6 +95,18 @@ body {
 }
 #title small{
 	color: #334A59;
+}
+#carouselBtn{
+	background: #2399A6;
+	border-color: #2399A6;
+}
+#presImg{
+	max-height: 400px;
+	border-color: #334A59;
+	border-width: 3px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	box-shadow: 2px 2px 0px #777;
 }
 #series{
 	padding-left: 5px;
@@ -81,6 +126,9 @@ body {
 	padding-left: 5px;
 	padding-right: 5px;
 }
+#miniature{
+	padding: 1px;
+}
 #banniere{
 	margin-bottom: 10px;
 	border-radius: 6px 6px 0px 0px;
@@ -97,11 +145,4 @@ footer{
 	/* Text */
     color: #334A59;
 	text-align: center;
-}
-a{
-	text-decoration: none;
-	color: #334A59;
-}
-a:hover{
-	text-decoration: none;
 }
