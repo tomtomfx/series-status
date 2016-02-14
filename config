@@ -16,7 +16,7 @@ nfsDirectory=/media/nfs/Videos/Series
 
 # Photos management
 photosDirectory=/media/divers/Photos/albums
-photosHTTPDirectory=http://localhost/photos
+photosHTTPDirectory=../albums
 photosDatabasePath=/home/tom/SubtitleManagement/databases/photos.db
 photosDatabaseLogFile=/home/tom/SubtitleManagement/logs/photosDatabase.log
 
