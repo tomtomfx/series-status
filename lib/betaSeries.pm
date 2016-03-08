@@ -9,7 +9,7 @@ use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie addShow/;
 
 sub sendRequest
 {
@@ -200,5 +200,50 @@ sub setEpisodeSeen
 
 	my $message = sendRequest($ua, $req);
 	#print Dumper $message;
+}
+
+sub searchSerie
+{
+	my ($verbose, $token, $betaSeriesKey, $title) = @_;
+	my $ua = LWP::UserAgent->new;
+	# search for a specific serie
+	my $shows = "http://api.betaseries.com/shows/search?title=$title&summary=true&token=$token";
+	my $req = HTTP::Request->new(GET => "$shows");
+	$req->header('X-BetaSeries-Version' => '2.2');
+	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	# print Dumper $message;
+	
+	my $parser = XML::Simple->new( KeepRoot => 0 );
+	my $result = $parser->XMLin($message);
+	my %shows = %{$result->{shows}->{show}};
+	# print Dumper %shows;
+	my $serieId = 0;
+	foreach my $show (keys (%shows))
+	{	
+		my $serieTitle = $shows{$show}->{title};
+		if ($serieTitle =~ /$title/i){$serieId = $show;last;}
+		else {next;}
+	}
+	
+	return $serieId;
+}
+
+sub addShow
+{
+	my ($verbose, $token, $betaSeriesKey, $showId) = @_;
+	my $ua = LWP::UserAgent->new;
+
+	# Set episode as seen
+	my $show = "http://api.betaseries.com/shows/show?token=$token&id=$showId";
+	my $req = HTTP::Request->new(POST => "$show");
+	$req->header('X-BetaSeries-Version' => '2.2');
+	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	# print Dumper $message;
 }
 1;
