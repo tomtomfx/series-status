@@ -116,6 +116,7 @@ if (-e $filename)
 	$serieDir = $serieDir." - Saison ".$saison;
 	$serieDir =~ s/^(\w)/\U$1/;
 	if($verbose >= 1){print "$outputDir\/$serieDir\/.\n";}
+	if (!-d "$outputDir\/$serieDir\/"){mkdir "$outputDir\/$serieDir\/";}
 	
 	# Copy file to its serie/season directory
 	my $commandMp4 = "mv \"$outputDir\/$serie - $episode.mp4\" \"$outputDir\/$serieDir\"\/.";

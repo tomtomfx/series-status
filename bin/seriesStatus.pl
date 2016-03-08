@@ -273,7 +273,7 @@ my @outDir = readdir(OUT);
 close OUT;
 foreach my $_ (@outDir)
 {
-	if ($_ =~ /(.*) - (.*)\.mp4/i)
+	if ($_ =~ /(.*) - (.*)\.mp4/i || $_ =~ /(.*) - (.*)\.avi/i)
 	{
 		my $serie = lc($1);
 		$status{$serie}{$2} = "<success>To be watched<success>";
