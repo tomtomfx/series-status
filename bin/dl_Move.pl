@@ -129,7 +129,7 @@ foreach my $file (@dlDir)
 		close DL;
 		foreach (@dlSerieDir)
 		{			
-			if ($_ =~ /\.avi/ or $_ =~ /\.mp4/)
+			if ($_ =~ /\.avi/ or $_ =~ /\.mp4/ or $_ =~ /\.mkv/)
 			{
 				my $command = "mv \"$serieDir\/$_\" \"$downloadDir\"";
 				system($command);
@@ -153,7 +153,7 @@ close DL;
 foreach my $file (@dlDir)
 {
 	$time = localtime;
-	if ($file !~ /\.avi/ and $file !~ /\.mp4/)
+	if ($file !~ /\.avi/ and $file !~ /\.mp4/ and $file !~ /\.mkv/)
 	{
 		next;
 	}
@@ -162,7 +162,8 @@ foreach my $file (@dlDir)
 	
 	my $extension;
 	if ($file =~ /\.avi/){$extension = "avi"}
-	else{$extension = "mp4"}
+	elsif($file =~ /\.mp4/){$extension = "mp4"}
+	else{$extension = "mkv"}
 	
 	my $foundSub = 0; 
 	my $sub;

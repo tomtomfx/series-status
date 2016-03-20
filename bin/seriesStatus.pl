@@ -273,7 +273,7 @@ my @outDir = readdir(OUT);
 close OUT;
 foreach my $_ (@outDir)
 {
-	if ($_ =~ /(.*) - (.*)\.mp4/i || $_ =~ /(.*) - (.*)\.avi/i)
+	if ($_ =~ /(.*) - (.*)\.mp4/i || $_ =~ /(.*) - (.*)\.avi/i || $_ =~ /(.*) - (.*)\.mkv/i)
 	{
 		my $serie = lc($1);
 		$status{$serie}{$2} = "<success>To be watched<success>";
@@ -287,7 +287,7 @@ my @downDir = readdir(DOWN);
 close DOWN;
 foreach my $file (@downDir)
 {
-	if ($file =~ /\.mp4/)
+	if ($file =~ /\.mp4/ or $file =~ /\.mkv/)
 	{
 		if ($verbose >=1) {print "$file\n";}
 		my @infos = &utils::GetInfos($file, @tvShows);
