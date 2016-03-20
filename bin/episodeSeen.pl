@@ -103,10 +103,18 @@ print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
 # Get file to copy
 $serie = lc($serie);
 $serie =~ s/_/ /g;
+my @extensions = ("mp4", "avi", "mkv");
+my $filename = "";
+my $fileFound = 0;
 
-my $filename = "$outputDir\/$serie - $episode\.mp4";
-if ($verbose >= 1){print "$filename\n";}
-if (-e $filename)
+for (my $i=0; $i<$#extensions+1; $i++)
+{ 
+	$filename = "$outputDir\/$serie - $episode\.$extensions[$i]";
+	if ($verbose >= 1){print "$filename\n";}
+	if (-e $filename){$fileFound = 1;last;}
+}
+
+if ($fileFound)
 {
 	# Get serie/season directory
 	if ($episode =~ /s(\d)e\d/) {$saison = $1;}
@@ -119,17 +127,16 @@ if (-e $filename)
 	if (!-d "$outputDir\/$serieDir\/"){mkdir "$outputDir\/$serieDir\/";}
 	
 	# Copy file to its serie/season directory
-	my $commandMp4 = "mv \"$outputDir\/$serie - $episode.mp4\" \"$outputDir\/$serieDir\"\/.";
+	my $commandVideo = "mv \"$filename\" \"$outputDir\/$serieDir\"\/.";
 	my $commandSrt = "mv \"$outputDir\/$serie - $episode.srt\" \"$outputDir\/$serieDir\"\/.";
 	#my $commandMeta = "mv \"$outputDir\/$serie - $episode.metathumb\" \"$outputDir\/$serieDir\"\/.";
 	#my $commandXml = "mv \"$outputDir\/$serie - $episode.xml\" \"$outputDir\/$serieDir\"\/.";
 	#my $commandBackdrop = "mv \"$outputDir\/.$serie - $episode.backdrop\" \"$outputDir\/$serieDir\"\/";
 	if($verbose >= 1){print "$commandMp4\n";}
-	system($commandMp4);
+	system($commandVideo);
 	system($commandSrt);
 	#system($commandMeta);
 	#system($commandXml);
 	#system($commandBackdrop);
 }
-#print $LOG "\n";
 close $LOG;

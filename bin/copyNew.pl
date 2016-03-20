@@ -98,7 +98,7 @@ foreach my $file (@outDir)
 {
 	my $fileFound = 0;
 	if (-d "$outputDir\/$file") {next;}
-	if ($file !~ /\.mp4$/ && $file !~ /\.avi$/) {next;}
+	if ($file !~ /\.mp4$/ && $file !~ /\.avi$/ && $file !~ /\.mkv$/) {next;}
 	# Check if file already viewed on the server
 	my @infos = getFileInfos($file, $verbose);
 	# open input serie directory
@@ -120,12 +120,14 @@ foreach my $file (@outDir)
 	}
 	if ($fileFound == 1)
 	{
-		$file =~ s/\.mp4//; $file =~ s/\.avi//;
-		my $folder = "$outputDir\/$infos[0] - Saison $infos[1]";
+		my $ext = "mp4";
+		if( $file =~ /.*\.(.*)$/ ){$ext = $1;}
+		$file =~ s/\.mp4//; $file =~ s/\.avi//; $file =~ s/\.mkv//;
+		my $folder = "$outputDsir\/$infos[0] - Saison $infos[1]";
 		if (-d $folder)
 		{
 			print $LOG "move $file\n";
-			my $moveMp4 = "mv \"$outputDir\/$file\.mp4\" \"$folder\/.\"";
+			my $moveMp4 = "mv \"$outputDir\/$file\.$ext\" \"$folder\/.\"";
 			my $moveSrt = "mv \"$outputDir\/$file\.srt\" \"$folder\/.\"";
 			if ($verbose >= 2) {print "$moveMp4\n$moveSrt\n";}
 			system($moveMp4);
@@ -134,7 +136,7 @@ foreach my $file (@outDir)
 		else
 		{
 			print $LOG "remove $file\n";
-			my $removeMp4 = "rm \"$outputDir\/$file\.mp4\"";
+			my $removeMp4 = "rm \"$outputDir\/$file\.$ext\"";
 			my $removeSrt = "rm \"$outputDir\/$file\.srt\"";
 			if ($verbose >= 2) {print "$removeMp4\n$removeSrt\n";}
 			system($removeMp4);
@@ -180,10 +182,14 @@ foreach (@outDir)
 			my @infos = getFileInfos ($show, $verbose);
 			if ($infos[2] ne "" && $infos[2] > $latestEp)
 			{
+				my $ext = "mp4";
+				if( $show =~ /.*\.(.*)$/ ){$ext = $1;}
+
 				$show =~ s/.mp4//;
 				$show =~ s/.avi//;
+				$show =~ s/.mkv//;
 				print $LOG "copy $show\n";
-				my $copyMp4 = "cp \"$inputDir\/$_\/$show.mp4\" \"$outputDir\/$_\/.\"";
+				my $copyMp4 = "cp \"$inputDir\/$_\/$show.$ext\" \"$outputDir\/$_\/.\"";
 				my $copySrt = "cp \"$inputDir\/$_\/$show.srt\" \"$outputDir\/$_\/.\"";
 				if ($verbose >= 2) {print "$copyMp4\n$copySrt\n";}
 				system($copyMp4);
@@ -221,10 +227,14 @@ foreach my $file (@inDir)
 	}
 	if ($fileFound == 0)
 	{
+		my $ext = "mp4";
+		if( $file =~ /.*\.(.*)$/ ){$ext = $1;}
+
 		$file =~ s/\.mp4//;
 		$file =~ s/\.avi//;
+		$file =~ s/\.mkv//;
 		print $LOG "copy $file\n";
-		my $copyMp4 = "cp \"$inputDir\/$file.mp4\" \"$outputDir\/.\"";
+		my $copyMp4 = "cp \"$inputDir\/$file.$ext\" \"$outputDir\/.\"";
 		my $copySrt = "cp \"$inputDir\/$file.srt\" \"$outputDir\/.\"";
 		if ($verbose >= 2) {print "$copyMp4\n$copySrt\n";}
 		system($copyMp4);
