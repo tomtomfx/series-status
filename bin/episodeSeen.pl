@@ -132,7 +132,7 @@ if ($fileFound)
 	#my $commandMeta = "mv \"$outputDir\/$serie - $episode.metathumb\" \"$outputDir\/$serieDir\"\/.";
 	#my $commandXml = "mv \"$outputDir\/$serie - $episode.xml\" \"$outputDir\/$serieDir\"\/.";
 	#my $commandBackdrop = "mv \"$outputDir\/.$serie - $episode.backdrop\" \"$outputDir\/$serieDir\"\/";
-	if($verbose >= 1){print "$commandMp4\n";}
+	if($verbose >= 1){print "$commandVideo\n";}
 	system($commandVideo);
 	system($commandSrt);
 	#system($commandMeta);
