@@ -113,6 +113,19 @@ sub getTorrentUrl
 	{
 		return "http:\/\/www.torrentbit.net\/get\/$torrentbit";
 	}
+	elsif ($kickass ne "")
+	{
+		my $res = $ua->get($kickass);
+		@url = split("\n", $res->decoded_content());
+		foreach (@url)
+		{
+			if ($_ =~ /href=\"(magnet:.*announce)\"/) 
+			{
+				if ($verbose >= 1) {print "$1\n";}
+				return $1;
+			}
+		}
+	}
 	elsif ($torlock ne "")
 	{
 		@url = split("\n", $ua->get($torlock));
@@ -122,18 +135,6 @@ sub getTorrentUrl
 			{
 				if ($verbose >= 1) {print "$1\n";}
 				return "http:\/\/www.torlock.com\/".$1;
-			}
-		}
-	}
-	elsif ($kickass ne "")
-	{
-		@url = split("\n", $ua->get($kickass));
-		foreach (@url)
-		{
-			if ($_ =~ /title="Magnet link" href="(magnet:.*)\" ><i class=\"ka ka-magnet\">/) 
-			{
-				if ($verbose >= 1) {print "$1\n";}
-				return $1;
 			}
 		}
 	}
