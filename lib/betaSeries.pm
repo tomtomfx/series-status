@@ -221,13 +221,18 @@ sub searchSerie
 	my %shows = %{$result->{shows}->{show}};
 	# print Dumper %shows;
 	my $serieId = 0;
-	foreach my $show (keys (%shows))
-	{	
-		my $serieTitle = $shows{$show}->{title};
-		if ($serieTitle =~ /$title/i){$serieId = $show;last;}
-		else {next;}
+	if (exists $shows{"thetvdb_id"}){
+		$serieId = $shows{"id"};
 	}
-	
+	else
+	{
+		foreach my $show (keys (%shows))
+		{	
+			my $serieTitle = $shows{$show}->{title};
+			if ($serieTitle =~ /$title/i){$serieId = $show;last;}
+			else {next;}
+		}
+	}
 	return $serieId;
 }
 

@@ -12,9 +12,9 @@ use betaSeries;
 
 my $req = new CGI;
 my $serie = "";
-my $config = "config";
-my $fullConfig = "";
-my $logFile = "\/var\/log\/apache2\/addSerie.log";
+my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $fullConfig = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $logFile = "\/var\/www\/addSerie.log";
 my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
