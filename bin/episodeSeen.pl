@@ -8,6 +8,7 @@ use XML::Simple;
 use Frontier::Client;
 use Data::Dumper;
 use Sys::Hostname;
+use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
@@ -20,6 +21,12 @@ my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $outputDir = "";
 
+# Database variables
+my $tabletDatabasePath = "";
+my $driver = "SQLite"; 
+my $dsn = "";
+my $userid = "";
+my $password = "";
 
 # Read config file 
 sub readConfigFile
@@ -55,6 +62,10 @@ sub readConfigFile
 		elsif ($_ =~ /outDirectory=(.*)$/)
 		{
 			$outputDir = $1;
+		}
+		elsif ($_ =~ /tabletDatabasePath=(.*)$/)
+		{
+			$tabletDatabasePath = $1;
 		}
 	}
 }
@@ -139,4 +150,16 @@ if ($fileFound)
 	#system($commandXml);
 	#system($commandBackdrop);
 }
+
+#########################################################################################
+# Remove episode from the database
+# Connect to database
+$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+# Remove episode
+my $episodeId = "\'$serie - $episode\'";
+if ($verbose >= 1){print "$episodeId\n";}
+$dbh->do("DELETE FROM Episodes WHERE id=($episodeId)");
+$dbh->disconnect();
+
 close $LOG;

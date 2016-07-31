@@ -7,6 +7,7 @@ use Email::Simple;
 use Email::Sender::Simple qw(sendmail);
 use Email::Sender::Transport::SMTP::TLS;
 use LWP::Simple;
+use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
@@ -28,6 +29,13 @@ my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $bannersPath = "";
+
+# Database variables
+my $tabletDatabasePath = "";
+my $driver = "SQLite"; 
+my $dsn = "";
+my $userid = "";
+my $password = "";
 
 # Read config file 
 sub readConfigFile
@@ -105,7 +113,22 @@ sub readConfigFile
 		{
 			$bannersPath = $1;
 		}
+		elsif ($_ =~ /tabletDatabasePath=(.*)$/)
+		{
+			$tabletDatabasePath = $1;
+		}
 	}
+}
+
+sub does_table_exist 
+{
+    my ($dbh, $table_name) = @_;
+	my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'$table_name\';");
+    $sth->execute();
+	my @info = $sth->fetchrow_array;
+    my $exists = scalar @info;
+	# print "Table \"$table_name\" exists: $exists\n";
+	return $exists;
 }
 
 sub getTitle
@@ -168,6 +191,7 @@ if ($verbose >= 1)
 	print "Download directory: $downloadDirectory\n";
 	print "Send email: $sendMail\n";
 	print "Banners path: $bannersPath\n";
+	print "Tablet database path: $tabletDatabasePath\n";
 	print "\n";
 }
 
@@ -369,6 +393,43 @@ foreach (@htmlSource)
 				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-5\">".$title."</div>\n";
 				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-4\"><span class=\"label label-".$label."\">".$epStatus."</span></div>\n";
 				$_ = $_."\t\t\t\t\t\t</div>\n";
+				
+				#########################################################################################
+				# Add episode available to be watched in the database
+				if ($status{$serie}{$ep} eq "<success>To be watched<success>")
+				{
+					# Connect to database
+					$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
+					my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+					if ($verbose >=1) {print "Database opened successfully\n";}	
+					# Check table exists
+					my $exists = does_table_exist($dbh, "Episodes");
+					if ($exists == 1){if ($verbose >= 1){print ("Table Episodes already exists\n");}}
+					else
+					{
+						if ($verbose >= 1){print ("Episodes table does not exists. Creating one.\n");}
+						$dbh->do("DROP TABLE IF EXISTS Episodes");
+						$dbh->do("CREATE TABLE Episodes(Id TEXT PRIMARY KEY, SerieName TEXT, EpisodeNumber TEXT, Episodetitle TEXT, copyRequested BOOL, isOnTablet BOOL)");
+					}
+					# Query to check if the episode already exists
+					my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
+					if ($verbose >= 2){print "$query\n";}
+					my $sth = $dbh->prepare($query);
+					$sth->execute("$serie - $ep");
+					if ($sth->fetch()->[0]) 
+					{
+						if ($verbose >= 1){print "$serie - $ep already exists\n";}
+					}
+					else
+					{
+						# Add episode
+						my $episodeInfos = "\'$serie - $ep\', \'$serie\', \'$ep\', \'$title\', \'false\', \'false\'";
+						if ($verbose >= 1){print "$episodeInfos\n";}
+						$dbh->do("INSERT INTO Episodes VALUES($episodeInfos)");
+					}
+					$sth->finish();
+					$dbh->disconnect();
+				}
 			}
 			$_ = $_."\t\t\t\t\t</div>\n";
 			$_ = $_."\t\t\t\t</div>\n";
