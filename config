@@ -31,6 +31,7 @@ graphsPath=/var/www/highchart
 
 # Database
 databasePath=/home/tom/SubtitleManagement/logs/series.db
+tabletDatabasePath=/var/www/series/tablet.db
 
 # The TVDB
 tvdbApiKey=C6EFC8AFBFAC6048
@@ -134,5 +135,6 @@ warehouse 13,
 white collar,
 whitney,
 baron noir,
+preacher,
 /shows
 
