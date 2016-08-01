@@ -409,7 +409,7 @@ foreach (@htmlSource)
 					{
 						if ($verbose >= 1){print ("Episodes table does not exists. Creating one.\n");}
 						$dbh->do("DROP TABLE IF EXISTS Episodes");
-						$dbh->do("CREATE TABLE Episodes(Id TEXT PRIMARY KEY, SerieName TEXT, EpisodeNumber TEXT, Episodetitle TEXT, copyRequested BOOL, isOnTablet BOOL)");
+						$dbh->do("CREATE TABLE Episodes(Id TEXT PRIMARY KEY, SerieName TEXT, EpisodeNumber TEXT, EpisodeTitle TEXT, copyRequested BOOL, isOnTablet BOOL)");
 					}
 					# Query to check if the episode already exists
 					my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
