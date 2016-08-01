@@ -126,6 +126,20 @@ sub getTorrentUrl
 			}
 		}
 	}
+	elsif ($t1337 ne "")
+	{
+		my $res = $ua->get($t1337);
+		@url = split("\n", $res->decoded_content());
+		foreach (@url)
+		{
+			# print Dumper($_);
+			if ($_ =~ /id=\"magnetdl\" href=\"(magnet:.*announce)\" onclick=\"/) 
+			{
+				if ($verbose >= 1) {print "$1\n";}
+				return $1;
+			}
+		}
+	}
 	elsif ($torlock ne "")
 	{
 		@url = split("\n", $ua->get($torlock));
@@ -135,18 +149,6 @@ sub getTorrentUrl
 			{
 				if ($verbose >= 1) {print "$1\n";}
 				return "http:\/\/www.torlock.com\/".$1;
-			}
-		}
-	}
-	elsif ($t1337 ne "")
-	{
-		@url = split("\n", $ua->get($t1337));
-		foreach (@url)
-		{
-			if ($_ =~ /href="(http:\/\/torcache.net\/torrent\/.*\.torrent)/) 
-			{
-				if ($verbose >= 1) {print "$1\n";}
-				return $1;
 			}
 		}
 	}
