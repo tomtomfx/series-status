@@ -36,6 +36,12 @@ body {
 	color: white;
 	margin-top: 10px;
 }
+.btn-info,
+.btn-info:hover{
+	background: #fff;
+	color: black;
+	border: 0px;
+}
 .dropdown-menu{width: 300px;border-top:0px;margin-top:3px;}
 .dropdown-menu .col-sm-12{margin-bottom:7px;}
 .dropdown-menu:after{
@@ -95,6 +101,31 @@ h5, h6{
 }
 #title small{
 	color: #334A59;
+}
+#panelGlobal{
+	background: white;
+	padding: 0px;
+	border: 2px solid #334A59;
+	border-radius: 8px;
+	box-shadow: 2px 2px 0px #777;
+	margin-bottom: 15px;
+}
+#panelHead{
+	background: #334A59;
+}
+#panelTitle{
+	color: white;
+}
+#nbEpBadge{
+	background: #2399A6;
+	margin-left: 10px;
+}
+#epAction{
+	color: #2399A6;
+	padding-left: 10px;
+}
+#panelGlyph{
+	margin-right: 10px;
 }
 #carouselBtn{
 	background: #2399A6;
