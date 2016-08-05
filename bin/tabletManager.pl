@@ -23,10 +23,10 @@ my $userid = "";
 my $password = "";
 
 # Tablet ssh server
-my $tabletHostname = "192.168.1.97";
+my $tabletHostname = "";
 my $tabletPort = "59672";
-my $sshUser = "tom";
-my $sshPassword = "ctl1032";
+my $ftpUser = "";
+my $ftpPassword = "";
 
 # Read config file 
 sub readConfigFile
@@ -92,11 +92,32 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DB
 if ($verbose >=1) {print "Database opened successfully\n";}	
 
 #########################################################################################
-# Get episodes with copy requested
-my @episodes;
-my $query = "SELECT * FROM Episodes WHERE copyRequested=\"true\"";
+# Get list of tablets and set their ftp status
+my $query = "SELECT * FROM Tablets";
 if ($verbose >= 2){print "$query\n";}
 my $sth = $dbh->prepare($query);
+$sth->execute();
+my $tablets = $sth->fetchall_hashref('id');
+foreach my $tablet (keys($tablets))
+{
+	my $tabletInfo = $tablets->{$tablet};
+	if ($verbose >= 1) {print Dumper($tabletInfo);}
+	# Try an FTP connection...
+	my $status = "Down";
+	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort);
+	if ($ftp){if ($ftp->login($tabletInfo->{"ftpUser"}, $tabletInfo->{"ftpPassword"})){$status = "OK";}}
+	# ...and update the status
+	$dbh->do("UPDATE Tablets SET status=\'$status\' WHERE Id=\'$tabletInfo->{\"id\"}\'");
+}
+$sth->finish();
+
+
+#########################################################################################
+# Get episodes with copy requested
+my @episodes;
+$query = "SELECT * FROM Episodes WHERE copyRequested=\"true\"";
+if ($verbose >= 2){print "$query\n";}
+$sth = $dbh->prepare($query);
 $sth->execute();
 while(my $episode = $sth->fetchrow_hashref)
 {
@@ -125,53 +146,63 @@ foreach my $file (@outDir)
 	else {next;}
 }
 
-# Connect to tablet through FTP
-my $ftp = Net::FTP->new($tabletHostname, Port => $tabletPort);
-if ($ftp)
+# Copy all files that have copy requested
+foreach my $episode (@episodes)
 {
-	$ftp->login($sshUser, $sshPassword);
-	if ($verbose >= 1){print "Connected to '$tabletHostname' as '$sshUser'\n";}
-
-	# Copy all files that have copy requested
-	foreach my $episode (@episodes)
+	my $tabletId = $episode->{"tablet"};
+	my $tabletInfo = $tablets->{$tabletId};
+	# Connect to tablet through FTP
+	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort);
+	if ($ftp)
 	{
-		$ftp->put("$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");
+		$ftp->login($tabletInfo->{"ftpUser"}, $tabletInfo->{"ftpPassword"});
+		if ($verbose >= 1){print "Connected to '$tabletInfo->{\"id\"}' as '$tabletInfo->{\"ftpUser\"}'\n";}
+
 		$ftp->put("$outDirectory\\$episode->{\"Id\"}.srt");
+		$ftp->put("$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");
+		
+		$ftp->quit();
 	}
-	$ftp->quit();
 }
 
 #########################################################################################
 # Check episodes present on tablet and update database and set their status to "Copied"
 # Connect to tablet through FTP
 my @fileList;
-$ftp = Net::FTP->new($tabletHostname, Port => $tabletPort);
-if ($ftp)
+foreach my $tablet (keys($tablets))
 {
-	$ftp->login($sshUser, $sshPassword);
-	if ($verbose >= 1){print "Connected to '$tabletHostname' as '$sshUser'\n";}
+	my $tabletInfo = $tablets->{$tablet};
+	# Try an FTP connection...
 
-	@fileList = $ftp->ls('');
-	#print Dumper(@fileList);
-}
-foreach my $file (@fileList)
-{
-	if ($file =~ /(.*)\..*/)
+	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort);
+	if ($ftp)
 	{
-		my $id = $1;
-		my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
-		if ($verbose >= 2){print "$query\n";}
-		$sth = $dbh->prepare($query);
-		$sth->execute($id);
-		if ($sth->fetch()->[0]) 
-		{
-			$dbh->do("UPDATE Episodes SET isOnTablet=\'true\' WHERE Id=\'$id\'");
-			$dbh->do("UPDATE Episodes SET copyRequested=\'false\' WHERE Id=\'$id\'");
-		}
-	}
-	$sth->finish();
-}
+		$ftp->login($tabletInfo->{"ftpUser"}, $tabletInfo->{"ftpPassword"});
+		if ($verbose >= 1){print "Connected to '$tabletInfo->{\"id\"}' as '$tabletInfo->{\"ftpUser\"}'\n";}
 
-# Disconnect FTP and close DB
-if ($ftp){$ftp->quit();}
+		@fileList = $ftp->ls('');
+		#print Dumper(@fileList);
+	}
+	foreach my $file (@fileList)
+	{
+		if ($file =~ /(.*)\..*/)
+		{
+			my $id = $1;
+			my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
+			if ($verbose >= 2){print "$query\n";}
+			$sth = $dbh->prepare($query);
+			$sth->execute($id);
+			if ($sth->fetch()->[0]) 
+			{
+				$dbh->do("UPDATE Episodes SET isOnTablet=\'true\' WHERE Id=\'$id\'");
+				$dbh->do("UPDATE Episodes SET copyRequested=\'false\' WHERE Id=\'$id\'");
+				$dbh->do("UPDATE Episodes SET tablet=\'$tabletInfo->{\"id\"}\' WHERE Id=\'$id\'");
+			}
+		}
+		$sth->finish();
+	}
+
+	# Disconnect FTP and close DB
+	if ($ftp){$ftp->quit();}
+}
 $dbh->disconnect();
