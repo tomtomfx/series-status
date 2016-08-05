@@ -127,28 +127,33 @@ foreach my $file (@outDir)
 
 # Connect to tablet through FTP
 my $ftp = Net::FTP->new($tabletHostname, Port => $tabletPort);
-$ftp->login($sshUser, $sshPassword);
-if ($verbose >= 1){print "Connected to '$tabletHostname' as '$sshUser'\n";}
-
-# Copy all files that have copy requested
-foreach my $episode (@episodes)
+if ($ftp)
 {
-	$ftp->put("$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");
-	$ftp->put("$outDirectory\\$episode->{\"Id\"}.srt");
-}
-$ftp->quit();
+	$ftp->login($sshUser, $sshPassword);
+	if ($verbose >= 1){print "Connected to '$tabletHostname' as '$sshUser'\n";}
 
+	# Copy all files that have copy requested
+	foreach my $episode (@episodes)
+	{
+		$ftp->put("$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");
+		$ftp->put("$outDirectory\\$episode->{\"Id\"}.srt");
+	}
+	$ftp->quit();
+}
 
 #########################################################################################
 # Check episodes present on tablet and update database and set their status to "Copied"
 # Connect to tablet through FTP
+my @fileList;
 $ftp = Net::FTP->new($tabletHostname, Port => $tabletPort);
-$ftp->login($sshUser, $sshPassword);
-if ($verbose >= 1){print "Connected to '$tabletHostname' as '$sshUser'\n";}
+if ($ftp)
+{
+	$ftp->login($sshUser, $sshPassword);
+	if ($verbose >= 1){print "Connected to '$tabletHostname' as '$sshUser'\n";}
 
-my @fileList = $ftp->ls('');
-#print Dumper(@fileList);
-
+	@fileList = $ftp->ls('');
+	#print Dumper(@fileList);
+}
 foreach my $file (@fileList)
 {
 	if ($file =~ /(.*)\..*/)
@@ -168,5 +173,5 @@ foreach my $file (@fileList)
 }
 
 # Disconnect FTP and close DB
-$ftp->quit();
+if ($ftp){$ftp->quit();}
 $dbh->disconnect();
