@@ -102,7 +102,20 @@ sub getTorrentUrl
 	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
 	
-	if ($t1337 ne "")
+	if ($kickass ne "")
+	{
+		my $res = $ua->get($kickass);
+		my @url = split("\n", $res->decoded_content());
+		foreach (@url)
+		{
+			if ($_ =~ /href=\"(magnet:.*)\"><i class=\"ka ka-magnet\"><\/i><\/a>/) 
+			{
+				if ($verbose >= 1) {print "$1\n";}
+				return $1;
+			}
+		}
+	}
+	elsif ($t1337 ne "")
 	{
 		my $res = $ua->get($t1337);
 		my @url = split("\n", $res->decoded_content());
@@ -110,19 +123,6 @@ sub getTorrentUrl
 		{
 			# print Dumper($_);
 			if ($_ =~ /id=\"magnetdl\" href=\"(magnet:.*announce)\" onclick=\"/) 
-			{
-				if ($verbose >= 1) {print "$1\n";}
-				return $1;
-			}
-		}
-	}
-	elsif ($kickass ne "")
-	{
-		my $res = $ua->get($kickass);
-		my @url = split("\n", $res->decoded_content());
-		foreach (@url)
-		{
-			if ($_ =~ /href=\"(magnet:.*announce)\"/) 
 			{
 				if ($verbose >= 1) {print "$1\n";}
 				return $1;
