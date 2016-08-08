@@ -68,68 +68,44 @@ sub getTorrentUrl
 	
 	my $torrentzLink = "http://torrentz.eu";
 	my $kickass = "";
-	my $torlock = "";
 	my $t1337 = "";
-	my $yourbittorrent = "";
-	my $torrentbit = "";
 	
 	$serie =~ s/ /+/g;
 	
-	# Get torrent URL
-	if ($verbose >= 1) {print "https://torrentz.eu/search?f=$serie+$episodes\n";}
-	my $response = $ua->get("https://torrentz.eu/search?f=$serie+$episodes+x264");
-	my @url = split("\n", $response->decoded_content);
-	foreach (@url)
+	# Get torrent URL from 1337.to
+	if ($verbose >= 1) {print "http://1337x.to/search/$serie+$episodes+x264/1/\n";}
+	my $response = $ua->get("http://1337x.to/search/$serie+$episodes+x264/1/");
+	my @x1337 = split("\n", $response->decoded_content);
+	foreach (@x1337)
 	{
-		if ($_ =~ /<dl><dt><a href=\"(\/\w*)"><b>/)
+		if ($_ =~ /<strong><a href=\"(\/torrent\/\d*\/.*\/)\"><b>/)
 		{
-			$torrentzLink = $torrentzLink.$1;
-			if ($verbose >= 1) {print "$torrentzLink\n";}
+			$t1337 = "http:\/\/1337x.to".$1;
 			last;
 		}
 	}
-	$response = $ua->get($torrentzLink);
-	@url = split("\n", $response->decoded_content);
-	foreach (@url)
+	# Get torrent URL from kickass
+	if ($verbose >= 1) {print "http://kickass.cd/search.php?q=$serie+$episodes+x264\n";}
+	$response = $ua->get("http://kickass.cd/search.php?q=$serie+$episodes+x264");
+	my @kickass = split("\n", $response->decoded_content);
+	foreach (@kickass)
 	{
-		if($_ =~ /href=\"(https:\/\/kickass.so\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kickass.to\/[\w|\-]*\.html)\"/ || $_ =~ /href=\"(https:\/\/kat.cr\/[\w|\-]*\.html)\"/){$kickass = $1;}
-		if($_ =~ /href=\"(http:\/\/www\.torlock\.com\/torrent\/.*\/.*\.html)\" rel=\"e\"><span.*torlock.com<\/span>/){$torlock = $1;}
-		if($_ =~ /href=\"(http:\/\/1337x.to\/torrent\/\d*\/.*\/)\".*1337x.to<\/span>/ || $_ =~ /href=\"(https:\/\/1337x.to\/torrent\/\d*\/.*\/)\" rel=\"e\">.*1337x\.to/){$t1337 = $1;}
-		if($_ =~ /href=\"http:\/\/www.yourbittorrent.com\/torrent\/(\d+)\/.*\.html\" rel=\"e\"><span.*yourbittorrent.com<\/span>/){$yourbittorrent = $1;}
-		if($_ =~ /href=\"http:\/\/www.torrentbit.net\/torrent\/(\d*)\/.*\/\" rel=\"e\"><span.*torrentbit.net<\/span>/){$torrentbit = $1;}
-	}
-	if ($verbose >= 1) {print ("kickass = $kickass\ntorlock = $torlock\n1337 = $t1337\nyourBittorrent = $yourbittorrent\ntorrentbit = $torrentbit\n");}
-
-	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
-	if ($torlock ne "" && $ua->get($torlock) eq "") {$torlock = "";}
-	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
-	# if ($yourbittorrent ne "" && get($yourbittorrent) eq "") {$yourbittorrent = "";}
-	
-	if ($yourbittorrent ne "")
-	{
-		return "http:\/\/yourbittorrent.com\/down\/$yourbittorrent.torrent";
-	}
-	elsif ($torrentbit ne "")
-	{
-		return "http:\/\/www.torrentbit.net\/get\/$torrentbit";
-	}
-	elsif ($kickass ne "")
-	{
-		my $res = $ua->get($kickass);
-		@url = split("\n", $res->decoded_content());
-		foreach (@url)
+		if ($_ =~ /<a href=\"(\/.*)\" class=\"cellMainLink\">/)
 		{
-			if ($_ =~ /href=\"(magnet:.*announce)\"/) 
-			{
-				if ($verbose >= 1) {print "$1\n";}
-				return $1;
-			}
+			$kickass = "http:\/\/kickass.cd".$1;
+			last;
 		}
 	}
-	elsif ($t1337 ne "")
+	
+	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\n");}
+
+	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
+	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
+	
+	if ($t1337 ne "")
 	{
 		my $res = $ua->get($t1337);
-		@url = split("\n", $res->decoded_content());
+		my @url = split("\n", $res->decoded_content());
 		foreach (@url)
 		{
 			# print Dumper($_);
@@ -140,15 +116,16 @@ sub getTorrentUrl
 			}
 		}
 	}
-	elsif ($torlock ne "")
+	elsif ($kickass ne "")
 	{
-		@url = split("\n", $ua->get($torlock));
+		my $res = $ua->get($kickass);
+		my @url = split("\n", $res->decoded_content());
 		foreach (@url)
 		{
-			if ($_ =~ /href=\"\/(tor\/.*\.torrent)\"><img src=http:\/\/cdn.torlock.com\/dlbutton2\.png/) 
+			if ($_ =~ /href=\"(magnet:.*announce)\"/) 
 			{
 				if ($verbose >= 1) {print "$1\n";}
-				return "http:\/\/www.torlock.com\/".$1;
+				return $1;
 			}
 		}
 	}
