@@ -201,6 +201,15 @@ my $date = "";
 if ($time =~ /(.*) \d*:\d*:\d*/) {$date = $1;}
 if ($verbose >=1) {print "Looking for logs of $date\n";}
 
+# Create the transport. Using gmail for this example
+my $transport = Email::Sender::Transport::SMTP::TLS->new(
+	host     => 'smtp.gmail.com',
+	port     => 587,
+	username => 'films.vouille@gmail.com',
+	password => 'ctl1032!'
+);
+
+
 # Get episodes to download
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 my @episodeTosee = &betaSeries::getEpisodesToSee($verbose, $token, $betaSeriesKey);
@@ -283,7 +292,21 @@ foreach (@list)
 			if ($ep =~ /$episode/i)
 			{
 				if ($epStatus eq "OK"){$status{$serie}{$epNumber} = "<info>Download launched<info>";}
-				else {$status{$serie}{$epNumber} = "<danger>Failed to launch download<danger>";}
+				else {
+					$status{$serie}{$epNumber} = "<danger>Failed to launch download<danger>";
+					# Send email
+					my $mailContent = "Download of $episode failed.\nPlease check.\n";
+					my $email = Email::Simple->create(
+					header => [
+						From    => 'films.vouille@gmail.com',
+						To      => 'thomas.fayoux@gmail.com',
+						Subject => "Failed to download",
+					],
+					body => $mailContent,
+					);					 
+					# send the mail
+					sendmail( $email, {transport => $transport} );
+				}
 				last;
 			}
 		}
@@ -366,8 +389,10 @@ foreach (@htmlSource)
 			if ($verbose >= 1) {print "$serie \($nbEpisodes\)\n"; print Dumper @episodes;}
 			foreach my $ep (@episodes)
 			{
+				my $title = "";
+				my $epId = "";
 				my $output = getTitle($verbose, $serie, $ep, @episodeTosee);
-				my ($title, $epId) = split(/ - /, $output);
+				if ($output ne ""){	($title, $epId) = split(/ - /, $output); }
 				my $serieUnderscore = $serie;
 				$serieUnderscore =~ s/ /_/g;
 				
@@ -481,14 +506,6 @@ if ($sendMail && @keys)
 	  Subject => "Series status $date",
 	],
 	body => $mailContent,
-	);
-
-	# Create the transport. Using gmail for this example
-	my $transport = Email::Sender::Transport::SMTP::TLS->new(
-		host     => 'smtp.gmail.com',
-		port     => 587,
-		username => 'films.vouille@gmail.com',
-		password => 'ctl1032!'
 	);
 	 
 	# send the mail

@@ -24,7 +24,7 @@ my $password = "";
 
 # Tablet ssh server
 my $tabletHostname = "";
-my $tabletPort = "59672";
+my $tabletPort = "2221";
 my $ftpUser = "";
 my $ftpPassword = "";
 
@@ -51,17 +51,6 @@ sub readConfigFile
 			$outDirectory = $1;
 		}
 	}
-}
-
-sub does_table_exist 
-{
-    my ($dbh, $table_name) = @_;
-	my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'$table_name\';");
-    $sth->execute();
-	my @info = $sth->fetchrow_array;
-    my $exists = scalar @info;
-	# print "Table \"$table_name\" exists: $exists\n";
-	return $exists;
 }
 
 foreach my $arg (@ARGV)
@@ -152,14 +141,20 @@ foreach my $episode (@episodes)
 	my $tabletId = $episode->{"tablet"};
 	my $tabletInfo = $tablets->{$tabletId};
 	# Connect to tablet through FTP
-	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort);
+	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort, Timeout => 120, Debug => 1);
 	if ($ftp)
 	{
 		$ftp->login($tabletInfo->{"ftpUser"}, $tabletInfo->{"ftpPassword"});
 		if ($verbose >= 1){print "Connected to '$tabletInfo->{\"id\"}' as '$tabletInfo->{\"ftpUser\"}'\n";}
-
-		$ftp->put("$outDirectory\\$episode->{\"Id\"}.srt");
-		$ftp->put("$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");
+		# Set binary and passive mode
+		$ftp->binary();
+		$ftp->passive(0);
+		if (0 and -f "$outDirectory\\$episode->{\"Id\"}.srt")
+			{$ftp->put("$outDirectory\\$episode->{\"Id\"}.srt");}
+		$ftp->binary();
+		$ftp->passive(0);
+		if (-f "$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}")
+			{$ftp->put("$outDirectory\\$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");}
 		
 		$ftp->quit();
 	}
@@ -179,9 +174,9 @@ foreach my $tablet (keys($tablets))
 	{
 		$ftp->login($tabletInfo->{"ftpUser"}, $tabletInfo->{"ftpPassword"});
 		if ($verbose >= 1){print "Connected to '$tabletInfo->{\"id\"}' as '$tabletInfo->{\"ftpUser\"}'\n";}
-
-		@fileList = $ftp->ls('');
-		#print Dumper(@fileList);
+		$ftp->passive(0);
+		@fileList = $ftp->ls;
+		if ($verbose >= 1){print Dumper(@fileList);}
 	}
 	foreach my $file (@fileList)
 	{
