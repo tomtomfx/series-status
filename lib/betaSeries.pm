@@ -142,7 +142,7 @@ sub getEpisodesToSee
 	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
 
 	my $message = sendRequest($ua, $req);
-	
+	if ($message eq "0") {return 0;}
 	# open my $DUMP, '>', "log.txt";
 	
 	my $parser = XML::Simple->new( KeepRoot => 0 );
@@ -221,6 +221,7 @@ sub searchSerie
 	my %shows = %{$result->{shows}->{show}};
 	# print Dumper %shows;
 	my $serieId = 0;
+	my $titleLength = 100;
 	if (exists $shows{"thetvdb_id"}){
 		$serieId = $shows{"id"};
 	}
@@ -229,10 +230,19 @@ sub searchSerie
 		foreach my $show (keys (%shows))
 		{	
 			my $serieTitle = $shows{$show}->{title};
-			if ($serieTitle =~ /$title/i){$serieId = $show;last;}
+			# print "$serieTitle - $title\n";
+			if ($serieTitle eq $title){$serieId = $show;last;}
+			if ($serieTitle =~ /$title/i)
+			{
+				if (length($serieTitle) - length($title) < $titleLength)
+				{
+					$titleLength = length($serieTitle) - length($title);
+					$serieId = $show;
+				}
+			}
 			else {next;}
 		}
-	}
+	}	
 	return $serieId;
 }
 
