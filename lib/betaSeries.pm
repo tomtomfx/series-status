@@ -230,6 +230,7 @@ sub searchSerie
 		foreach my $show (keys (%shows))
 		{	
 			my $serieTitle = $shows{$show}->{title};
+			$serieTitle =~ s/\'s//;
 			# print "$serieTitle - $title\n";
 			if ($serieTitle eq $title){$serieId = $show;last;}
 			if ($serieTitle =~ /$title/i)
