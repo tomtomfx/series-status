@@ -151,7 +151,7 @@ sub getTitle
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$show =~ s/marvel\'s/marvel/i;	
 			# Specific for MacGyver (2016)
-			$show =~ s/macgyver/macgyver \(2016\)/i;
+			$show =~ s/macgyver/macgyver \(2016\)/i;	
 			# Specific for DC's legends of tomorrow
 			$show =~ s/dc's/dc/i;	
 			# Specific for Mr Robot
@@ -250,6 +250,8 @@ foreach (@list)
 		if ($episode =~ /(.*) \(\d{4}\) - (.*)/i) {$serie = $1; $epNumber = $2;}
 		elsif ($episode =~ /(.*) \(US\) - (.*)/i) {$serie = $1; $epNumber = $2;}
 		elsif ($episode =~ /(.*) - (.*)/) {$serie = $1; $epNumber = $2;}
+		# Specific for MacGyver (2016)
+		if ($serie eq "macgyver") {$serie = $serie . "\ (2016\)";}
 		$status{$serie}{$epNumber} = "<info>Download not launched yet<info>";
 	}
 	else {next;}
@@ -307,7 +309,7 @@ foreach (@list)
 					body => $mailContent,
 					);					 
 					# send the mail
-					sendmail( $email, {transport => $transport} );
+					# sendmail( $email, {transport => $transport} );
 				}
 				last;
 			}
@@ -397,6 +399,8 @@ foreach (@htmlSource)
 				if ($output ne ""){	($title, $epId) = split(/ - /, $output); }
 				my $serieUnderscore = $serie;
 				$serieUnderscore =~ s/ /_/g;
+				$serieUnderscore =~ s/\(/\\\(/g;
+				$serieUnderscore =~ s/\)/\\\)/g;
 				
 				my $epStatus = "";
 				my $label = "";
