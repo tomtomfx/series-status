@@ -150,6 +150,8 @@ sub getTitle
 			$epId = $5;
 			# Specific for Marvel's agents of S.H.I.E.L.D.
 			$show =~ s/marvel\'s/marvel/i;	
+			# Specific for MacGyver (2016)
+			$show =~ s/macgyver/macgyver \(2016\)/i;
 			# Specific for DC's legends of tomorrow
 			$show =~ s/dc's/dc/i;	
 			# Specific for Mr Robot
@@ -448,6 +450,7 @@ foreach (@htmlSource)
 					else
 					{
 						# Add episode
+						$title =~ s/\'/ /g;
 						my $episodeInfos = "\'$serie - $ep\', \'$serie\', \'$ep\', \'$title\', \'\', \'false\', \'false\'";
 						if ($verbose >= 1){print "$episodeInfos\n";}
 						$dbh->do("INSERT INTO Episodes VALUES($episodeInfos)");
