@@ -30,6 +30,16 @@ sub GetInfos
 	my ($file, @shows) = @_;
 	my $foundShow = 0;
 	my @Infos;
+	
+	# manage shows with more than 9 seasons
+	if ($file =~ /[^\w\(](\d{4})[^\d\)]/)
+	{
+		my $sn = substr($1, 0, 2);
+		my $ep = substr($1, 2, 2);
+		$ep = $sn."x".$ep;
+		$file =~ s/$1/$ep/;
+	}
+	
 	foreach my $show (@shows)
 	{
 		$foundShow = foundShow($file, $show);
@@ -51,7 +61,7 @@ sub GetInfos
 			push(@Infos, $1);
 			push(@Infos, $2);
 		}
-		if ($file =~ /\W(\d{3})\D/)
+		if ($file =~ /\W(\d{3})\D/ || $file =~ /[^\w\(](\d{4})[^\d\)]/)
 		{
 			(my $sn, my $ep) = split('', $1, 2);
 			push(@Infos, $sn);
