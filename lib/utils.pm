@@ -31,8 +31,8 @@ sub GetInfos
 	my $foundShow = 0;
 	my @Infos;
 	
-	# manage shows with more than 9 seasons
-	if ($file =~ /[^\w\(](\d{4})[^\d\)]/)
+	# manage big bang theory season 10
+	if ($file =~ /big/i and $file =~ /bang/i and $file =~ /theory/i and $file =~ /[^\w\(](\d{4})[^\d\)]/)
 	{
 		my $sn = substr($1, 0, 2);
 		my $ep = substr($1, 2, 2);

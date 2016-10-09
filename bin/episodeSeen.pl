@@ -128,7 +128,7 @@ for (my $i=0; $i<$#extensions+1; $i++)
 if ($fileFound)
 {
 	# Get serie/season directory
-	if ($episode =~ /s(\d)e\d/) {$saison = $1;}
+	if ($episode =~ /s(\d+)e\d+/) {$saison = $1;}
 	my $serieDir = $serie;
 	# Specific Marvel's agents of shield
 	$serieDir =~ s/s.h.i.e.l.d./shield/i;
