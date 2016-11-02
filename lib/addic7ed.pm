@@ -137,7 +137,9 @@ sub tv
 				{
 					$version =~ s/ /,/g;
 					$version =~ s/and/,/ig;
-					$version =~ s/\./,/g;					
+					$version =~ s/\./,/g;
+					$version =~ s/\(/ /g;					
+					$version =~ s/\)/ /g;
 					my @versions = split(/,/, $version);
 					foreach (@versions)
 					{
