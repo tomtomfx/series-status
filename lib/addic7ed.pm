@@ -133,6 +133,9 @@ sub tv
 				$languageFound = 0;
 				$subCompleted = 0;
 				
+				if ($version eq "DIMENSION"){$version = $version.",LOL"}
+				if ($version eq "LOL"){$version = $version.",DIMENSION"}
+				
 				if ($version =~ /,/ || $version=~ /and/i)
 				{
 					$version =~ s/ /,/g;
