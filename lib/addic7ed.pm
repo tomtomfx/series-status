@@ -20,13 +20,13 @@ sub downloadSubtitles
 
 	# Open log file
 	open (LOG, ">>", $logFile) or die "Cannot open $logFile";
-	 
+	
 	# Remove unused info
 	my @del = ("readnfo","extended","theatrical","limited","dc","rerip","dubbed","docu","unrated","festival","ac3","720p","1080p","HDTV");
 	foreach (@del){$filename =~ s/\.$_//i;}
 
 	# Remove file extension
-	$filename =~ s/\.mp4//i; $filename =~ s/\.avi//i;
+	$filename =~ s/\.mp4//i; $filename =~ s/\.avi//i; $filename =~ s/\.mkv//i;
 	
 	# Specific for Rush
 	$filename =~ s/\WUS\W/\./i;
@@ -35,6 +35,15 @@ sub downloadSubtitles
 	# Manage US/UK and year tags
 	$filename =~ s/(\W)US(\W)/$1\(US\)$2/i; 
 	$filename =~ s/(\W)UK(\W)/$1\(UK\)$2/i; 
+	
+	# manage big bang theory season 10
+	if ($filename =~ /big/i and $filename =~ /bang/i and $filename =~ /theory/i and $filename =~ /[^\w\(](\d{4})[^\d\)]/)
+	{
+		my $sn = substr($1, 0, 2);
+		my $ep = substr($1, 2, 2);
+		$ep = "s".$sn."e".$ep;
+		$filename =~ s/$1/$ep/;
+	}
 	
 	if ($filename =~ /(2\d{3})/)
 	{
