@@ -191,6 +191,8 @@ foreach my $file (@dlDir)
 			$serie =~ s/ \(US\)//;
 			# Specific for Mr. Robot
 			$serie =~ s/mr\./mr/i;
+			# Specific for the blacklist: redemption
+			$serie =~ s/blacklist: redemption/blacklist redemption/i;
 			
 			if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
 			if ($infos[0] =~ /$serie/i && $infos[1] == $saison && $infos[2] == $ep)
