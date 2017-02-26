@@ -155,7 +155,9 @@ sub getTitle
 			# Specific for DC's legends of tomorrow
 			$show =~ s/dc's/dc/i;	
 			# Specific for Mr Robot
-			$show =~ s/mr\./mr/i;		
+			$show =~ s/mr\./mr/i;	
+			# Specific for the blacklist: redemption
+			$show =~ s/blacklist: redemption/blacklist redemption/i;			
 		
 			$epNumber = "s".$season."e".$episodeNumber; 
 			if ($verbose >= 1) {print "$show - $serie\n$ep - $epNumber\n";}
@@ -239,6 +241,8 @@ foreach (@list)
 		$episode =~ s/dc's/dc/i;	
 		# Specific for Mr Robot
 		$episode =~ s/mr\./mr/i;		
+		# Specific for the blacklist: redemption
+		$episode =~ s/blacklist: redemption/blacklist redemption/i;			
 		# Remove 0 if season less than 10
 		if ($episode =~ /(.*) - s(\d+)e(\d+)/i)
 		{
@@ -281,7 +285,9 @@ foreach (@list)
 			$ep =~ s/dc's/dc/i;				
 			# Specific for Mr Robot
 			$ep =~ s/mr\./mr/i;		
-			
+			# Specific for the blacklist: redemption
+			$ep =~ s/blacklist: redemption/blacklist redemption/i;			
+
 			if ($ep =~ /(.*) \(US\) - s(\d+)e(\d+)/i) {$ep = "$1 - s$2e$3";}
 			if ($verbose >= 1) {print "$ep --> $epStatus\n";}
 			# Remove 0 if season less than 10
