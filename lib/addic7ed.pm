@@ -105,6 +105,8 @@ sub downloadSubtitles
 	$show =~ s/Mr_/Mr\._/i;
 	# Specific for Daredevil
 	if ($show =~ /daredevil/i) {$show = "Daredevil";}
+	# Specific for the blacklist: redemption
+	if ($show =~ /blacklist_redemption/i) {$show = "The_Blacklist:_Redemption";}
 
 	if ($verbose >= 2) {print "Show: $show, Season: $season, Episode: $episode\n";}
 	my $download = tv($filename, $show, $season, $episode, $downloadDir, $verbose);
