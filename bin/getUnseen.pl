@@ -66,21 +66,34 @@ sub getTorrentUrl
 	# Specific for Mr. Robot
 	$serie =~ s/Mr\./Mr/i;
 	
-	my $torrentzLink = "http://torrentz.eu";
 	my $kickass = "";
 	my $t1337 = "";
+	my $pirate = "";
 	
 	$serie =~ s/ /+/g;
 	
-	# Get torrent URL from 1337.to
-	if ($verbose >= 1) {print "http://1337x.to/search/$serie+$episodes+x264/1/\n";}
-	my $response = $ua->get("http://1337x.to/search/$serie+$episodes+x264/1/");
+	# Get torrent URL from 1337.pl
+	if ($verbose >= 1) {print "http://1337x.pl/search/$serie+$episodes+x264/1/\n";}
+	my $response = $ua->get("http://1337x.pl/search/$serie+$episodes+x264/1/");
 	my @x1337 = split("\n", $response->decoded_content);
 	foreach (@x1337)
 	{
 		if ($_ =~ /<strong><a href=\"(\/torrent\/\d*\/.*\/)\"><b>/)
 		{
-			$t1337 = "http:\/\/1337x.to".$1;
+			$t1337 = "http:\/\/1337x.pl".$1;
+			last;
+		}
+	}
+	# Get torrent URL from thepiratebay
+	if ($verbose >= 1) {print "https://tpb.proxyduck.co/search.php?q=$serie+$episodes+x264&page=0&orderby=99\n";}
+	my $response = $ua->get("https://tpb.proxyduck.co/search.php?q=$serie+$episodes+x264&page=0&orderby=99");
+	my @pirate = split("\n", $response->decoded_content);
+	foreach (@pirate)
+	{
+		print "$_\n";
+		if ($_ =~ /<a href=\"(magnet:.*)\" title=\"Download this torrent using magnet\"/)
+		{
+			$pirate = $1;
 			last;
 		}
 	}
@@ -97,12 +110,17 @@ sub getTorrentUrl
 		}
 	}
 	
-	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\n");}
+	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\nPirateBay = $pirate\n");}
 
 	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
+	if ($pirate ne "" && $ua->get($pirate) eq "") {$pirate = "";}
 	
-	if ($kickass ne "")
+	if ($pirate ne "")
+	{
+		return $pirate;
+	}
+	elsif ($kickass ne "")
 	{
 		my $res = $ua->get($kickass);
 		my @url = split("\n", $res->decoded_content());
