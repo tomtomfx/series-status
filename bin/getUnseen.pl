@@ -90,7 +90,6 @@ sub getTorrentUrl
 	my @pirate = split("\n", $response->decoded_content);
 	foreach (@pirate)
 	{
-		print "$_\n";
 		if ($_ =~ /<a href=\"(magnet:.*)\" title=\"Download this torrent using magnet\"/)
 		{
 			$pirate = $1;
