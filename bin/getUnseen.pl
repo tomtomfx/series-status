@@ -85,8 +85,8 @@ sub getTorrentUrl
 		}
 	}
 	# Get torrent URL from thepiratebay
-	if ($verbose >= 1) {print "https://tpb.proxyduck.info/search.php?q=$serie+$episodes+x264&page=0&orderby=99\n";}
-	my $response = $ua->get("https://tpb.proxyduck.info/search.php?q=$serie+$episodes+x264&page=0&orderby=99");
+	if ($verbose >= 1) {print "https://tpb.proxyduck.info/search.php?q=$serie+$episodes+x26*&page=0&orderby=99\n";}
+	my $response = $ua->get("https://tpb.proxyduck.info/search.php?q=$serie+$episodes+x26*&page=0&orderby=99");
 	my @pirate = split("\n", $response->decoded_content);
 	foreach (@pirate)
 	{
