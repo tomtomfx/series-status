@@ -69,6 +69,7 @@ sub getTorrentUrl
 	my $kickass = "";
 	my $t1337 = "";
 	my $pirate = "";
+	my $pirate2 = "";
 	
 	$serie =~ s/ /+/g;
 	
@@ -96,6 +97,18 @@ sub getTorrentUrl
 			last;
 		}
 	}
+	# Get torrent URL from thehiddenbay
+	if ($verbose >= 1) {print "https://thehiddenbay.info/search.php?q=$serie+$episodes+x26*&page=0&orderby=99\n";}
+	my $response = $ua->get("https://thehiddenbay.info/search.php?q=$serie+$episodes+x26*&page=0&orderby=99");
+	my @pirate2 = split("\n", $response->decoded_content);
+	foreach (@pirate2)
+	{
+		if ($_ =~ /<a href=\"(magnet:.*)\" title=\"Download this torrent using magnet\"/)
+		{
+			$pirate2 = $1;
+			last;
+		}
+	}
 	# Get torrent URL from kickass
 	if ($verbose >= 1) {print "http://kickass.cd/search.php?q=$serie+$episodes+x264\n";}
 	$response = $ua->get("http://kickass.cd/search.php?q=$serie+$episodes+x264");
@@ -109,15 +122,20 @@ sub getTorrentUrl
 		}
 	}
 	
-	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\nPirateBay = $pirate\n");}
+	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\nPirateBay = $pirate\nHiddenBay = $pirate2\n");}
 
 	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
 	if ($pirate ne "" && $ua->get($pirate) eq "") {$pirate = "";}
+	if ($pirate2 ne "" && $ua->get($pirate2) eq "") {$pirate2 = "";}
 	
 	if ($pirate ne "")
 	{
 		return $pirate;
+	}
+	if ($pirate2 ne "")
+	{
+		return $pirate2;
 	}
 	elsif ($kickass ne "")
 	{
