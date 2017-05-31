@@ -98,8 +98,8 @@ sub getTorrentUrl
 		}
 	}
 	# Get torrent URL from thehiddenbay
-	if ($verbose >= 1) {print "https://thehiddenbay.info/search.php?q=$serie+$episodes+x26*/0/99/0\n";}
-	my $response = $ua->get("https://thehiddenbay.info/search.php?q=$serie+$episodes+x26*/0/99/0");
+	if ($verbose >= 1) {print "https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0\n";}
+	my $response = $ua->get("https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0");
 	my @pirate2 = split("\n", $response->decoded_content);
 	foreach (@pirate2)
 	{
