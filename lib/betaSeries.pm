@@ -163,7 +163,8 @@ sub getEpisodesToSee
 		my $numberOfEps = 1;
 		if (!exists $keys{"thetvdb_id"})
 		{
-			$numberOfEps = $shows{$show}->{remaining};
+			my @epNumbers = keys(%keys);
+			$numberOfEps = scalar @epNumbers;
 		}
 		my $epNumber = "";
 		my $title = "";
