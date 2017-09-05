@@ -60,7 +60,8 @@ sub getEpisodeToDownload
 		my $numberOfEps = 1;
 		if (!exists $keys{"thetvdb_id"})
 		{
-			$numberOfEps = $shows{$show}->{remaining};
+			my @epNumbers = keys(%keys);
+			$numberOfEps = scalar @epNumbers;
 		}
 		my $epNumber = "";
 		my $title = "";
@@ -218,8 +219,9 @@ sub searchSerie
 	
 	my $parser = XML::Simple->new( KeepRoot => 0 );
 	my $result = $parser->XMLin($message);
+	# print Dumper ($result);
 	my %shows = %{$result->{shows}->{show}};
-	# print Dumper %shows;
+	if ($verbose >= 1) {print Dumper %shows;}
 	my $serieId = 0;
 	my $titleLength = 100;
 	if (exists $shows{"thetvdb_id"}){
