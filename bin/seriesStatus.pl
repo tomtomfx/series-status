@@ -152,6 +152,8 @@ sub getTitle
 			$show =~ s/marvel\'s/marvel/i;	
 			# Specific for MacGyver (2016)
 			$show =~ s/macgyver/macgyver \(2016\)/i;	
+			# Specific for S.W.A.T. (2017)
+			$show =~ s/s\.w\.a\.t\./s\.w\.a\.t\. \(2017\)/i;	
 			# Specific for DC's legends of tomorrow
 			$show =~ s/dc's/dc/i;	
 			# Specific for Mr Robot

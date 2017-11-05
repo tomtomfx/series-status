@@ -62,7 +62,7 @@ sub downloadSubtitles
 	# Specific for DC's Legends of Tomorrow
 	$filename =~ s/dcs/dc's/i;
 	$filename =~ s/dc.s/dc's/i;
-
+	
 	if ($verbose >= 2) {print "$filename\n";}
 	
 	my $show, my $season, my $episode;
@@ -107,6 +107,8 @@ sub downloadSubtitles
 	if ($show =~ /daredevil/i) {$show = "Daredevil";}
 	# Specific for the blacklist: redemption
 	if ($show =~ /blacklist_redemption/i) {$show = "The_Blacklist:_Redemption";}
+	# Specific for S.W.A.T. (2017)
+	$show =~ s/S_W_A_T_/S\.W\.A\.T\._/i;
 
 	if ($verbose >= 2) {print "Show: $show, Season: $season, Episode: $episode\n";}
 	my $download = tv($filename, $show, $season, $episode, $downloadDir, $verbose);
