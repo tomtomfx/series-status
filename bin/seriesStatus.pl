@@ -154,6 +154,8 @@ sub getTitle
 			$show =~ s/macgyver/macgyver \(2016\)/i;	
 			# Specific for S.W.A.T. (2017)
 			$show =~ s/s\.w\.a\.t\./s\.w\.a\.t\. \(2017\)/i;	
+			# Specific for Deception (2018)
+			$show =~ s/deception/deception \(2018\)/i;	
 			# Specific for DC's legends of tomorrow
 			$show =~ s/dc's/dc/i;	
 			# Specific for Mr Robot
@@ -258,6 +260,10 @@ foreach (@list)
 		elsif ($episode =~ /(.*) - (.*)/) {$serie = $1; $epNumber = $2;}
 		# Specific for MacGyver (2016)
 		if ($serie eq "macgyver") {$serie = $serie . "\ (2016\)";}
+		# Specific for S.W.A.T. (2017)
+		if ($serie eq "s\.w\.a\.t\.") {$serie = $serie . "\ (2017\)";}
+		# Specific for Deception (2018)
+		if ($serie eq "deception") {$serie = $serie . "\ (2018\)";}
 		$status{$serie}{$epNumber} = "<info>Download not launched yet<info>";
 	}
 	else {next;}
