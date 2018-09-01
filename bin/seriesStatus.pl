@@ -336,7 +336,7 @@ foreach (@list)
 opendir (OUT, $outDirectory);
 my @outDir = readdir(OUT);
 close OUT;
-foreach my $_ (@outDir)
+foreach $_ (@outDir)
 {
 	if ($_ =~ /(.*) - (.*)\.mp4/i || $_ =~ /(.*) - (.*)\.avi/i || $_ =~ /(.*) - (.*)\.mkv/i)
 	{

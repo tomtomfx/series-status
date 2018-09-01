@@ -87,9 +87,9 @@ if ($verbose >= 2){print "$query\n";}
 my $sth = $dbh->prepare($query);
 $sth->execute();
 my $tablets = $sth->fetchall_hashref('id');
-foreach my $tablet (keys($tablets))
+foreach my $tablet (values %{$tablets})
 {
-	my $tabletInfo = $tablets->{$tablet};
+	my $tabletInfo = $tablet;
 	if ($verbose >= 1) {print Dumper($tabletInfo);}
 	# Try an FTP connection...
 	my $status = "Down";
@@ -161,9 +161,9 @@ foreach my $episode (@episodes)
 # Check episodes present on tablet and update database and set their status to "Copied"
 # Connect to tablet through FTP
 my @fileList;
-foreach my $tablet (keys($tablets))
+foreach my $tablet (values %{$tablets})
 {
-	my $tabletInfo = $tablets->{$tablet};
+	my $tabletInfo = $tablet;
 	# Try an FTP connection...
 
 	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort, Degug => 0, Passive => 1);
