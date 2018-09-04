@@ -31,6 +31,8 @@ my $betaSeriesPassword = "";
 my $bannersPath = "";
 
 # Database variables
+my $seriesDatabasePath = "";
+my $dsnSerie = "";
 my $tabletDatabasePath = "";
 my $driver = "SQLite"; 
 my $dsn = "";
@@ -116,6 +118,10 @@ sub readConfigFile
 		elsif ($_ =~ /tabletDatabasePath=(.*)$/)
 		{
 			$tabletDatabasePath = $1;
+		}
+		elsif ($_ =~ /databasePath=(.*)$/)
+		{
+			$seriesDatabasePath = $1;
 		}
 	}
 }
@@ -216,7 +222,6 @@ my $transport = Email::Sender::Transport::SMTP::TLS->new(
 	username => 'films.vouille@gmail.com',
 	password => 'ctl1032!'
 );
-
 
 # Get episodes to download
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
@@ -332,19 +337,31 @@ foreach (@list)
 	}
 }
 
-# Get files to be read
-opendir (OUT, $outDirectory);
-my @outDir = readdir(OUT);
-close OUT;
-foreach $_ (@outDir)
+# Get files to be read from series database
+$dsnSerie = "DBI:$driver:dbname=$seriesDatabasePath";
+my $dbhSerie = DBI->connect($dsnSerie, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+my @episodes;
+my $query = "SELECT * FROM unseenEpisodes";
+if ($verbose >= 2){print "$query\n";}
+my $sth = $dbhSerie->prepare($query);
+$sth->execute();
+while(my $episode = $sth->fetchrow_hashref)
 {
-	if ($_ =~ /(.*) - (.*)\.mp4/i || $_ =~ /(.*) - (.*)\.avi/i || $_ =~ /(.*) - (.*)\.mkv/i)
+	push (@episodes, $episode);
+}
+$sth->finish();
+$dbhSerie->disconnect();
+
+if ($verbose >= 1) {print Dumper (@episodes);}
+foreach (@episodes)
+{
+	if ($_->{"Id"} =~ /(.*) - (.*)/i)
 	{
 		my $serie = lc($1);
 		$status{$serie}{$2} = "<success>To be watched<success>";
 	}
 	else {next;}
-}
+}	
 
 # Check files from download directory
 opendir (DOWN, $downloadDirectory);

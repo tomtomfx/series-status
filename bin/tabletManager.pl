@@ -16,9 +16,11 @@ my $verbose = 0;
 my $outDirectory = "";
 
 # Database variables
+my $seriesDatabasePath = "";
+my $dsnSerie = "";
 my $tabletDatabasePath = "";
-my $driver = "SQLite"; 
 my $dsn = "";
+my $driver = "SQLite"; 
 my $userid = "";
 my $password = "";
 
@@ -45,6 +47,10 @@ sub readConfigFile
 		if ($_ =~ /tabletDatabasePath=(.*)$/)
 		{
 			$tabletDatabasePath = $1;
+		}
+		elsif ($_ =~ /databasePath=(.*)$/)
+		{
+			$seriesDatabasePath = $1;
 		}
 		elsif ($_ =~ /outDirectory=(.*)$/)
 		{
@@ -118,22 +124,23 @@ $sth->finish();
 
 #########################################################################################
 # Copy episodes with copy requested to tablet
-
-# Get all video files available in the out directory
 # Create a hash with ID and extension
-my %episodeExtension;
-# Open out directory
-opendir (OUT, $outDirectory);
-my @outDir = readdir(OUT);
-close OUT;
-foreach my $file (@outDir)
+my %episodeLocation;
+# Get files to be read from series database
+$dsnSerie = "DBI:$driver:dbname=$seriesDatabasePath";
+my $dbhSerie = DBI->connect($dsnSerie, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+$query = "SELECT * FROM unseenEpisodes";
+if ($verbose >= 2){print "$query\n";}
+$sth = $dbhSerie->prepare($query);
+$sth->execute();
+while(my $episode = $sth->fetchrow_hashref)
 {
-	if (($file =~ /(.*)\.(mp4)/) || ($file =~ /(.*)\.(mkv)/) || ($file =~ /(.*)\.(avi)/))
-	{
-		$episodeExtension{$1} = $2;
-	}
-	else {next;}
+	$episodeLocation{$episode->{"Id"}} = $episode->{"Location"};
 }
+$sth->finish();
+$dbhSerie->disconnect();
+
+# print Dumper (%episodeLocation);
 
 # Copy all files that have copy requested
 foreach my $episode (@episodes)
@@ -148,11 +155,15 @@ foreach my $episode (@episodes)
 		if ($verbose >= 1){print "Connected to '$tabletInfo->{\"id\"}' as '$tabletInfo->{\"ftpUser\"}'\n";}
 		# Set binary and passive mode
 		$ftp->binary();
-		if (-f "$outDirectory\/$episode->{\"Id\"}.srt")
-			{$ftp->put("$outDirectory\/$episode->{\"Id\"}.srt");}
+		# print ("$episodeLocation{$episode->{\"Id\"}}\n");
+		if (-f $episodeLocation{$episode->{"Id"}})
+			{$ftp->put($episodeLocation{$episode->{"Id"}});}
 		$ftp->binary();
-		if (-f "$outDirectory\/$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}")
-			{$ftp->put("$outDirectory\/$episode->{\"Id\"}.$episodeExtension{$episode->{\"Id\"}}");}
+		my $srtLocation = $episodeLocation{$episode->{"Id"}};
+		$srtLocation =~ s/\..{3}/\.srt/;
+		# print "$srtLocation\n";
+		if (-f $srtLocation)
+			{$ftp->put($srtLocation);}
 		$ftp->quit();
 	}
 }

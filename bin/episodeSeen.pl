@@ -23,6 +23,7 @@ my $outputDir = "";
 
 # Database variables
 my $tabletDatabasePath = "";
+my $seriesDatabasePath = "";
 my $driver = "SQLite"; 
 my $dsn = "";
 my $userid = "";
@@ -66,6 +67,10 @@ sub readConfigFile
 		elsif ($_ =~ /tabletDatabasePath=(.*)$/)
 		{
 			$tabletDatabasePath = $1;
+		}
+		elsif ($_ =~ /databasePath=(.*)$/)
+		{
+			$seriesDatabasePath = $1;
 		}
 	}
 }
@@ -111,48 +116,19 @@ my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesL
 &betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
 print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
 
-# Get file to copy
-$serie = lc($serie);
-$serie =~ s/_/ /g;
-my @extensions = ("mp4", "avi", "mkv");
-my $filename = "";
-my $fileFound = 0;
-
-for (my $i=0; $i<$#extensions+1; $i++)
-{ 
-	$filename = "$outputDir\/$serie - $episode\.$extensions[$i]";
-	if ($verbose >= 1){print "$filename\n";}
-	if (-e $filename){$fileFound = 1;last;}
-}
-
-if ($fileFound)
-{
-	# Get serie/season directory
-	if ($episode =~ /s(\d+)e\d+/) {$saison = $1;}
-	my $serieDir = $serie;
-	# Specific Marvel's agents of shield
-	$serieDir =~ s/s.h.i.e.l.d./shield/i;
-	$serieDir = $serieDir." - Saison ".$saison;
-	$serieDir =~ s/^(\w)/\U$1/;
-	if($verbose >= 1){print "$outputDir\/$serieDir\/.\n";}
-	if (!-d "$outputDir\/$serieDir\/"){mkdir "$outputDir\/$serieDir\/";}
-	
-	# Copy file to its serie/season directory
-	my $commandVideo = "mv \"$filename\" \"$outputDir\/$serieDir\"\/.";
-	my $commandSrt = "mv \"$outputDir\/$serie - $episode.srt\" \"$outputDir\/$serieDir\"\/.";
-	#my $commandMeta = "mv \"$outputDir\/$serie - $episode.metathumb\" \"$outputDir\/$serieDir\"\/.";
-	#my $commandXml = "mv \"$outputDir\/$serie - $episode.xml\" \"$outputDir\/$serieDir\"\/.";
-	#my $commandBackdrop = "mv \"$outputDir\/.$serie - $episode.backdrop\" \"$outputDir\/$serieDir\"\/";
-	if($verbose >= 1){print "$commandVideo\n";}
-	system($commandVideo);
-	system($commandSrt);
-	#system($commandMeta);
-	#system($commandXml);
-	#system($commandBackdrop);
-}
+#########################################################################################
+# Remove episode from the series database
+# Connect to database
+$dsn = "DBI:$driver:dbname=$seriesDatabasePath";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+# Remove episode
+my $episodeId = "\'$serie - $episode\'";
+if ($verbose >= 1){print "$episodeId\n";}
+$dbh->do("DELETE FROM unseenEpisodes WHERE id=($episodeId)");
+$dbh->disconnect();
 
 #########################################################################################
-# Remove episode from the database
+# Remove episode from the tablet database
 # Connect to database
 $dsn = "DBI:$driver:dbname=$tabletDatabasePath";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use XML::Simple;
 use Sys::Hostname;
+use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
@@ -15,12 +16,19 @@ my @tvShows;
 my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
 my $downloadDir = "";
 my $outputDir = "";
+my $serieDatabasePath = "";
 my $logFile = "";
 my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $verbose = 0;
 my $time = localtime;
+
+# Database
+my $driver = "SQLite"; 
+my $dsn = "";
+my $userid = "";
+my $password = "";
 
 # Read config file 
 sub readConfigFile
@@ -67,6 +75,10 @@ sub readConfigFile
 		{
 			$outputDir = $1;
 		}
+		elsif ($_ =~ /databasePath=(.*)$/)
+		{
+			$serieDatabasePath = $1;
+		}
 		elsif ($_ =~ /betaSeriesKey=(.*)$/)
 		{
 			$betaSeriesKey = $1;
@@ -80,6 +92,17 @@ sub readConfigFile
 			$betaSeriesPassword = $1;
 		}
 	}
+}
+
+sub does_table_exist 
+{
+    my ($dbh, $table_name) = @_;
+	my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'$table_name\';");
+    $sth->execute();
+	my @info = $sth->fetchrow_array;
+    my $exists = scalar @info;
+	# print "Table \"$table_name\" exists: $exists\n";
+	return $exists;
 }
 
 foreach my $arg (@ARGV)
@@ -106,6 +129,19 @@ open my $LOG, '>>', $logFile;
 
 # Get hostname
 my $host = hostname;
+
+#########################################################################################
+# Open Database connection
+$dsn = "DBI:$driver:dbname=$serieDatabasePath";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+if ($verbose >=1) {print "Database opened successfully\n";}	
+my $exists = does_table_exist($dbh, "unseenEpisodes");
+if ($exists == 0)
+{
+	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
+	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Location TEXT)");
+}
 
 # Get the episodes to download from betaSeries
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
@@ -229,10 +265,35 @@ foreach my $file (@dlDir)
 		if ($foundSub == 1)
 		{
 			$time = localtime;
-			my $outFilename = "$outputDir\/$infos[0] - s$infos[1]e$infos[2]";
+			
+			# Get serie directory and create it if it does not exists
+			my $serieDir = $infos[0];
+			$serieDir =~ s/^(\w)/\U$1/;
+			if (!-d "$outputDir\/$serieDir\/"){mkdir "$outputDir\/$serieDir\/";}
+			
+			my $outFilename = "$outputDir\/$serieDir\/$infos[0] - s$infos[1]e$infos[2]";
 			print $LOG "[$time] $host GetSubtitles INFO \"$infos[0] - s$infos[1]e$infos[2]\" Subtitles found \n";
 			system("mv \"$downloadDir\/$file\" \"$outFilename.$extension\"");
 			system("mv \"$downloadDir\/$sub\" \"$outFilename.srt\"");
+
+			# Add unseen episode to the serie database
+			# Query to check if the episode already exists
+			my $query = "SELECT COUNT(*) FROM unseenEpisodes WHERE Id=?";
+			if ($verbose >= 2){print "$query\n";}
+			my $sth = $dbh->prepare($query);
+			$sth->execute("$infos[0] - s$infos[1]e$infos[2]");
+			if ($sth->fetch()->[0]) 
+			{
+				if ($verbose >= 1){print "$infos[0] - s$infos[1]e$infos[2] already exists\n";}
+			}
+			else
+			{
+				# Add episode
+				my $episodeInfos = "\'$infos[0] - s$infos[1]e$infos[2]\', \'$outFilename.$extension\'";
+				if ($verbose >= 1){print "$episodeInfos\n";}
+				$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
+			}
+			$sth->finish();
 			print " --> OK\n";
 		}
 		else 
@@ -249,4 +310,5 @@ foreach my $file (@dlDir)
 	
 	#print $LOG "\n";
 }
+$dbh->disconnect();
 close $LOG;
