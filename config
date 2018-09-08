@@ -5,7 +5,7 @@ downloadLogFile=/home/tom/SubtitleManagement/logs/downloadSubs.log
 copyLogFile=/home/tom/SubtitleManagement/logs/copy.log
 copyUnseenLogFile=/home/tom/SubtitleManagement/logs/copyUnseen.log
 unseenLogFile=/home/tom/SubtitleManagement/logs/unseen.log
-seenLogFile=/home/tom/SubtitleManagement/logs/seen.log
+seenLogFile=/var/log/apache2/seen.log
 databaseLogFile=/home/tom/SubtitleManagement/logs/database.log
 
 # In and out directories
@@ -30,7 +30,7 @@ bannersPath=/var/www/images
 graphsPath=/var/www/highchart
 
 # Database
-databasePath=/home/tom/SubtitleManagement/logs/series.db
+databasePath=/var/www/series/series.db
 tabletDatabasePath=/var/www/series/tablet.db
 
 # The TVDB

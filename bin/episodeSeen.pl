@@ -23,9 +23,10 @@ my $outputDir = "";
 
 # Database variables
 my $tabletDatabasePath = "";
+my $serieDsn = "";
 my $seriesDatabasePath = "";
-my $driver = "SQLite"; 
 my $dsn = "";
+my $driver = "SQLite"; 
 my $userid = "";
 my $password = "";
 
@@ -116,16 +117,17 @@ my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesL
 &betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
 print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
 
+my $episodeId = "\'$serie - $episode\'";
+
 #########################################################################################
 # Remove episode from the series database
 # Connect to database
-$dsn = "DBI:$driver:dbname=$seriesDatabasePath";
-my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+$serieDsn = "DBI:$driver:dbname=$seriesDatabasePath";
+my $serieDbh = DBI->connect($serieDsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
 # Remove episode
-my $episodeId = "\'$serie - $episode\'";
 if ($verbose >= 1){print "$episodeId\n";}
-$dbh->do("DELETE FROM unseenEpisodes WHERE id=($episodeId)");
-$dbh->disconnect();
+$serieDbh->do("DELETE FROM unseenEpisodes WHERE id=($episodeId)");
+$serieDbh->disconnect();
 
 #########################################################################################
 # Remove episode from the tablet database
@@ -133,7 +135,6 @@ $dbh->disconnect();
 $dsn = "DBI:$driver:dbname=$tabletDatabasePath";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
 # Remove episode
-my $episodeId = "\'$serie - $episode\'";
 if ($verbose >= 1){print "$episodeId\n";}
 $dbh->do("DELETE FROM Episodes WHERE id=($episodeId)");
 $dbh->disconnect();
