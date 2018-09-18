@@ -88,6 +88,7 @@ if ($verbose >= 1) {print "$ARGV[0]\n";}
 if ($ARGV[0] =~ /(.*)-(.*)-(.*)/)
 {
 	$serie = $1; $episode = $2; $epId = $3;
+	$serie =~ s/_/ /ig;
 	if ($verbose >= 1) {print "$serie - $episode - $epId\n";}
 }
 if ($serie eq "" or $episode eq "" or $epId eq "") {die "Bad episode info formating: $ARGV[0]\n";}
