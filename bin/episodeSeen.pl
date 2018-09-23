@@ -5,7 +5,7 @@ use warnings;
 use LWP::UserAgent;
 use LWP::Simple;
 use XML::Simple;
-use Frontier::Client;
+use Mojo::UserAgent;
 use Data::Dumper;
 use Sys::Hostname;
 use DBI;
@@ -76,8 +76,25 @@ sub readConfigFile
 	}
 }
 
+sub sendRequest
+{
+	my $request = $_[0];
+	my $ua = Mojo::UserAgent->new(); 
+	my $tx = $ua->get($request);
+	if ($tx->success)
+	{
+		my $ret = $tx->res->json;
+		return $ret;
+	}
+	elsif (my $err = $tx->error)
+	{
+		print "Error: ".$err->{message}."\n";
+		return 0;
+	}
+}
+
 if ($#ARGV < 0) {die "Usage: episodeSeen episode-sXeXX-epId [verbose]\n";}
-my $serie = ""; my $episode = ""; my $epId = ""; my $saison = "";
+my $serie = ""; my $episode = ""; my $epId = ""; my $season = 0; my $epNumber = 0;
 foreach my $arg (@ARGV)
 {
 	if ($arg eq '-v') {$verbose = 1;}
@@ -89,6 +106,7 @@ if ($ARGV[0] =~ /(.*)-(.*)-(.*)/)
 {
 	$serie = $1; $episode = $2; $epId = $3;
 	$serie =~ s/_/ /ig;
+	if ($episode =~ /s(\d+)e(\d+)/i){$season = $1; $epNumber = $2;}
 	if ($verbose >= 1) {print "$serie - $episode - $epId\n";}
 }
 if ($serie eq "" or $episode eq "" or $epId eq "") {die "Bad episode info formating: $ARGV[0]\n";}
@@ -103,7 +121,7 @@ if ($verbose >= 1)
 	# Print BetaSeries infos
 	print "BetaSeries login: $betaSeriesLogin\n";
 	print "BetaSeries key: $betaSeriesKey\n";	
-	print "Output Dir: $outputDir\n";
+	print "Serie database: $seriesDatabasePath\n";
 	print "\n";
 }
 
@@ -117,6 +135,64 @@ my $time = localtime;
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 &betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
 print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
+
+#########################################################################################
+# Mark episode as watched in Kodi
+# Connect to Kodi
+my $ip = '192.168.1.117';
+my $port = "8080";
+my $kodiHost = "http:\/\/".$ip.":".$port."\/jsonrpc";
+my $serieKodi = $serie;
+
+# Specific naming
+$serieKodi =~ s/marvel//ig;
+
+# Get TV show ID
+my $tvshowid = 0;
+my $method = 'VideoLibrary.GetTVShows';
+my $request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method."\"}";
+if ($verbose >= 1) {print Dumper ($request);}
+my $result = sendRequest($request);
+my @tvshows = @{$result->{'result'}->{'tvshows'}};
+foreach my $show (@tvshows)
+{
+	# print Dumper ($show);
+	if ($show->{'label'} =~ /$serieKodi/i){
+		$tvshowid = $show->{'tvshowid'};
+		last;
+	}
+}
+if ($verbose >= 1) {print ("TV show ID: ".$tvshowid."\n");}
+
+if ($tvshowid != 0)
+{
+	# Get episode ID
+	my $epId = 0;
+	$method = 'VideoLibrary.GetEpisodes';
+	my $params = "\", \"params\": {\"tvshowid\":".$tvshowid.", \"season\":".$season.", \"properties\": [\"season\", \"episode\"]}";
+	$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
+	if ($verbose >= 1) {print Dumper ($request);}
+	$result = sendRequest($request);
+	my @episodes = @{$result->{'result'}->{'episodes'}};
+	foreach my $episode (@episodes)
+	{
+		#print Dumper ($episode);
+		if ($episode->{'season'} == $season and $episode->{'episode'} == $epNumber){
+			$epId = $episode->{'episodeid'};
+			last;
+		}
+	}
+	if ($verbose >= 1) {print ("Episode ID: ".$epId."\n");}
+	if ($epId != 0)
+	{
+		$method = 'VideoLibrary.SetEpisodeDetails';
+		$params = "\", \"params\": {\"episodeid\":".$epId.", \"playcount\": 1}";
+		$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
+		if ($verbose >= 1) {print Dumper ($request);}
+		$result = sendRequest($request);
+		if ($verbose >= 1) {print ("Set as seen: ".$result->{'result'}."\n");}
+	}
+}
 
 my $episodeId = "\'$serie - $episode\'";
 
