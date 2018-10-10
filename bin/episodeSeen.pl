@@ -173,24 +173,27 @@ if ($tvshowid != 0)
 	$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
 	if ($verbose >= 1) {print Dumper ($request);}
 	$result = sendRequest($request);
-	my @episodes = @{$result->{'result'}->{'episodes'}};
-	foreach my $episode (@episodes)
+	if (defined $result->{'result'}->{'episodes'})
 	{
-		#print Dumper ($episode);
-		if ($episode->{'season'} == $season and $episode->{'episode'} == $epNumber){
-			$epId = $episode->{'episodeid'};
-			last;
+		my @episodes = @{$result->{'result'}->{'episodes'}};
+		foreach my $episode (@episodes)
+		{
+			#print Dumper ($episode);
+			if ($episode->{'season'} == $season and $episode->{'episode'} == $epNumber){
+				$epId = $episode->{'episodeid'};
+				last;
+			}
 		}
-	}
-	if ($verbose >= 1) {print ("Episode ID: ".$epId."\n");}
-	if ($epId != 0)
-	{
-		$method = 'VideoLibrary.SetEpisodeDetails';
-		$params = "\", \"params\": {\"episodeid\":".$epId.", \"playcount\": 1}";
-		$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
-		if ($verbose >= 1) {print Dumper ($request);}
-		$result = sendRequest($request);
-		if ($verbose >= 1) {print ("Set as seen: ".$result->{'result'}."\n");}
+		if ($verbose >= 1) {print ("Episode ID: ".$epId."\n");}
+		if ($epId != 0)
+		{
+			$method = 'VideoLibrary.SetEpisodeDetails';
+			$params = "\", \"params\": {\"episodeid\":".$epId.", \"playcount\": 1}";
+			$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
+			if ($verbose >= 1) {print Dumper ($request);}
+			$result = sendRequest($request);
+			if ($verbose >= 1) {print ("Set as seen: ".$result->{'result'}."\n");}
+		}
 	}
 }
 
