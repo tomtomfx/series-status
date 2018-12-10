@@ -149,6 +149,8 @@ sub tv
 				if ($version eq "DIMENSION"){$version = $version.",LOL"}
 				if ($version eq "LOL"){$version = $version.",DIMENSION"}
 				
+				$version =~ s/\*\*NUKED\*\*//gi; 
+				
 				if ($version =~ /,/ || $version=~ /and/i)
 				{
 					$version =~ s/ /,/g;
