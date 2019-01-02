@@ -73,15 +73,15 @@ sub getTorrentUrl
 	
 	$serie =~ s/ /+/g;
 	
-	# Get torrent URL from 1337.pl
-	if ($verbose >= 1) {print "http://1337x.pl/search/$serie+$episodes+x264/1/\n";}
-	my $response = $ua->get("http://1337x.pl/search/$serie+$episodes+x264/1/");
+	# Get torrent URL from 1337.to
+	if ($verbose >= 1) {print "http://1337x.to/search/$serie+$episodes+x264/1/\n";}
+	my $response = $ua->get("http://1337x.to/search/$serie+$episodes+x264/1/");
 	my @x1337 = split("\n", $response->decoded_content);
 	foreach (@x1337)
 	{
-		if ($_ =~ /<strong><a href=\"(\/torrent\/\d*\/.*\/)\"><b>/)
+		if ($_ =~ /<a href=\"(\/torrent\/\d*\/.*\/)\">/)
 		{
-			$t1337 = "http:\/\/1337x.pl".$1;
+			$t1337 = "http:\/\/1337x.to".$1;
 			last;
 		}
 	}
@@ -124,16 +124,30 @@ sub getTorrentUrl
 	
 	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\nPirateBay = $pirate\nHiddenBay = $pirate2\n");}
 
-	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
+	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($pirate ne "" && $ua->get($pirate) eq "") {$pirate = "";}
 	if ($pirate2 ne "" && $ua->get($pirate2) eq "") {$pirate2 = "";}
 	
-	if ($pirate ne "")
+	if ($t1337 ne "")
+	{
+		my $res = $ua->get($t1337);
+		my @url = split("\n", $res->decoded_content());
+		foreach (@url)
+		{
+			# print Dumper($_);
+			if ($_ =~ /href=\"(magnet:.*announce)\" onclick=\"/) 
+			{
+				if ($verbose >= 1) {print "$1\n";}
+				return $1;
+			}
+		}
+	}
+	elsif ($pirate ne "")
 	{
 		return $pirate;
 	}
-	if ($pirate2 ne "")
+	elsif ($pirate2 ne "")
 	{
 		return $pirate2;
 	}
@@ -144,20 +158,6 @@ sub getTorrentUrl
 		foreach (@url)
 		{
 			if ($_ =~ /href=\"(magnet:.*)\"><i class=\"ka ka-magnet\"><\/i><\/a>/) 
-			{
-				if ($verbose >= 1) {print "$1\n";}
-				return $1;
-			}
-		}
-	}
-	elsif ($t1337 ne "")
-	{
-		my $res = $ua->get($t1337);
-		my @url = split("\n", $res->decoded_content());
-		foreach (@url)
-		{
-			# print Dumper($_);
-			if ($_ =~ /id=\"magnetdl\" href=\"(magnet:.*announce)\" onclick=\"/) 
 			{
 				if ($verbose >= 1) {print "$1\n";}
 				return $1;
