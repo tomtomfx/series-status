@@ -8,6 +8,7 @@ use XML::Simple;
 use Frontier::Client;
 use Data::Dumper;
 use Sys::Hostname;
+use Rarbg::torrentapi;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
@@ -70,8 +71,22 @@ sub getTorrentUrl
 	my $t1337 = "";
 	my $pirate = "";
 	my $pirate2 = "";
+	my $rarbg = "";
 	
 	$serie =~ s/ /+/g;
+	
+	# Get torrent URL from rarbg
+	my $tapi = Rarbg::torrentapi->new();
+	sleep(3);
+	my $search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
+	print Dumper($search);
+	foreach my $res (@{$search})
+	{
+		my $title = $res->{'title'};
+		if ($title =~ /1080/){next;}
+		$rarbg = $res->{'download'};
+		print Dumper($rarbg);
+	}
 	
 	# Get torrent URL from 1337.to
 	if ($verbose >= 1) {print "http://1337x.to/search/$serie+$episodes+x264/1/\n";}
@@ -85,6 +100,7 @@ sub getTorrentUrl
 			last;
 		}
 	}
+	
 	# Get torrent URL from thepiratebay
 	if ($verbose >= 1) {print "https://tpb.proxyduck.info/search.php?q=$serie+$episodes+x26*&page=0&orderby=99\n";}
 	$response = $ua->get("https://tpb.proxyduck.info/search.php?q=$serie+$episodes+x26*&page=0&orderby=99");
@@ -122,14 +138,19 @@ sub getTorrentUrl
 		}
 	}
 	
-	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\nPirateBay = $pirate\nHiddenBay = $pirate2\n");}
+	if ($verbose >= 1) {print ("kickass = $kickass\n1337 = $t1337\nPirateBay = $pirate\nHiddenBay = $pirate2\nrarbg = $rarbg");}
 
+	if ($rarbg ne "" && $ua->get($rarbg) eq "") {$rarbg = "";}
 	if ($t1337 ne "" && $ua->get($t1337) eq "") {$t1337 = "";}
 	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($pirate ne "" && $ua->get($pirate) eq "") {$pirate = "";}
 	if ($pirate2 ne "" && $ua->get($pirate2) eq "") {$pirate2 = "";}
-	
-	if ($t1337 ne "")
+		
+	if ($rarbg ne "")
+	{
+		return $rarbg;
+	}
+	elsif ($t1337 ne "")
 	{
 		my $res = $ua->get($t1337);
 		my @url = split("\n", $res->decoded_content());
