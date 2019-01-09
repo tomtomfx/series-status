@@ -76,16 +76,15 @@ sub getTorrentUrl
 	$serie =~ s/ /+/g;
 	
 	# Get torrent URL from rarbg
+	if ($verbose >= 1) {print "Looking on Rarbg\n";}
 	my $tapi = Rarbg::torrentapi->new();
 	sleep(3);
 	my $search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
-	print Dumper($search);
 	foreach my $res (@{$search})
 	{
 		my $title = $res->{'title'};
 		if ($title =~ /1080/){next;}
 		$rarbg = $res->{'download'};
-		print Dumper($rarbg);
 	}
 	
 	# Get torrent URL from 1337.to
