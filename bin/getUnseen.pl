@@ -60,10 +60,8 @@ sub getTorrentUrl
 	my ($serie, $episodes, $ua,$verbose) = @_;
 	# Remove (year)
 	if ($serie =~ /(.*) \(\d{4}\)/){$serie = $1;}
-	
 	# Specific for marvel's agent of shield
 	$serie =~ s/\'s/s/i;
-	
 	# Specific for Mr. Robot
 	$serie =~ s/Mr\./Mr/i;
 	
@@ -78,8 +76,13 @@ sub getTorrentUrl
 	# Get torrent URL from rarbg
 	if ($verbose >= 1) {print "Looking on Rarbg\n";}
 	my $tapi = Rarbg::torrentapi->new();
-	sleep(3);
+	sleep(5);
 	my $search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
+	if (ref $search ne "ARRAY")
+	{
+		sleep(5);
+		$search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
+	}
 	foreach my $res (@{$search})
 	{
 		my $title = $res->{'title'};
@@ -112,6 +115,7 @@ sub getTorrentUrl
 			last;
 		}
 	}
+	
 	# Get torrent URL from thehiddenbay
 	if ($verbose >= 1) {print "https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0\n";}
 	$response = $ua->get("https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0");
@@ -124,6 +128,7 @@ sub getTorrentUrl
 			last;
 		}
 	}
+	
 	# Get torrent URL from kickass
 	if ($verbose >= 1) {print "http://kickass.cd/search.php?q=$serie+$episodes+x264\n";}
 	$response = $ua->get("http://kickass.cd/search.php?q=$serie+$episodes+x264");
@@ -144,11 +149,8 @@ sub getTorrentUrl
 	if ($kickass ne "" && $ua->get($kickass) eq "") {$kickass = "";}
 	if ($pirate ne "" && $ua->get($pirate) eq "") {$pirate = "";}
 	if ($pirate2 ne "" && $ua->get($pirate2) eq "") {$pirate2 = "";}
-		
-	if ($rarbg ne "")
-	{
-		return $rarbg;
-	}
+	
+	if ($rarbg ne ""){return $rarbg;}
 	elsif ($t1337 ne "")
 	{
 		my $res = $ua->get($t1337);
@@ -163,14 +165,8 @@ sub getTorrentUrl
 			}
 		}
 	}
-	elsif ($pirate ne "")
-	{
-		return $pirate;
-	}
-	elsif ($pirate2 ne "")
-	{
-		return $pirate2;
-	}
+	elsif ($pirate ne ""){return $pirate;}
+	elsif ($pirate2 ne ""){return $pirate2;}
 	elsif ($kickass ne "")
 	{
 		my $res = $ua->get($kickass);
@@ -191,7 +187,6 @@ foreach my $arg (@ARGV)
 	elsif ($arg eq '-vv'){$verbose = 2;}
 	else {$verbose = 0;}
 }
-
 # Read config file
 readConfigFile($verbose);
 
