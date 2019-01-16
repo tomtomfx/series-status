@@ -1,5 +1,8 @@
-# This file configure the scripts that download and rename subtitles
+######################################################################
+# This file configure the scripts that download and rename subtitles #
+######################################################################
 
+###################################################################
 # Log files
 downloadLogFile=/home/tom/SubtitleManagement/logs/downloadSubs.log
 copyLogFile=/home/tom/SubtitleManagement/logs/copy.log
@@ -8,39 +11,52 @@ unseenLogFile=/home/tom/SubtitleManagement/logs/unseen.log
 seenLogFile=/var/log/apache2/seen.log
 databaseLogFile=/home/tom/SubtitleManagement/logs/database.log
 
+###################################################################
 # In and out directories
 inDirectory=/media/divers/Downloads
 outDirectory=/media/divers/Videos/Series
 copyDirectory=/media/others/Videos
 nfsDirectory=/media/nfs/Videos/Series
 
+###################################################################
 # Photos management
 photosDirectory=/media/divers/Photos/albums
 photosHTTPDirectory=../albums
 photosDatabasePath=/var/www/photos.db
 photosDatabaseLogFile=/home/tom/SubtitleManagement/logs/photosDatabase.log
 
+###################################################################
 # Downloads list file
 downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
 
+###################################################################
 # Site
 htmlPage=/home/tom/SubtitleManagement/bin/seriesStatus.html
 outputHtmlPage=/var/www/series/series.php
 bannersPath=/var/www/images
 graphsPath=/var/www/highchart
 
+###################################################################
 # Database
 databasePath=/var/www/series/series.db
 tabletDatabasePath=/var/www/series/tablet.db
 
+###################################################################
 # The TVDB
 tvdbApiKey=C6EFC8AFBFAC6048
 
+###################################################################
 # BetaSeries
 betaSeriesKey=ba121e466d79
 betaSeriesLogin=Tomtomfx
 betaSeriesPassword=faafea7e15825ed90d83cbd9a476e998
 
+###################################################################
+# Kodi
+useKodi=1
+kodiIpAddress=192.168.1.94
+
+###################################################################
 # List of followed shows
 shows
 12 monkeys,
@@ -150,5 +166,21 @@ shooter,
 sneaky pete,
 marvel iron fist,
 powerless,
+salvation,
+marvel the defenders,
+the gifted,
+marvel inhumans,
+young sheldon,
+marvel runaways,
+seal team,
+the brave,
+the crossing,
+liar,
+black lightning,
+deception (2018),
+marvel the punisher,
+s.w.a.t. (2017),
+manifest,
+the rookie,
 /shows
 

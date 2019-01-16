@@ -26,7 +26,6 @@ if ($verbose >= 1) {print Dumper @torrents;}
 # Remove finished
 foreach (@{$torrents[0]})
 {
-	#print Dumper $_;
 	my @infos = $_;
 	if ($verbose >= 1) {print "$infos[0][0]\n";}
 	my @cmdParameters = ("$infos[0][0]");

@@ -9,17 +9,25 @@ use Frontier::Client;
 use Data::Dumper;
 use Sys::Hostname;
 use Rarbg::torrentapi;
+use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
 
-my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $config = "C:\\Users\\ETHOFAY\\Perso\\series-status\\bin\\config";
 my $logFile = "";
 my $verbose = 0;
 my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
+my $serieDatabasePath = "";
 my $torrentUrl = "";
+
+# Database
+my $driver = "SQLite"; 
+my $dsn = "";
+my $userid = "";
+my $password = "";
 
 # Read config file 
 sub readConfigFile
@@ -35,23 +43,11 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-
-	    if ($_ =~ /unseenLogFile=(.*\.log)/)
-	    {
-		    $logFile = $1;
-    	}
-    	elsif ($_ =~ /betaSeriesKey=(.*)$/)
-		{
-			$betaSeriesKey = $1;
-		}
-		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
-		{
-			$betaSeriesLogin = $1;
-		}
-		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
-		{
-			$betaSeriesPassword = $1;
-		}
+	    if ($_ =~ /unseenLogFile=(.*\.log)/){$logFile = $1;}
+		elsif ($_ =~ /databasePath=(.*)$/){$serieDatabasePath = $1;}
+    	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
+		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
+		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
 	}
 }
 
@@ -181,6 +177,17 @@ sub getTorrentUrl
 		}
 	}
 }
+sub does_table_exist 
+{
+    my ($dbh, $table_name) = @_;
+	my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'$table_name\';");
+    $sth->execute();
+	my @info = $sth->fetchrow_array;
+    my $exists = scalar @info;
+	return $exists;
+}
+
+##### Program start #####
 foreach my $arg (@ARGV)
 {
 	if ($arg eq '-v') {$verbose = 1;}
@@ -204,6 +211,19 @@ open my $LOG, '>>', $logFile;
 # Get hostname
 my $host = hostname;
 
+#########################################################################################
+# Open Database connection
+$dsn = "DBI:$driver:dbname=$serieDatabasePath";
+my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+if ($verbose >=1) {print "Database opened successfully\n";}	
+my $exists = does_table_exist($dbh, "unseenEpisodes");
+if ($exists == 0)
+{
+	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
+	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT)");
+}
+
 # Create user agent for https
 my $ua = LWP::UserAgent->new( ssl_opts => { verify_hostname => 0 } );
 $ua->agent('Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Firefox/31.0 Iceweasel/31.3.0');
@@ -214,12 +234,12 @@ my @episodeToDownload = &betaSeries::getEpisodeToDownload($verbose, $token, $bet
 foreach my $ep (@episodeToDownload)
 {
 	my $time = localtime;
-
-	if ($ep =~ /(.*) - (.*) - /)
+	my $status = "Download failed";
+	if ($ep =~ /(.*) - (.*) - (.*) - (.*)/)
 	{
 		my @torrentUrl;
 		my $result = 0;
-		my $serie = $1; my $episode = $2;
+		my $serie = $1; my $episode = $2; my $title = $3; my $id = $4;
 		push (@torrentUrl, getTorrentUrl($serie, $episode, $ua,$verbose));
 		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
@@ -229,6 +249,28 @@ foreach my $ep (@episodeToDownload)
 			my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.5/RPC2');
 			$result = $xmlrpc->call("load_start", @torrentUrl);
 		}
+		if ($result eq "0"){$status = "Download launched";}
+		
+		# Add unseen episode to the serie database
+		# Query to check if the episode already exists
+		my $query = "SELECT COUNT(*) FROM unseenEpisodes WHERE Id=?";
+		if ($verbose >= 2){print "$query\n";}
+		my $sth = $dbh->prepare($query);
+		$sth->execute("$serie - $episode");
+		if ($sth->fetch()->[0]) 
+		{
+			if ($verbose >= 1){print "$serie - $episode already exists\n";}
+			$dbh->do("UPDATE unseenEpisodes SET Status=\'$status\' WHERE Id=\'$serie - $episode\'");
+		}
+		else
+		{
+			# Add episode
+			my $episodeInfos = "\'$serie - $episode\', \'$serie\', \'$title\', \'$id\', \'$status\', \'\'";
+			if ($verbose >= 1){print "$episodeInfos\n";}
+			$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
+		}
+		$sth->finish();
+		
 		if ($result eq "0") {print $LOG "[$time] $host Download INFO \"$serie - $episode\" --> OK\n";}
 		else {print $LOG "[$time] $host Download ERROR \"$serie - $episode\" --> Failed\n"; next;}
 		

@@ -16,18 +16,10 @@ use tvdb;
  
 my @tvShows;
 my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
-my $downloadsListFile = "";
 my $verbose = 0;
-my $downloadLogFile = "";
-my $unseenLogFile = "";
-my $outDirectory = "";
-my $downloadDirectory = "";
 my $htmlPage = "";
 my $outputHtmlPage = "";
 my $sendMail = 0;
-my $betaSeriesKey = "";
-my $betaSeriesLogin = "";
-my $betaSeriesPassword = "";
 my $bannersPath = "";
 
 # Database variables
@@ -53,16 +45,8 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-		if ($_ =~ /shows/) 
-    	{
-			$readingShows = 1;
-		    next;
-		}
-		if ($_ =~ /\/shows/) 
-		{
-			$readingShows = 0;
-		    next;
-		}
+		if ($_ =~ /shows/){$readingShows = 1;next;}
+		if ($_ =~ /\/shows/){$readingShows = 0;next;}
 		if ($readingShows == 1)
 		{
 			if ($_ =~ /(.*),/) 
@@ -71,58 +55,11 @@ sub readConfigFile
 				next;
 			}
 		}
-	    if ($_ =~ /downloadsListFile=(.*\.list)/)
-	    {
-		    $downloadsListFile = $1;
-    	}
-		elsif ($_ =~ /outDirectory=(.*)$/)
-		{
-			$outDirectory = $1;
-		}
-		elsif ($_ =~ /inDirectory=(.*)$/)
-		{
-			$downloadDirectory = $1;
-		}
-		elsif ($_ =~ /downloadLogFile=(.*)$/)
-		{
-			$downloadLogFile = $1;
-		}
-		elsif ($_ =~ /unseenLogFile=(.*)$/)
-		{
-			$unseenLogFile = $1;
-		}
-		elsif ($_ =~ /htmlPage=(.*)$/)
-		{
-			$htmlPage = $1;
-		}
-		elsif ($_ =~ /outputHtmlPage=(.*)$/)
-		{
-			$outputHtmlPage = $1;
-		}
-		elsif ($_ =~ /betaSeriesKey=(.*)$/)
-		{
-			$betaSeriesKey = $1;
-		}
-		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
-		{
-			$betaSeriesLogin = $1;
-		}
-		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
-		{
-			$betaSeriesPassword = $1;
-		}
-		elsif ($_ =~ /bannersPath=(.*)$/)
-		{
-			$bannersPath = $1;
-		}
-		elsif ($_ =~ /tabletDatabasePath=(.*)$/)
-		{
-			$tabletDatabasePath = $1;
-		}
-		elsif ($_ =~ /databasePath=(.*)$/)
-		{
-			$seriesDatabasePath = $1;
-		}
+		if ($_ =~ /htmlPage=(.*)$/){$htmlPage = $1;}
+		elsif ($_ =~ /outputHtmlPage=(.*)$/){$outputHtmlPage = $1;}
+		elsif ($_ =~ /bannersPath=(.*)$/){$bannersPath = $1;}
+		elsif ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
+		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
 	}
 }
 
@@ -133,7 +70,6 @@ sub does_table_exist
     $sth->execute();
 	my @info = $sth->fetchrow_array;
     my $exists = scalar @info;
-	# print "Table \"$table_name\" exists: $exists\n";
 	return $exists;
 }
 
@@ -197,12 +133,7 @@ readConfigFile($verbose);
 
 if ($verbose >= 1)
 {
-	# Print BetaSeries infos
-	print "Downloads file list: $downloadsListFile\n";
-	print "Unseen log file: $unseenLogFile\n";
-	print "Download log file: $downloadLogFile\n";	
-	print "Output directory: $outDirectory\n";
-	print "Download directory: $downloadDirectory\n";
+	# Print configuration infos
 	print "Send email: $sendMail\n";
 	print "Banners path: $bannersPath\n";
 	print "Tablet database path: $tabletDatabasePath\n";
@@ -222,120 +153,8 @@ my $transport = Email::Sender::Transport::SMTP::TLS->new(
 	username => 'films.vouille@gmail.com',
 	password => 'ctl1032!'
 );
-
-# Get episodes to download
-my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
-my @episodeTosee = &betaSeries::getEpisodesToSee($verbose, $token, $betaSeriesKey);
-# print Dumper @episodeTosee;
  
-# Open downloads file list
-open my $LIST, '<', $downloadsListFile or die "Cannot open download list file: $downloadsListFile\n";
-my @list = <$LIST>;
-close $LIST;
-my $episode = "";
-my $serie = "";
-my $epNumber = "";
-my %status = ();
-
-foreach (@list)
-{
-	if ($_ ne "\n")	
-	{
-		$episode = $_;
-		chomp($episode);
-		$episode = lc($episode);
-		# Specific for Marvel's agents of S.H.I.E.L.D.
-		$episode =~ s/marvel\'s/marvel/i;
-		# Specific for DC's legends of tomorrow
-		$episode =~ s/dc's/dc/i;	
-		# Specific for Mr Robot
-		$episode =~ s/mr\./mr/i;		
-		# Specific for the blacklist: redemption
-		$episode =~ s/blacklist: redemption/blacklist redemption/i;			
-		# Remove 0 if season less than 10
-		if ($episode =~ /(.*) - s(\d+)e(\d+)/i)
-		{
-			my $ep = 0 + $2;
-			$episode = "$1 - s$ep"."e$3";
-		}
-		if ($verbose >=1) {print "$episode\n";}
-		# Remove year if any
-		if ($episode =~ /(.*) \(\d{4}\) - (.*)/i) {$serie = $1; $epNumber = $2;}
-		elsif ($episode =~ /(.*) \(US\) - (.*)/i) {$serie = $1; $epNumber = $2;}
-		elsif ($episode =~ /(.*) - (.*)/) {$serie = $1; $epNumber = $2;}
-		# Specific for MacGyver (2016)
-		if ($serie eq "macgyver") {$serie = $serie . "\ (2016\)";}
-		# Specific for S.W.A.T. (2017)
-		if ($serie eq "s\.w\.a\.t\.") {$serie = $serie . "\ (2017\)";}
-		# Specific for Deception (2018)
-		if ($serie eq "deception") {$serie = $serie . "\ (2018\)";}
-		$status{$serie}{$epNumber} = "<info>Download not launched yet<info>";
-	}
-	else {next;}
-	# Open unseen logs
-	open my $UNSEEN, '<', $unseenLogFile or die "Cannot open unseen log file: $unseenLogFile\n";
-	my @unseen = <$UNSEEN>;
-	close $UNSEEN;
-	my $dateFound = 0;
-	foreach (@unseen)
-	{
-		if ($dateFound == 0 && $_ =~ /$date/) 
-		{
-			$dateFound = 1;
-			if ($verbose >=1) {print "$_";}
-		}
-		if ($dateFound == 1 && $_ =~ /(.*) --> (.*)/)
-		{
-			my $ep = lc ($1);
-			my $epStatus = $2;
-			
-			# Remove " if any
-			$ep =~ s/"//g;
-			
-			# Specific for Marvel's agents of S.H.I.E.L.D.
-			$ep =~ s/marvel\'s/marvel/i;
-			# Specific for DC's legends of tomorrow
-			$ep =~ s/dc's/dc/i;				
-			# Specific for Mr Robot
-			$ep =~ s/mr\./mr/i;		
-			# Specific for the blacklist: redemption
-			$ep =~ s/blacklist: redemption/blacklist redemption/i;			
-
-			if ($ep =~ /(.*) \(US\) - s(\d+)e(\d+)/i) {$ep = "$1 - s$2e$3";}
-			if ($verbose >= 1) {print "$ep --> $epStatus\n";}
-			# Remove 0 if season less than 10
-			if ($ep =~ /(.*) - s(\d+)e(\d+)/i)
-			{
-				my $epNumber = 0 + $2;
-				$ep = "$1 - s$epNumber"."e$3";
-			}
-			
-			$ep =~ s/\(//g;$ep =~ s/\)//g;$episode =~ s/\(//g;$episode =~ s/\)//g;
-			
-			if ($ep =~ /$episode/i)
-			{
-				if ($epStatus eq "OK"){$status{$serie}{$epNumber} = "<info>Download launched<info>";}
-				else {
-					$status{$serie}{$epNumber} = "<danger>Failed to launch download<danger>";
-					# Send email
-					my $mailContent = "Download of $episode failed.\nPlease check.\n";
-					my $email = Email::Simple->create(
-					header => [
-						From    => 'films.vouille@gmail.com',
-						To      => 'thomas.fayoux@gmail.com',
-						Subject => "Failed to download",
-					],
-					body => $mailContent,
-					);					 
-					# send the mail
-					# sendmail( $email, {transport => $transport} );
-				}
-				last;
-			}
-		}
-		else {next;}
-	}
-}
+my %shows = ();
 
 # Get files to be read from series database
 $dsnSerie = "DBI:$driver:dbname=$seriesDatabasePath";
@@ -352,40 +171,27 @@ while(my $episode = $sth->fetchrow_hashref)
 $sth->finish();
 $dbhSerie->disconnect();
 
-if ($verbose >= 1) {print Dumper (@episodes);}
+# Process files in the database
 foreach (@episodes)
 {
-	if ($_->{"Id"} =~ /(.*) - (.*)/i)
-	{
-		my $serie = lc($1);
-		$status{$serie}{$2} = "<success>To be watched<success>";
-	}
-	else {next;}
-}	
-
-# Check files from download directory
-opendir (DOWN, $downloadDirectory);
-my @downDir = readdir(DOWN);
-close DOWN;
-foreach my $file (@downDir)
-{
-	if ($file =~ /\.mp4/ or $file =~ /\.mkv/)
-	{
-		if ($verbose >=1) {print "$file\n";}
-		my @infos = &utils::GetInfos($file, @tvShows);
-		$infos[1] = $infos[1] + 0;
-		if ($verbose >=1) {print "Looking for $infos[0] - s$infos[1]e$infos[2]\n";}
-		$status{$infos[0]}{"s$infos[1]e$infos[2]"} = "<warning>No subtitles found<warning>";
-	}
+	$shows{$_->{'Show'}}{$_->{'Id'}}{'IdBetaseries'} = $_->{'IdBetaseries'};
+	$shows{$_->{'Show'}}{$_->{'Id'}}{'Title'} = $_->{'Title'};
+	$shows{$_->{'Show'}}{$_->{'Id'}}{'Location'} = $_->{'Location'};
+	
+	# Managed status
+	if ($_->{'Status'} eq "To be watched"){$shows{$_->{'Show'}}{$_->{'Id'}}{'Status'} = "<success>To be watched<success>";}
+	elsif ($_->{'Status'} eq "No subtitles found"){$shows{$_->{'Show'}}{$_->{'Id'}}{'Status'} = "<warning>No subtitles found<warning>";}
+	elsif ($_->{'Status'} eq "Download launched"){$shows{$_->{'Show'}}{$_->{'Id'}}{'Status'} = "<info>Download launched<info>";}
+	elsif ($_->{'Status'} eq "Download failed"){$shows{$_->{'Show'}}{$_->{'Id'}}{'Status'} = "<danger>Download failed<danger>";}
 }
-
-if ($verbose >= 1) {print Dumper %status;}
-my @keys = sort keys %status;
+	
+if ($verbose >= 1) {print Dumper (%shows);}
+my @keys = sort keys %shows;
 
 my $episodes = 0;
 foreach (@keys)
 {
-	my @eps = keys %{$status{$_}};
+	my @eps = keys %{$shows{$_}};
 	$episodes += $#eps + 1;
 }
 
@@ -415,7 +221,7 @@ foreach (@htmlSource)
 				if ($verbose >=2) {print "$tvdbBanner\n";}
 				getstore($tvdbBanner, $banner);
 			}
-			my @episodes = sort keys %{$status{$serie}};
+			my @episodes = sort keys %{$shows{$serie}};
 			my $nbEpisodes = $#episodes + 1;
 			# Add line for the banner
 			$_ = $_."\t\t\t\t\t\t<div class=\"row\">\n";
@@ -424,10 +230,8 @@ foreach (@htmlSource)
 			if ($verbose >= 1) {print "$serie \($nbEpisodes\)\n"; print Dumper @episodes;}
 			foreach my $ep (@episodes)
 			{
-				my $title = "";
-				my $epId = "";
-				my $output = getTitle($verbose, $serie, $ep, @episodeTosee);
-				if ($output ne ""){	($title, $epId) = split(/ - /, $output); }
+				my $title = $shows{$serie}{$ep}{'Title'};
+				my $epId = $shows{$serie}{$ep}{'IdBetaseries'};
 				my $serieUnderscore = $serie;
 				$serieUnderscore =~ s/ /_/g;
 				$serieUnderscore =~ s/\(/\\\(/g;
@@ -435,30 +239,32 @@ foreach (@htmlSource)
 				
 				my $epStatus = "";
 				my $label = "";
-				if ($status{$serie}{$ep} =~ /<(.*)>(.*)<.*>/)
+				my $epRef = "";
+				if ($shows{$serie}{$ep}{'Status'} =~ /<(.*)>(.*)<.*>/)
 				{
 					$label = $1;
 					$epStatus = $2;
 				}
+				if ($ep =~ /.* - (.*)/){$epRef = $1;}
 				
 				# Print each episode
 				$_ = $_."\t\t\t\t\t\t<div class=\"row\" id=\"episode\">\n";
-				if ($status{$serie}{$ep} eq "<success>To be watched<success>")
+				if ($epStatus eq "To be watched")
 				{
-					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><a href=\"..\/cgi-bin\/update.cgi?ep=".$serieUnderscore."-".$ep."-".$epId."\" class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></a></div>\n";
+					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><a href=\"..\/cgi-bin\/update.cgi?ep=".$serieUnderscore."-".$epRef."-".$epId."\" class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></a></div>\n";
 				}
 				else
 				{
 					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><span class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></span></div>\n";
 				}
-				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-2\">".$ep.":</div>\n";
+				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-2\">".$epRef.":</div>\n";
 				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-5\">".$title."</div>\n";
 				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-4\"><span class=\"label label-".$label."\">".$epStatus."</span></div>\n";
 				$_ = $_."\t\t\t\t\t\t</div>\n";
 				
 				#########################################################################################
 				# Add episode available to be watched in the database
-				if ($status{$serie}{$ep} eq "<success>To be watched<success>")
+				if ($epStatus eq "To be watched")
 				{
 					# Connect to database
 					$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
@@ -477,16 +283,16 @@ foreach (@htmlSource)
 					my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
 					if ($verbose >= 2){print "$query\n";}
 					my $sth = $dbh->prepare($query);
-					$sth->execute("$serie - $ep");
+					$sth->execute("$serie - $epRef");
 					if ($sth->fetch()->[0]) 
 					{
-						if ($verbose >= 1){print "$serie - $ep already exists\n";}
+						if ($verbose >= 1){print "$serie - $epRef already exists\n";}
 					}
 					else
 					{
 						# Add episode
 						$title =~ s/\'/ /g;
-						my $episodeInfos = "\'$serie - $ep\', \'$serie\', \'$ep\', \'$title\', \'\', \'false\', \'false\'";
+						my $episodeInfos = "\'$serie - $epRef\', \'$serie\', \'$epRef\', \'$title\', \'\', \'false\', \'false\'";
 						if ($verbose >= 1){print "$episodeInfos\n";}
 						$dbh->do("INSERT INTO Episodes VALUES($episodeInfos)");
 					}
@@ -521,16 +327,16 @@ if ($sendMail && @keys)
 {
 	# Create email content
 	my $mailContent = "Bonjour Thomas,\nVoici le résumé \"séries\" du jour:\n\n";
-	foreach my $serie (sort keys %status)
+	foreach my $serie (sort keys %shows)
 	{
-		my @episodes = sort keys %{$status{$serie}};
+		my @episodes = sort keys %{$shows{$serie}};
 		my $nbEpisodes = $#episodes + 1;
 		$mailContent = $mailContent."$serie \($nbEpisodes\)\n";
 		foreach my $episode (@episodes)
 		{
-			$status{$serie}{$episode} =~ s/<danger>//g; $status{$serie}{$episode} =~ s/<success>//g;
-			$status{$serie}{$episode} =~ s/<warning>//g; $status{$serie}{$episode} =~ s/<info>//g;
-			$mailContent = $mailContent."\t$episode --> $status{$serie}{$episode}\n";
+			$shows{$serie}{$episode}{'Status'} =~ s/<danger>//g; $shows{$serie}{$episode}{'Status'} =~ s/<success>//g;
+			$shows{$serie}{$episode}{'Status'} =~ s/<warning>//g; $shows{$serie}{$episode}{'Status'} =~ s/<info>//g;
+			$mailContent = $mailContent."\t$episode --> $shows{$serie}{$episode}\n";
 		}
 	}
 	$mailContent = $mailContent."\nBonne soirée.\n";

@@ -32,23 +32,10 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-
-	    if ($_ =~ /addSerieLogFile=(.*\.log)/)
-	    {
-		    $logFile = $1;
-    	}
-    	elsif ($_ =~ /betaSeriesKey=(.*)$/)
-		{
-			$betaSeriesKey = $1;
-		}
-		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
-		{
-			$betaSeriesLogin = $1;
-		}
-		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
-		{
-			$betaSeriesPassword = $1;
-		}
+	    if ($_ =~ /addSerieLogFile=(.*\.log)/){$logFile = $1;}
+    	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
+		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
+		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
 	}
 }
 
@@ -130,10 +117,7 @@ if ($serieId != 0)
 		open my $CONF, '>', $config or die "Cannot open $config";
 		foreach my $line (@conf)
 		{
-			if ($line =~ /\/shows/)
-			{
-				print $CONF "$serie,\n";
-			}
+			if ($line =~ /\/shows/){last;}
 			print $CONF "$line";
 		}
 		close $CONF;

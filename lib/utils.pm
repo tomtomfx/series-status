@@ -9,8 +9,53 @@ use Data::Dumper;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/GetInfos testSubFile/;
+my @EXPORT = qw/GetInfos testSubFile doesTableExist createTable insertDatas/;
 
+sub insertData
+{
+	my ($verbose, $dbh, $tableName, $idValue, $id, $values) = @_;
+	# Query to check if the data already exists
+	my $query = "SELECT COUNT(*) FROM $tableName WHERE $idValue=?";
+	if ($verbose >= 2){print "$query\n";}
+	my $sth = $dbh->prepare($query);
+	$sth->execute("$id");
+	if ($sth->fetch()->[0]) 
+	{
+		if ($verbose >= 1){print "$id already exists\n";}
+	}
+	else
+	{
+		# add data
+		$dbh->do("INSERT INTO $tableName VALUES($values)");
+	}
+	$sth->finish();
+}
+
+sub createTable
+{
+	my ($verbose, $dbh, $tableName, $tableValues) = @_;
+	my $exists = doesTableExist($dbh, $tableName);
+	if ($exists == 1)
+	{
+		if ($verbose >= 1){print ("Table \"$tableName\" already exists\n");}
+		return 0;
+	}
+	
+	if ($verbose >= 1){print ("\"$tableName\" table does not exists. Creating one.\n");}
+	$dbh->do("DROP TABLE IF EXISTS $tableName");
+	$dbh->do("CREATE TABLE $tableName($tableValues)");
+}
+
+sub doesTableExist 
+{
+    my ($dbh, $table_name) = @_;
+	my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'$table_name\';");
+    $sth->execute();
+	my @info = $sth->fetchrow_array;
+    my $exists = scalar @info;
+	# print "Table \"$table_name\" exists: $exists\n";
+	return $exists;
+}
 
 sub foundShow
 {

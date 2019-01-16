@@ -44,18 +44,9 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-		if ($_ =~ /tabletDatabasePath=(.*)$/)
-		{
-			$tabletDatabasePath = $1;
-		}
-		elsif ($_ =~ /databasePath=(.*)$/)
-		{
-			$seriesDatabasePath = $1;
-		}
-		elsif ($_ =~ /outDirectory=(.*)$/)
-		{
-			$outDirectory = $1;
-		}
+		if ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
+		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
+		elsif ($_ =~ /outDirectory=(.*)$/){$outDirectory = $1;}
 	}
 }
 

@@ -5,12 +5,11 @@ use warnings;
 use XML::Simple;
 use Sys::Hostname;
 use DBI;
+use Data::Dumper;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
-use addic7ed;
 use betaSeries;
-use Data::Dumper;
 
 my @tvShows;
 my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
@@ -44,17 +43,8 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-	    if ($_ =~ /shows/) 
-    	{
-			$readingShows = 1;
-		    next;
-		}
-		if ($_ =~ /\/shows/) 
-		{
-			$readingShows = 0;
-		    next;
-		}
-
+	    if ($_ =~ /shows/){$readingShows = 1;next;}
+		if ($_ =~ /\/shows/){$readingShows = 0;next;}
 		if ($readingShows == 1)
 		{
 			if ($_ =~ /(.*),/) 
@@ -63,34 +53,13 @@ sub readConfigFile
 				next;
 			}
 		}
-	    if ($_ =~ /downloadLogFile=(.*\.log)/)
-	    {
-		    $logFile = $1; 
-    	}
-    	elsif ($_ =~ /inDirectory=(.*)$/)
-		{
-			$downloadDir = $1;
-		}
-		elsif ($_ =~ /outDirectory=(.*)$/)
-		{
-			$outputDir = $1;
-		}
-		elsif ($_ =~ /databasePath=(.*)$/)
-		{
-			$serieDatabasePath = $1;
-		}
-		elsif ($_ =~ /betaSeriesKey=(.*)$/)
-		{
-			$betaSeriesKey = $1;
-		}
-		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
-		{
-			$betaSeriesLogin = $1;
-		}
-		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
-		{
-			$betaSeriesPassword = $1;
-		}
+	    if ($_ =~ /downloadLogFile=(.*\.log)/){$logFile = $1;}
+    	elsif ($_ =~ /inDirectory=(.*)$/){$downloadDir = $1;}
+		elsif ($_ =~ /outDirectory=(.*)$/){$outputDir = $1;}
+		elsif ($_ =~ /databasePath=(.*)$/){$serieDatabasePath = $1;}
+		elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
+		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
+		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
 	}
 }
 
@@ -101,10 +70,10 @@ sub does_table_exist
     $sth->execute();
 	my @info = $sth->fetchrow_array;
     my $exists = scalar @info;
-	# print "Table \"$table_name\" exists: $exists\n";
 	return $exists;
 }
 
+##### Program start #####
 foreach my $arg (@ARGV)
 {
 	if ($arg eq '-v') {$verbose = 1;}
@@ -118,8 +87,6 @@ readConfigFile($verbose);
 if ($verbose >= 1)
 {
 	# Print available shows
-	print "Available shows : \n";
-	# foreach my $printShow (@tvShows) { print "$printShow\n"; }
 	print "logFile: $logFile\nbetaSeriesLogin: $betaSeriesLogin\nbetaSeriesKey: $betaSeriesKey\nbetaSeriesPassword: $betaSeriesPassword\ndownloadDir: $downloadDir\noutputDir: outputDir";
 	print "\n";
 }
@@ -140,13 +107,13 @@ if ($exists == 0)
 {
 	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
 	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
-	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Location TEXT)");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT)");
 }
 
 # Get the episodes to download from betaSeries
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
-my @episodeToDownload = &betaSeries::getEpisodeToDownload($verbose, $token, $betaSeriesKey);
-if ($verbose >= 1) {print Dumper(@episodeToDownload);}
+my @episodeToSee = &betaSeries::getEpisodesToSee($verbose, $token, $betaSeriesKey);
+#if ($verbose >= 1) {print Dumper(@episodeToSee);}
 
 # Check if series folders are presents
 opendir(DL, $downloadDir);
@@ -155,10 +122,9 @@ close DL;
 foreach my $file (@dlDir)
 {
 	$time = localtime;
-	my $serieDir = "$downloadDir\/$file";
+	my $serieDir = "$downloadDir\\$file";
 	if (-d $serieDir && $file ne '.' && $file ne '..' && $file ne 'Config' && $file ne 'Films' && $file ne 'Series' && $file ne 'Temp' && $file ne 'Torrents')
 	{
-		#print "\"$serieDir\"\n";
 		my $doNotRemove = 0;
 		opendir(DL, $serieDir);
 		my @dlSerieDir = readdir(DL);
@@ -189,13 +155,11 @@ close DL;
 foreach my $file (@dlDir)
 {
 	$time = localtime;
-	if ($file !~ /\.avi/ and $file !~ /\.mp4/ and $file !~ /\.mkv/)
-	{
-		next;
-	}
+	if ($file !~ /\.avi/ and $file !~ /\.mp4/ and $file !~ /\.mkv/){next;}
 	print "$file";
 	if ($verbose >= 2) {print "\n";} 
 	
+	my $dbId = "";
 	my $extension;
 	if ($file =~ /\.avi/){$extension = "avi"}
 	elsif($file =~ /\.mp4/){$extension = "mp4"}
@@ -211,10 +175,15 @@ foreach my $file (@dlDir)
 	
 		# Set file as downloaded on betaseries
 		my $epId = "";
-		foreach (@episodeToDownload)
+		my $show = "";
+		my $title = "";
+		my $saison = "";
+		my $ep = "";
+		my $status = "No subtitles found";
+		foreach (@episodeToSee)
 		{
-			my $serie, my $saison, my $ep;
-			if ($_ =~ /(.*) - S(\d*)E(\d*) - (\d*)/){$serie = $1; $saison = $2; $ep = $3; $epId = $4}
+			if ($_ =~ /(.*) - S(\d*)E(\d*) - (.*) - (\d*)/){$show = $1; $saison = $2; $ep = $3; $title = $4; $epId = $5}
+			my $serie = $show;
 			
 			# Remove year if any
 			$serie =~ s/ \(\d{4}\)//;
@@ -230,25 +199,30 @@ foreach my $file (@dlDir)
 			# Specific for the blacklist: redemption
 			$serie =~ s/blacklist: redemption/blacklist redemption/i;
 			
-			if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
+			# if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
 			if ($infos[0] =~ /$serie/i && $infos[1] == $saison && $infos[2] == $ep)
 			{
+				if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
 				if ($verbose >= 1) {print "Episode found\n"}; 
 				last;
 			}
 			else {$epId = "";}
 		}
-		if ($epId ne ""){&betaSeries::setDownloaded($verbose, $token, $betaSeriesKey, $epId);}
-
-		# Download subtitles
-		close $LOG;
-		&addic7ed::downloadSubtitles($file, $downloadDir, $logFile, $verbose);
-		open $LOG, '>>', $logFile;
+		if ($epId ne "")
+		{
+			# Set episode downloaded on betaseries
+			&betaSeries::setDownloaded($verbose, $token, $betaSeriesKey, $epId);
+			$dbId = $show." - S".$saison."E".$ep;
 		
+			# Download subtitles
+			betaSeries::getSubtitles($verbose, $token, $betaSeriesKey, $epId, $file, $downloadDir);
+			
+		}
 		# open files directory
 		opendir(DL, $downloadDir);
 		my @subDlDir = readdir(DL);
 		close DL;
+		my $outFilename = "";
 		foreach my $subFile (@subDlDir)
 		{
 			if ($subFile !~ /\.srt/)
@@ -265,7 +239,6 @@ foreach my $file (@dlDir)
 		if ($foundSub == 1)
 		{
 			$time = localtime;
-			
 			# Get serie directory and create it if it does not exists
 			my $serieDir = $infos[0];
 			$serieDir =~ s/^(\w)/\U$1/;
@@ -275,25 +248,7 @@ foreach my $file (@dlDir)
 			print $LOG "[$time] $host GetSubtitles INFO \"$infos[0] - s$infos[1]e$infos[2]\" Subtitles found \n";
 			system("mv \"$downloadDir\/$file\" \"$outFilename.$extension\"");
 			system("mv \"$downloadDir\/$sub\" \"$outFilename.srt\"");
-
-			# Add unseen episode to the serie database
-			# Query to check if the episode already exists
-			my $query = "SELECT COUNT(*) FROM unseenEpisodes WHERE Id=?";
-			if ($verbose >= 2){print "$query\n";}
-			my $sth = $dbh->prepare($query);
-			$sth->execute("$infos[0] - s$infos[1]e$infos[2]");
-			if ($sth->fetch()->[0]) 
-			{
-				if ($verbose >= 1){print "$infos[0] - s$infos[1]e$infos[2] already exists\n";}
-			}
-			else
-			{
-				# Add episode
-				my $episodeInfos = "\'$infos[0] - s$infos[1]e$infos[2]\', \'$outFilename.$extension\'";
-				if ($verbose >= 1){print "$episodeInfos\n";}
-				$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
-			}
-			$sth->finish();
+			$status = "To be watched";
 			print " --> OK\n";
 		}
 		else 
@@ -302,12 +257,37 @@ foreach my $file (@dlDir)
 			print $LOG "[$time] $host GetSubtitles ERROR \"$file\" No subtitle found\n"; 
 			print " --> Failed\n";
 		}
+		if ($epId ne "")
+		{
+			# Add or update unseen episode to the serie database
+			# Query to check if the episode already exists
+			if ($verbose >= 1){print "$dbId\n";}		
+			my $query = "SELECT COUNT(*) FROM unseenEpisodes WHERE Id=?";
+			if ($verbose >= 2){print "$query\n";}
+			my $sth = $dbh->prepare($query);
+			$sth->execute($dbId);
+			if ($sth->fetch()->[0]) 
+			{
+				if ($verbose >= 1){print "$dbId already exists\n";}
+				$dbh->do("UPDATE unseenEpisodes SET Status=\'$status\' WHERE Id=\'$dbId\'");
+				if ($outFilename ne ""){$dbh->do("UPDATE unseenEpisodes SET Location=\'$outFilename.$extension\' WHERE Id=\'$dbId\'");}
+			}
+			else
+			{
+				# Add episode
+				my $episodeInfos = "";
+				if ($outFilename ne ""){$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'$outFilename.$extension\'";}
+				else {$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'\'";}
+				if ($verbose >= 1){print "$episodeInfos\n";}
+				$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
+			}
+			$sth->finish();
+		}
 	}
 	else
 	{
 		print $LOG "[$time] $host GetSubtitles ERROR \"$file\" No show, season or episode found\n";
 	}
-	
 	#print $LOG "\n";
 }
 $dbh->disconnect();

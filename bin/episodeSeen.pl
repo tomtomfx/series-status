@@ -29,6 +29,9 @@ my $dsn = "";
 my $driver = "SQLite"; 
 my $userid = "";
 my $password = "";
+my $useKodi = 0;
+my $kodiIpAddress = "";
+
 
 # Read config file 
 sub readConfigFile
@@ -44,35 +47,15 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-
-	    if ($_ =~ /seenLogFile=(.*\.log)/)
-	    {
-		    $logFile = $1;
-    	}
-    	elsif ($_ =~ /betaSeriesKey=(.*)$/)
-		{
-			$betaSeriesKey = $1;
-		}
-		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
-		{
-			$betaSeriesLogin = $1;
-		}
-		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
-		{
-			$betaSeriesPassword = $1;
-		}
-		elsif ($_ =~ /outDirectory=(.*)$/)
-		{
-			$outputDir = $1;
-		}
-		elsif ($_ =~ /tabletDatabasePath=(.*)$/)
-		{
-			$tabletDatabasePath = $1;
-		}
-		elsif ($_ =~ /databasePath=(.*)$/)
-		{
-			$seriesDatabasePath = $1;
-		}
+	    if ($_ =~ /seenLogFile=(.*\.log)/){$logFile = $1;}
+    	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
+		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
+		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
+		elsif ($_ =~ /outDirectory=(.*)$/){$outputDir = $1;}
+		elsif ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
+		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
+		elsif ($_ =~ /useKodi=(.*)$/){$useKodi = $1;}
+		elsif ($_ =~ /kodiIpAddress=(.*)$/){$kodiIpAddress = $1;}
 	}
 }
 
@@ -131,71 +114,11 @@ open my $LOG, '>>', $logFile;
 # Start writing logs with date and time
 my $time = localtime;
 
+#########################################################################################
 # Set episode as seen
 my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 &betaSeries::setEpisodeSeen($verbose, $token, $betaSeriesKey, $epId);
 print $LOG "[$time] $host EpisodeSeen INFO \"$serie - $episode\" watched\n";
-
-#########################################################################################
-# Mark episode as watched in Kodi
-# Connect to Kodi
-my $ip = '192.168.1.117';
-my $port = "8080";
-my $kodiHost = "http:\/\/".$ip.":".$port."\/jsonrpc";
-my $serieKodi = $serie;
-
-# Specific naming
-$serieKodi =~ s/marvel//ig;
-
-# Get TV show ID
-my $tvshowid = 0;
-my $method = 'VideoLibrary.GetTVShows';
-my $request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method."\"}";
-if ($verbose >= 1) {print Dumper ($request);}
-my $result = sendRequest($request);
-my @tvshows = @{$result->{'result'}->{'tvshows'}};
-foreach my $show (@tvshows)
-{
-	# print Dumper ($show);
-	if ($show->{'label'} =~ /$serieKodi/i){
-		$tvshowid = $show->{'tvshowid'};
-		last;
-	}
-}
-if ($verbose >= 1) {print ("TV show ID: ".$tvshowid."\n");}
-
-if ($tvshowid != 0)
-{
-	# Get episode ID
-	my $epId = 0;
-	$method = 'VideoLibrary.GetEpisodes';
-	my $params = "\", \"params\": {\"tvshowid\":".$tvshowid.", \"season\":".$season.", \"properties\": [\"season\", \"episode\"]}";
-	$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
-	if ($verbose >= 1) {print Dumper ($request);}
-	$result = sendRequest($request);
-	if (defined $result->{'result'}->{'episodes'})
-	{
-		my @episodes = @{$result->{'result'}->{'episodes'}};
-		foreach my $episode (@episodes)
-		{
-			#print Dumper ($episode);
-			if ($episode->{'season'} == $season and $episode->{'episode'} == $epNumber){
-				$epId = $episode->{'episodeid'};
-				last;
-			}
-		}
-		if ($verbose >= 1) {print ("Episode ID: ".$epId."\n");}
-		if ($epId != 0)
-		{
-			$method = 'VideoLibrary.SetEpisodeDetails';
-			$params = "\", \"params\": {\"episodeid\":".$epId.", \"playcount\": 1}";
-			$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
-			if ($verbose >= 1) {print Dumper ($request);}
-			$result = sendRequest($request);
-			if ($verbose >= 1) {print ("Set as seen: ".$result->{'result'}."\n");}
-		}
-	}
-}
 
 my $episodeId = "\'$serie - $episode\'";
 
@@ -219,4 +142,66 @@ if ($verbose >= 1){print "$episodeId\n";}
 $dbh->do("DELETE FROM Episodes WHERE id=($episodeId)");
 $dbh->disconnect();
 
+#########################################################################################
+# Mark episode as watched in Kodi
+# Connect to Kodi
+if ($useKodi == 1)
+{
+	my $port = "8080";
+	my $kodiHost = "http:\/\/".$kodiIpAddress.":".$port."\/jsonrpc";
+	my $serieKodi = $serie;
+
+	# Specific naming
+	$serieKodi =~ s/marvel//ig;
+
+	# Get TV show ID
+	my $tvshowid = 0;
+	my $method = 'VideoLibrary.GetTVShows';
+	my $request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method."\"}";
+	if ($verbose >= 1) {print Dumper ($request);}
+	my $result = sendRequest($request);
+	my @tvshows = @{$result->{'result'}->{'tvshows'}};
+	foreach my $show (@tvshows)
+	{
+		if ($show->{'label'} =~ /$serieKodi/i)
+		{
+			$tvshowid = $show->{'tvshowid'};
+			last;
+		}
+	}
+	if ($verbose >= 1) {print ("TV show ID: ".$tvshowid."\n");}
+	
+	if ($tvshowid != 0)
+	{
+		# Get episode ID
+		my $epId = 0;
+		$method = 'VideoLibrary.GetEpisodes';
+		my $params = "\", \"params\": {\"tvshowid\":".$tvshowid.", \"season\":".$season.", \"properties\": [\"season\", \"episode\"]}";
+		$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
+		if ($verbose >= 1) {print Dumper ($request);}
+		$result = sendRequest($request);
+		if (defined $result->{'result'}->{'episodes'})
+		{
+			my @episodes = @{$result->{'result'}->{'episodes'}};
+			foreach my $episode (@episodes)
+			{
+				if ($episode->{'season'} == $season and $episode->{'episode'} == $epNumber)
+				{
+					$epId = $episode->{'episodeid'};
+					last;
+				}
+			}
+			if ($verbose >= 1) {print ("Episode ID: ".$epId."\n");}
+			if ($epId != 0)
+			{
+				$method = 'VideoLibrary.SetEpisodeDetails';
+				$params = "\", \"params\": {\"episodeid\":".$epId.", \"playcount\": 1}";
+				$request = $kodiHost."?request={\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"".$method.$params."}";
+				if ($verbose >= 1) {print Dumper ($request);}
+				$result = sendRequest($request);
+				if ($verbose >= 1) {print ("Set as seen: ".$result->{'result'}."\n");}
+			}
+		}
+	}
+}
 close $LOG;

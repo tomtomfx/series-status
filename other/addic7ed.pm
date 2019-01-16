@@ -22,7 +22,7 @@ sub downloadSubtitles
 	open (LOG, ">>", $logFile) or die "Cannot open $logFile";
 	
 	# Remove unused info
-	my @del = ("readnfo","extended","theatrical","limited","dc","rerip","dubbed","docu","unrated","festival","ac3","720p","1080p","HDTV");
+	my @del = ("\[eztv\]","readnfo","extended","theatrical","limited","dc","rerip","dubbed","docu","unrated","festival","ac3","720p","1080p","HDTV");
 	foreach (@del){$filename =~ s/\.$_//i;}
 
 	# Remove file extension
@@ -63,7 +63,7 @@ sub downloadSubtitles
 	$filename =~ s/dcs/dc's/i;
 	$filename =~ s/dc.s/dc's/i;
 	
-	if ($verbose >= 2) {print "$filename\n";}
+	if ($verbose >= 1) {print "\nFilename: $filename\n";}
 	
 	my $show, my $season, my $episode;
 
@@ -89,6 +89,7 @@ sub downloadSubtitles
 	}
 	else
 	{
+		if ($verbose >= 1) {print "No show, season or episode found\n";}
 		my $host = hostname;
 		my $time = localtime;
 		print LOG "[$time] $host GetSubtitles ERROR \"No show, season or episode found\"\n";
@@ -110,7 +111,7 @@ sub downloadSubtitles
 	# Specific for S.W.A.T. (2017)
 	$show =~ s/S_W_A_T_/S\.W\.A\.T\._/i;
 
-	if ($verbose >= 2) {print "Show: $show, Season: $season, Episode: $episode\n";}
+	if ($verbose >= 1) {print "Show: $show, Season: $season, Episode: $episode\n";}
 	my $download = tv($filename, $show, $season, $episode, $downloadDir, $verbose);
 
 	# Close the log file
@@ -125,7 +126,7 @@ sub tv
 		my $verbose = $_[5];
 		my $time = localtime;
 		my $host = hostname;
-		if ($verbose >= 2) {print "http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x\n";}
+		if ($verbose >= 1) {print "http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x\n";}
 		print LOG "[$time] $host GetSubtitles INFO \"$show - $episode\" Addic7ed=http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x\n";
 		my @url = split("\n", get("http://www.addic7ed.com/serie/$show/$_[2]/$_[3]/x"));
 		my $downloadDir = $_[4];
@@ -148,16 +149,20 @@ sub tv
 				
 				if ($version eq "DIMENSION"){$version = $version.",LOL"}
 				if ($version eq "LOL"){$version = $version.",DIMENSION"}
+				if ($version eq "SVA"){$version = $version.",AVS"}
+				if ($version eq "AVS"){$version = $version.",SVA"}
 				
 				$version =~ s/\*\*NUKED\*\*//gi; 
-				
+				if ($verbose >=1){print Dumper ($version);}
 				if ($version =~ /,/ || $version=~ /and/i)
 				{
 					$version =~ s/ /,/g;
 					$version =~ s/and/,/ig;
 					$version =~ s/\./,/g;
+					$version =~ s/_/,/g;
 					$version =~ s/\(/ /g;					
 					$version =~ s/\)/ /g;
+					
 					my @versions = split(/,/, $version);
 					foreach (@versions)
 					{

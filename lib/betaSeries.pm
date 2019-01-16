@@ -9,7 +9,7 @@ use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie addShow/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie addShow getSubtitles/;
 
 sub sendRequest
 {
@@ -51,7 +51,6 @@ sub getEpisodeToDownload
 	{
 		%shows = %{$episodes->{shows}};
 	}
-	# print Dumper %shows;
 	# Get episodes than require a download
 	foreach my $show (keys (%shows))
 	{	
@@ -76,11 +75,11 @@ sub getEpisodeToDownload
 				$epNumber = $eps{$ep}->{code};
 				$title = $eps{$ep}->{title};
 				$id = $eps{$ep}->{thetvdb_id};
-				if ($verbose >= 1) {print ("$serie - $epNumber - $id\n");}
+				#if ($verbose >= 1) {print ("$serie - $epNumber - $id\n");}
 				if ($eps{$ep}->{user}->{downloaded} != 1)
 				{
-					if ($verbose >= 1) {print ("$serie - $epNumber\n");}
-					push(@episodeToDownload, "$serie - $epNumber - $id");
+					if ($verbose >= 1) {print ("$serie - $epNumber - $title - $id\n");}
+					push(@episodeToDownload, "$serie - $epNumber - $title - $id");
 				}
 			}
 		}
@@ -265,4 +264,62 @@ sub addShow
 	my $message = sendRequest($ua, $req);
 	# print Dumper $message;
 }
+
+sub getSubtitles
+{
+	my ($verbose, $token, $betaSeriesKey, $epId, $filename, $downloadDir) = @_;
+	
+	my $subFound = 0;
+	
+	# Get the right ID for this 
+	my $ua = LWP::UserAgent->new;
+	my $request = "http://api.betaseries.com/episodes/display?thetvdb_id=$epId&token=$token";
+	my $req = HTTP::Request->new(GET => "$request");
+	$req->header('X-BetaSeries-Version' => '2.2');
+	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	my $parser = XML::Simple->new( KeepRoot => 0 );
+	my $episode = $parser->XMLin($message);
+	my $id = $episode->{'episode'}{'id'};
+	
+	# Get available subtitles
+	$request = "http://api.betaseries.com/subtitles/episode?id=$id&token=$token&language=vo";
+	my $req = HTTP::Request->new(GET => "$request");
+	$req->header('X-BetaSeries-Version' => '2.2');
+	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	my $parser = XML::Simple->new( KeepRoot => 0 );
+	my $subtitles = $parser->XMLin($message);
+	
+	my %subs = %{$subtitles->{'subtitles'}->{'subtitle'}};
+	foreach my $sub (keys (%subs))
+	{
+		if ($subs{$sub}->{'source'} ne "addic7ed"){next;}
+		my $subFile = $subs{$sub}->{'file'};
+		if ($subFile =~ /.*\.(.*)\.English.*/)
+		{
+			my @versions = split('-', $1);
+			foreach (@versions)
+			{
+				if ($filename =~ /$_/i) 
+				{
+					my $sub = "curl -s -k -o \"$downloadDir\/$subs{$sub}->{'file'}\" $subs{$sub}->{'url'}";
+					$sub =~ s/\(//g;
+					$sub =~ s/\)//g;
+					if($verbose >= 1) {print "$sub\n";}
+					system("$sub");
+					$subFound = 1;
+					last;
+				}
+			}
+		}
+		if ($subFound == 1){last;}
+	}
+	return "";
+}
+
 1;
