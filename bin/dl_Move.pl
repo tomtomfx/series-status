@@ -183,8 +183,9 @@ foreach my $file (@dlDir)
 		foreach (@episodeToSee)
 		{
 			if ($_ =~ /(.*) - S(\d*)E(\d*) - (.*) - (\d*)/){$show = $1; $saison = $2; $ep = $3; $title = $4; $epId = $5}
+			$title =~ s/'//;
+						
 			my $serie = $show;
-			
 			# Remove year if any
 			$serie =~ s/ \(\d{4}\)//;
 			# Specific for Marvel's agents of S.H.I.E.L.D.
