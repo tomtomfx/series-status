@@ -14,7 +14,7 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
 
-my $config = "C:\\Users\\ETHOFAY\\Perso\\series-status\\bin\\config";
+my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
 my $logFile = "";
 my $verbose = 0;
 my $betaSeriesKey = "";
