@@ -216,6 +216,7 @@ foreach my $file (@dlDir)
 			$dbId = $show." - S".$saison."E".$ep;
 		
 			# Download subtitles
+			if ($verbose >= 1){print ("Download subtitles\n");}
 			betaSeries::getSubtitles($verbose, $token, $betaSeriesKey, $epId, $file, $downloadDir);
 			
 		}
@@ -244,8 +245,7 @@ foreach my $file (@dlDir)
 			my $serieDir = $infos[0];
 			$serieDir =~ s/^(\w)/\U$1/;
 			if (!-d "$outputDir\/$serieDir\/"){mkdir "$outputDir\/$serieDir\/";}
-			
-			my $outFilename = "$outputDir\/$serieDir\/$infos[0] - s$infos[1]e$infos[2]";
+			$outFilename = "$outputDir\/$serieDir\/$infos[0] - s$infos[1]e$infos[2]";
 			print $LOG "[$time] $host GetSubtitles INFO \"$infos[0] - s$infos[1]e$infos[2]\" Subtitles found \n";
 			system("mv \"$downloadDir\/$file\" \"$outFilename.$extension\"");
 			system("mv \"$downloadDir\/$sub\" \"$outFilename.srt\"");
