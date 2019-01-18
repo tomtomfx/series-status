@@ -240,6 +240,8 @@ foreach my $ep (@episodeToDownload)
 		my @torrentUrl;
 		my $result = 0;
 		my $serie = $1; my $episode = $2; my $title = $3; my $id = $4;
+		$title =~ s/'//;
+		$serie =~ s/'//;
 		push (@torrentUrl, getTorrentUrl($serie, $episode, $ua,$verbose));
 		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}

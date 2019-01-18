@@ -184,7 +184,8 @@ foreach my $file (@dlDir)
 		{
 			if ($_ =~ /(.*) - S(\d*)E(\d*) - (.*) - (\d*)/){$show = $1; $saison = $2; $ep = $3; $title = $4; $epId = $5}
 			$title =~ s/'//;
-						
+			$show =~ s/'//;
+			
 			my $serie = $show;
 			# Remove year if any
 			$serie =~ s/ \(\d{4}\)//;
