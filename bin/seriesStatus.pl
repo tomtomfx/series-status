@@ -336,7 +336,7 @@ if ($sendMail && @keys)
 		{
 			$shows{$serie}{$episode}{'Status'} =~ s/<danger>//g; $shows{$serie}{$episode}{'Status'} =~ s/<success>//g;
 			$shows{$serie}{$episode}{'Status'} =~ s/<warning>//g; $shows{$serie}{$episode}{'Status'} =~ s/<info>//g;
-			$mailContent = $mailContent."\t$episode --> $shows{$serie}{$episode}\n";
+			$mailContent = $mailContent."\t$episode --> $shows{$serie}{$episode}{'Status'}\n";
 		}
 	}
 	$mailContent = $mailContent."\nBonne soirée.\n";

@@ -122,7 +122,7 @@ close DL;
 foreach my $file (@dlDir)
 {
 	$time = localtime;
-	my $serieDir = "$downloadDir\\$file";
+	my $serieDir = "$downloadDir\/$file";
 	if (-d $serieDir && $file ne '.' && $file ne '..' && $file ne 'Config' && $file ne 'Films' && $file ne 'Series' && $file ne 'Temp' && $file ne 'Torrents')
 	{
 		my $doNotRemove = 0;
@@ -183,10 +183,10 @@ foreach my $file (@dlDir)
 		foreach (@episodeToSee)
 		{
 			if ($_ =~ /(.*) - S(\d*)E(\d*) - (.*) - (\d*)/){$show = $1; $saison = $2; $ep = $3; $title = $4; $epId = $5}
+			my $serie = $show;
 			$title =~ s/'//;
 			$show =~ s/'//;
 			
-			my $serie = $show;
 			# Remove year if any
 			$serie =~ s/ \(\d{4}\)//;
 			# Specific for Marvel's agents of S.H.I.E.L.D.

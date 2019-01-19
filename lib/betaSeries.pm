@@ -1,6 +1,6 @@
 
 package betaSeries;	
-
+use LWP::UserAgent;
 use LWP::Simple;
 use XML::Simple;
 use Time::localtime;
@@ -295,7 +295,11 @@ sub getSubtitles
 	my $parser = XML::Simple->new( KeepRoot => 0 );
 	my $subtitles = $parser->XMLin($message);
 	
-	my %subs = %{$subtitles->{'subtitles'}->{'subtitle'}};
+	my %subs = ();
+	if (defined ($subtitles->{'subtitles'}->{'subtitle'}))
+	{
+		%subs = %{$subtitles->{'subtitles'}->{'subtitle'}};
+	}
 	foreach my $sub (keys (%subs))
 	{
 		if ($subs{$sub}->{'source'} ne "addic7ed"){next;}
@@ -307,11 +311,12 @@ sub getSubtitles
 			{
 				if ($filename =~ /$_/i) 
 				{
-					my $sub = "curl -s -k -o \"$downloadDir\/$subs{$sub}->{'file'}\" $subs{$sub}->{'url'}";
-					$sub =~ s/\(//g;
-					$sub =~ s/\)//g;
-					if($verbose >= 1) {print "$sub\n";}
-					system("$sub");
+					# Get redirection
+					my $response = $ua->get("$subs{$sub}->{'url'}");
+					# open log file
+					open my $SUB, '>', "$downloadDir\/$subs{$sub}->{'file'}";
+					print $SUB ($response->decoded_content);
+					close $SUB;
 					$subFound = 1;
 					last;
 				}
