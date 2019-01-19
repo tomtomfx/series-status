@@ -300,6 +300,10 @@ sub getSubtitles
 	{
 		%subs = %{$subtitles->{'subtitles'}->{'subtitle'}};
 	}
+	if (exists $subs{"source"})
+	{
+		%subs = %{$subtitles->{'subtitles'}};
+	}
 	foreach my $sub (keys (%subs))
 	{
 		if ($subs{$sub}->{'source'} ne "addic7ed"){next;}
