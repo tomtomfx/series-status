@@ -313,7 +313,13 @@ sub getSubtitles
 			my @versions = split('-', $1);
 			foreach (@versions)
 			{
-				if ($filename =~ /$_/i) 
+				my $version = $_;
+				if ($version eq "AVS_SVA")
+				{
+					if ($filename =~ /SVA/i){$version = "SVA";}
+					elsif ($filename =~ /AVS/i){$version = "AVS";}
+				}
+				if ($filename =~ /$version/i) 
 				{
 					# Get redirection
 					my $response = $ua->get("$subs{$sub}->{'url'}");
