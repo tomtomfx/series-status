@@ -9,7 +9,7 @@ use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie addShow getSubtitles/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie addShow archiveShow getSubtitles/;
 
 sub sendRequest
 {
@@ -254,7 +254,23 @@ sub addShow
 	my ($verbose, $token, $betaSeriesKey, $showId) = @_;
 	my $ua = LWP::UserAgent->new;
 
-	# Set episode as seen
+	# Add show
+	my $show = "http://api.betaseries.com/shows/show?token=$token&id=$showId";
+	my $req = HTTP::Request->new(POST => "$show");
+	$req->header('X-BetaSeries-Version' => '2.2');
+	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	# print Dumper $message;
+}
+
+sub archiveShow
+{
+	my ($verbose, $token, $betaSeriesKey, $showId) = @_;
+	my $ua = LWP::UserAgent->new;
+
+	# Archive show
 	my $show = "http://api.betaseries.com/shows/show?token=$token&id=$showId";
 	my $req = HTTP::Request->new(POST => "$show");
 	$req->header('X-BetaSeries-Version' => '2.2');
@@ -306,7 +322,7 @@ sub getSubtitles
 	}
 	foreach my $sub (keys (%subs))
 	{
-		if ($subs{$sub}->{'source'} ne "addic7ed"){next;}
+		if ($subs{$sub}->{'source'} ne "addic7ed" and $subs{$sub}->{'source'} ne "uploaded"){next;}
 		my $subFile = $subs{$sub}->{'file'};
 		if ($subFile =~ /.*\.(.*)\.English.*/)
 		{
@@ -324,7 +340,8 @@ sub getSubtitles
 					# Get redirection
 					my $response = $ua->get("$subs{$sub}->{'url'}");
 					# open log file
-					open my $SUB, '>', "$downloadDir\/$subs{$sub}->{'file'}";
+					$subFile =~ s/://g; $subFile =~ s/'//g;
+					open my $SUB, '>', "$downloadDir\/$subFile";
 					print $SUB ($response->decoded_content);
 					close $SUB;
 					$subFound = 1;
