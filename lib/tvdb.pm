@@ -4,6 +4,7 @@ package tvdb;
 use strict;
 use Data::Dumper;
 use LWP::Simple;
+use TVDB::API;
 
 require Exporter;
 my @ISA = qw/Exporter/;
@@ -91,7 +92,7 @@ sub getTVDBInfo
 sub getBannerPath
 {
 	# Get input info
-	my ($verbose, $serie, $language) = @_;
+	my ($verbose, $serie, $language, $type, $apiKey) = @_;
 	
 	my $bannerPath = "";
 	
@@ -99,7 +100,8 @@ sub getBannerPath
 	if ($serie eq "the flash" || $serie eq "rush" || $serie eq "forever") {$serie = "$serie (2014)";}
 	if ($serie eq "castle") {$serie = "$serie (2009)";}
 	$serie =~ s/S\.H\.I\.E\.L\.D\./SHIELD/;
-	$serie =~ s/marvel/marvel's/;
+	$serie =~ s/Marvels/Marvel/i;
+	$serie =~ s/Marvel/Marvel's/i;
 	$serie =~ s/dc/dc's/;
 	
 	# Get serie ID from theTVDB.com
@@ -107,11 +109,23 @@ sub getBannerPath
 	my $page = get("http://thetvdb.com/api/GetSeries.php?seriesname=$serie&language=$language");
 	if ($verbose >=2) {print Dumper $page;}
 	my @serieInfo = split ('\n', $page);
-	foreach (@serieInfo)
+	
+	if ($type eq "banner")
 	{
-		if ($_ =~ /<banner>(.+)<\/banner>/) {$bannerPath = "http://thetvdb.com/banners/$1"; last;}
-		else {next;}
-	}	
+		foreach (@serieInfo)
+		{
+			if ($_ =~ /<banner>(.+)<\/banner>/) {$bannerPath = "http://thetvdb.com/banners/$1"; last;}
+			else {next;}
+		}
+	}
+	elsif ($type eq "background")
+	{
+		my $tvdb = TVDB::API::new($apiKey, "en");
+		$tvdb->setBannerPath("");
+		print "$serie\n";
+		my $fanart = $tvdb->getSeriesFanart($serie);
+		$bannerPath = "http://thetvdb.com/banners/$fanart"
+	}
 	return $bannerPath;
 }
 

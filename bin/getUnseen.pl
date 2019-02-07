@@ -13,6 +13,7 @@ use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
+use tvdb;
 
 my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
 my $logFile = "";
@@ -22,6 +23,7 @@ my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $serieDatabasePath = "";
 my $torrentUrl = "";
+my $bannersPath = "";
 
 # Database
 my $driver = "SQLite"; 
@@ -45,6 +47,7 @@ sub readConfigFile
 	    if ($_ =~ /^#/) {next;}			
 	    if ($_ =~ /unseenLogFile=(.*\.log)/){$logFile = $1;}
 		elsif ($_ =~ /databasePath=(.*)$/){$serieDatabasePath = $1;}
+		elsif ($_ =~ /bannersPath=(.*)$/){$bannersPath = $1;}
     	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
 		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
 		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
@@ -201,7 +204,8 @@ if ($verbose >= 1)
 {
 	# Print BetaSeries infos
 	print "BetaSeries login: $betaSeriesLogin\n";
-	print "BetaSeries key: $betaSeriesKey\n";	
+	print "BetaSeries key: $betaSeriesKey\n";
+	print "Banners path: $bannersPath\n";	
 	print "\n";
 }
 
@@ -221,7 +225,7 @@ if ($exists == 0)
 {
 	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
 	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
-	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT)");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT, Archived TEXT)");
 }
 
 # Create user agent for https
@@ -242,6 +246,18 @@ foreach my $ep (@episodeToDownload)
 		my $serie = $1; my $episode = $2; my $title = $3; my $id = $4;
 		$title =~ s/'//;
 		$serie =~ s/'//;
+		
+		# Get show banner if doesn't exists
+		my $banner = "$bannersPath\\$serie.jpg";
+		unless (-e $banner)
+		{
+			if ($verbose >=2) {print "$banner does not exist\n";}
+			my $tvdbBanner = tvdb::getBannerPath($verbose, $serie, "fr");
+			if ($verbose >=2) {print "$tvdbBanner\n";}
+			getstore($tvdbBanner, $banner);
+		}
+		
+		# Get Torrent for this episode
 		push (@torrentUrl, getTorrentUrl($serie, $episode, $ua,$verbose));
 		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
@@ -267,7 +283,7 @@ foreach my $ep (@episodeToDownload)
 		else
 		{
 			# Add episode
-			my $episodeInfos = "\'$serie - $episode\', \'$serie\', \'$title\', \'$id\', \'$status\', \'\'";
+			my $episodeInfos = "\'$serie - $episode\', \'$serie\', \'$title\', \'$id\', \'$status\', \'\', \'\'";
 			if ($verbose >= 1){print "$episodeInfos\n";}
 			$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
 		}

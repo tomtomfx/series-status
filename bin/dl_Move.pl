@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use XML::Simple;
+use LWP::Simple;
 use Sys::Hostname;
 use DBI;
 use Data::Dumper;
@@ -10,6 +11,7 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
 use betaSeries;
+use tvdb;
 
 my @tvShows;
 my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
@@ -20,8 +22,11 @@ my $logFile = "";
 my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
+my $tvdbKey = "";
 my $verbose = 0;
 my $time = localtime;
+my $bannersPath = "";
+my $backgroundsPath = "";
 
 # Database
 my $driver = "SQLite"; 
@@ -60,6 +65,9 @@ sub readConfigFile
 		elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
 		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
 		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
+		elsif ($_ =~ /tvdbApiKey=(.*)$/){$tvdbKey = $1;}
+		elsif ($_ =~ /bannersPath=(.*)$/){$bannersPath = $1;}
+		elsif ($_ =~ /backgroundsPath=(.*)$/){$backgroundsPath = $1;}
 	}
 }
 
@@ -88,6 +96,9 @@ if ($verbose >= 1)
 {
 	# Print available shows
 	print "logFile: $logFile\nbetaSeriesLogin: $betaSeriesLogin\nbetaSeriesKey: $betaSeriesKey\nbetaSeriesPassword: $betaSeriesPassword\ndownloadDir: $downloadDir\noutputDir: outputDir";
+	print "TVDB API key: $tvdbKey\n";
+	print "Banners path: $bannersPath\n";
+	print "Backgrounds path: $backgroundsPath\n";
 	print "\n";
 }
 
@@ -107,7 +118,7 @@ if ($exists == 0)
 {
 	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
 	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
-	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT)");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT, Archived TEXT)");
 }
 
 # Get the episodes to download from betaSeries
@@ -186,6 +197,25 @@ foreach my $file (@dlDir)
 			my $serie = $show;
 			$title =~ s/'//;
 			$show =~ s/'//;
+			
+			# Get show banner if doesn't exists
+			my $banner = "$bannersPath\\$show.jpg";
+			unless (-e $banner)
+			{
+				if ($verbose >=1) {print "Banner $banner does not exist\n";}
+				my $tvdbBanner = tvdb::getBannerPath($verbose, $show, "en", "banner", $tvdbKey);
+				if ($verbose >=1) {print "$tvdbBanner\n";}
+				getstore($tvdbBanner, $banner);
+			}
+			# Get show background if doesn't exists
+			my $background = "$backgroundsPath\\$show.jpg";
+			unless (-e $background)
+			{
+				if ($verbose >=1) {print "Background $background does not exist\n";}
+				my $tvdbBackground = tvdb::getBannerPath($verbose, $show, "en", "background", $tvdbKey);
+				if ($verbose >=1) {print "$tvdbBackground\n";}
+				getstore($tvdbBackground, $background);
+			}
 			
 			# Remove year if any
 			$serie =~ s/ \(\d{4}\)//;
@@ -278,8 +308,8 @@ foreach my $file (@dlDir)
 			{
 				# Add episode
 				my $episodeInfos = "";
-				if ($outFilename ne ""){$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'$outFilename.$extension\'";}
-				else {$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'\'";}
+				if ($outFilename ne ""){$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'$outFilename.$extension\', \'\'";}
+				else {$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'\', \'\'";}
 				if ($verbose >= 1){print "$episodeInfos\n";}
 				$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
 			}

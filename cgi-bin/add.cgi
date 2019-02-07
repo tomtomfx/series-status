@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+BEGIN {push @INC, '/var/www/cgi-bin/'}
+
 use strict;
 use warnings;
 use LWP::UserAgent;
@@ -7,7 +9,8 @@ use LWP::Simple;
 use XML::Simple;
 use Data::Dumper;
 use Sys::Hostname;
-use CGI;
+use CGI::Carp qw(fatalsToBrowser);
+use CGI qw(standard);
 use betaSeries;
 
 my $req = new CGI;
@@ -74,6 +77,8 @@ sub sendRequest
 
 # Get hostname
 my $host = hostname;
+# Read config file
+readConfigFile();
 # open log file
 open my $LOG, '>>', $logFile or die "Cannot open $logFile - $!";
 
@@ -84,16 +89,13 @@ if ($req->request_method() eq "POST")
 	if ($req->param('serieName') eq "") 
 	{
 		print $LOG "[$time] $host AddSerie ERROR No serie to add specified\n";
-		print $req->redirect('../series/series.php?status=failed');
+		print $req->redirect('../series/series.php?status=failed&type=add');
 	}
 	else
 	{
 		$serie = $req->param('serieName');
 		print $LOG "[$time] $host AddSerie INFO Serie to add: $serie\n";
 		
-		# Read config file
-		readConfigFile();
-
 		# Connection to betaseries.com
 		my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 		# Get serie ID from title
@@ -130,15 +132,15 @@ if ($req->request_method() eq "POST")
 				}
 				close $CONF;
 				print $LOG "[$time] $host AddSerie INFO Serie $serie found and added in config file\n";
-				print $req->redirect('../series/series.php?status=success');
+				print $req->redirect('../series/series.php?status=success&type=add');
 			}
 			print $LOG "[$time] $host AddSerie WARNING Serie $serie already present in config file\n";
-			print $req->redirect('../series/series.php?status=success');
+			print $req->redirect('../series/series.php?status=success&type=add');
 		}
 		else
 		{
 			print $LOG "[$time] $host AddSerie ERROR Serie $serie cannot be found on betaSeries\n";
-			print $req->redirect('../series/series.php?status=failed');
+			print $req->redirect('../series/series.php?status=failed&type=add');
 		}
 	}
 }

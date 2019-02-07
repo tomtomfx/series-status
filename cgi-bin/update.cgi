@@ -17,4 +17,4 @@ if ($ENV{'REQUEST_METHOD'} eq "GET")
 system("perl \/home\/tom\/SubtitleManagement\/bin\/episodeSeen.pl $ep");
 system("perl \/home\/tom\/SubtitleManagement\/bin\/seriesStatus.pl 0");
 
-print CGI::redirect("..\/series\/");
+print CGI::redirect("..\/series\/series.php");

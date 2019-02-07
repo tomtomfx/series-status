@@ -17,10 +17,7 @@ use tvdb;
 my @tvShows;
 my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
 my $verbose = 0;
-my $htmlPage = "";
-my $outputHtmlPage = "";
 my $sendMail = 0;
-my $bannersPath = "";
 
 # Database variables
 my $seriesDatabasePath = "";
@@ -55,10 +52,7 @@ sub readConfigFile
 				next;
 			}
 		}
-		if ($_ =~ /htmlPage=(.*)$/){$htmlPage = $1;}
-		elsif ($_ =~ /outputHtmlPage=(.*)$/){$outputHtmlPage = $1;}
-		elsif ($_ =~ /bannersPath=(.*)$/){$bannersPath = $1;}
-		elsif ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
+		if ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
 		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
 	}
 }
@@ -71,51 +65,6 @@ sub does_table_exist
 	my @info = $sth->fetchrow_array;
     my $exists = scalar @info;
 	return $exists;
-}
-
-sub getTitle
-{
-	my ($verbose, $serie, $ep, @episodeToSee) = @_;
-	foreach (@episodeToSee)
-	{
-		my $show = "";
-		my $epNumber = "";
-		my $title = "";
-		my $epId = "";
-		if ($verbose >= 1) {print "$_\n";}
-		if (($_ =~ /(.*) \(\d{4}\) - s(\d*)e(\d*) - (.*) - (\d*)/i) || ($_ =~ /(.*) \(US\) - s(\d*)e(\d*) - (.*) - (\d*)/i) || ($_ =~ /(.*) - s(\d*)e(\d*) - (.*) - (\d*)/i)) 
-		{			
-			$show = lc($1);
-			my $season = $2+0;
-			my $episodeNumber = $3;
-			$title = $4;
-			$epId = $5;
-			# Specific for Marvel's agents of S.H.I.E.L.D.
-			$show =~ s/marvel\'s/marvel/i;	
-			# Specific for MacGyver (2016)
-			$show =~ s/macgyver/macgyver \(2016\)/i;	
-			# Specific for S.W.A.T. (2017)
-			$show =~ s/s\.w\.a\.t\./s\.w\.a\.t\. \(2017\)/i;	
-			# Specific for Deception (2018)
-			$show =~ s/deception/deception \(2018\)/i;	
-			# Specific for DC's legends of tomorrow
-			$show =~ s/dc's/dc/i;	
-			# Specific for Mr Robot
-			$show =~ s/mr\./mr/i;	
-			# Specific for the blacklist: redemption
-			$show =~ s/blacklist: redemption/blacklist redemption/i;			
-		
-			$epNumber = "s".$season."e".$episodeNumber; 
-			if ($verbose >= 1) {print "$show - $serie\n$ep - $epNumber\n";}
-		}
-		if ($serie eq $show && $ep eq $epNumber)
-		{
-			if ($verbose >= 1) {print "$serie - $show\n$ep - $epNumber\n$title\n";}
-			my $output = "$title - $epId";
-			return $output;
-		}
-	}
-	return "";
 }
 
 if ($#ARGV < 0) {die "Usage: seriesStatus sendMail [verbose]\n";}
@@ -135,7 +84,6 @@ if ($verbose >= 1)
 {
 	# Print configuration infos
 	print "Send email: $sendMail\n";
-	print "Banners path: $bannersPath\n";
 	print "Tablet database path: $tabletDatabasePath\n";
 	print "\n";
 }
@@ -195,132 +143,64 @@ foreach (@keys)
 	$episodes += $#eps + 1;
 }
 
-# Update html page
-# Read default page
-open my $HTML, '<', $htmlPage or die "Cannot open input html file: $htmlPage\n";
-my @htmlSource = <$HTML>;
-close $HTML;
-my @html;
-foreach (@htmlSource)
+foreach my $serie (@keys)
 {
-	if ($_ =~ /<number of episodes>/){$_ =~ s/<number of episodes>/$episodes/;}
-	if ($_ =~ /<insert text here>/)
+	my @episodes = sort keys %{$shows{$serie}};
+	my $nbEpisodes = $#episodes + 1;
+	if ($verbose >= 1) {print "$serie \($nbEpisodes\)\n"; print Dumper @episodes;}
+	foreach my $ep (@episodes)
 	{
-		$_ = "";
-		foreach my $serie (@keys)
+		my $title = $shows{$serie}{$ep}{'Title'};
+		my $epId = $shows{$serie}{$ep}{'IdBetaseries'};
+		my $label = "";		
+		my $epStatus = "";
+		my $epRef = "";
+		if ($shows{$serie}{$ep}{'Status'} =~ /<(.*)>(.*)<.*>/)
 		{
-			# create a new column for the serie
-			$_ = $_."\t\t\t\t<div class=\"col-xs-12 col-sm-6 col-md-4\" id=\"series\">\n";
-			$_ = $_."\t\t\t\t\t<div class=\"col-xs-12\" id=\"serie\">\n";
-			
-			my $banner = "$bannersPath\/$serie.jpg";
-			unless (-e $banner)
+			$label = $1;
+			$epStatus = $2;
+		}
+		if ($ep =~ /.* - (.*)/){$epRef = $1;}
+						
+		#########################################################################################
+		# Add episode available to be watched in the database
+		if ($epStatus eq "To be watched")
+		{
+			# Connect to database
+			$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
+			my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+			if ($verbose >=1) {print "Database opened successfully\n";}	
+			# Check table exists
+			my $exists = does_table_exist($dbh, "Episodes");
+			if ($exists == 1){if ($verbose >= 1){print ("Table Episodes already exists\n");}}
+			else
 			{
-				if ($verbose >=2) {print "$banner does not exist\n";}
-				my $tvdbBanner = tvdb::getBannerPath($verbose, $serie, "fr");
-				if ($verbose >=2) {print "$tvdbBanner\n";}
-				getstore($tvdbBanner, $banner);
+				if ($verbose >= 1){print ("Episodes table does not exists. Creating one.\n");}
+				$dbh->do("DROP TABLE IF EXISTS Episodes");
+				$dbh->do("CREATE TABLE Episodes(Id TEXT PRIMARY KEY, SerieName TEXT, EpisodeNumber TEXT, EpisodeTitle TEXT, tablet TEXT, copyRequested BOOL, isOnTablet BOOL)");
 			}
-			my @episodes = sort keys %{$shows{$serie}};
-			my $nbEpisodes = $#episodes + 1;
-			# Add line for the banner
-			$_ = $_."\t\t\t\t\t\t<div class=\"row\">\n";
-			$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-12\"><h3 id=\"serieTitle\"><img id=\"banniere\" class=\"img-responsive\" src=\"../images/".$serie.".jpg\" alt=\"".$serie." \(".$nbEpisodes."\)\"></h3></div>\n";
-			$_ = $_."\t\t\t\t\t\t</div>\n";
-			if ($verbose >= 1) {print "$serie \($nbEpisodes\)\n"; print Dumper @episodes;}
-			foreach my $ep (@episodes)
+			# Query to check if the episode already exists
+			my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
+			if ($verbose >= 2){print "$query\n";}
+			my $sth = $dbh->prepare($query);
+			$sth->execute("$serie - $epRef");
+			if ($sth->fetch()->[0]) 
 			{
-				my $title = $shows{$serie}{$ep}{'Title'};
-				my $epId = $shows{$serie}{$ep}{'IdBetaseries'};
-				my $serieUnderscore = $serie;
-				$serieUnderscore =~ s/ /_/g;
-				$serieUnderscore =~ s/\(/\\\(/g;
-				$serieUnderscore =~ s/\)/\\\)/g;
-				
-				my $epStatus = "";
-				my $label = "";
-				my $epRef = "";
-				if ($shows{$serie}{$ep}{'Status'} =~ /<(.*)>(.*)<.*>/)
-				{
-					$label = $1;
-					$epStatus = $2;
-				}
-				if ($ep =~ /.* - (.*)/){$epRef = $1;}
-				
-				# Print each episode
-				$_ = $_."\t\t\t\t\t\t<div class=\"row\" id=\"episode\">\n";
-				if ($epStatus eq "To be watched")
-				{
-					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><a href=\"..\/cgi-bin\/update.cgi?ep=".$serieUnderscore."-".$epRef."-".$epId."\" class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></a></div>\n";
-				}
-				else
-				{
-					$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-1\"><span class=\"glyphicon glyphicon-eye-open\" id=\"eye\"></span></div>\n";
-				}
-				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-2\">".$epRef.":</div>\n";
-				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-5\">".$title."</div>\n";
-				$_ = $_."\t\t\t\t\t\t\t<div class=\"col-xs-4\"><span class=\"label label-".$label."\">".$epStatus."</span></div>\n";
-				$_ = $_."\t\t\t\t\t\t</div>\n";
-				
-				#########################################################################################
-				# Add episode available to be watched in the database
-				if ($epStatus eq "To be watched")
-				{
-					# Connect to database
-					$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
-					my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
-					if ($verbose >=1) {print "Database opened successfully\n";}	
-					# Check table exists
-					my $exists = does_table_exist($dbh, "Episodes");
-					if ($exists == 1){if ($verbose >= 1){print ("Table Episodes already exists\n");}}
-					else
-					{
-						if ($verbose >= 1){print ("Episodes table does not exists. Creating one.\n");}
-						$dbh->do("DROP TABLE IF EXISTS Episodes");
-						$dbh->do("CREATE TABLE Episodes(Id TEXT PRIMARY KEY, SerieName TEXT, EpisodeNumber TEXT, EpisodeTitle TEXT, tablet TEXT, copyRequested BOOL, isOnTablet BOOL)");
-					}
-					# Query to check if the episode already exists
-					my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
-					if ($verbose >= 2){print "$query\n";}
-					my $sth = $dbh->prepare($query);
-					$sth->execute("$serie - $epRef");
-					if ($sth->fetch()->[0]) 
-					{
-						if ($verbose >= 1){print "$serie - $epRef already exists\n";}
-					}
-					else
-					{
-						# Add episode
-						$title =~ s/\'/ /g;
-						my $episodeInfos = "\'$serie - $epRef\', \'$serie\', \'$epRef\', \'$title\', \'\', \'false\', \'false\'";
-						if ($verbose >= 1){print "$episodeInfos\n";}
-						$dbh->do("INSERT INTO Episodes VALUES($episodeInfos)");
-					}
-					$sth->finish();
-					$dbh->disconnect();
-				}
+				if ($verbose >= 1){print "$serie - $epRef already exists\n";}
 			}
-			$_ = $_."\t\t\t\t\t</div>\n";
-			$_ = $_."\t\t\t\t</div>\n";
+			else
+			{
+				# Add episode
+				$title =~ s/\'/ /g;
+				my $episodeInfos = "\'$serie - $epRef\', \'$serie\', \'$epRef\', \'$title\', \'\', \'false\', \'false\'";
+				if ($verbose >= 1){print "$episodeInfos\n";}
+				$dbh->do("INSERT INTO Episodes VALUES($episodeInfos)");
+			}
+			$sth->finish();
+			$dbh->disconnect();
 		}
 	}
-	if ($_ =~ /<date>/)
-	{
-		my @months = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
-		my @days = qw(Sun Mon Tue Wed Thu Fri Sat Sun);
-
-		my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
-		$min = sprintf("%02d", $min);
-		my $date = "$days[$wday] $mday $months[$mon] @ $hour:$min \n";
-		$_ =~ s/<date>/$date/;
-	}
-	push (@html, $_);
 }
-
-# Output updated html page
-open $HTML, '>', $outputHtmlPage or die "Cannot open output html file: $outputHtmlPage\n";
-print $HTML @html;
-close $HTML;
 
 # Manage email
 if ($sendMail && @keys)
