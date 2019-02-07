@@ -199,7 +199,7 @@ foreach my $file (@dlDir)
 			$show =~ s/'//;
 			
 			# Get show banner if doesn't exists
-			my $banner = "$bannersPath\\$show.jpg";
+			my $banner = "$bannersPath\/$show.jpg";
 			unless (-e $banner)
 			{
 				if ($verbose >=1) {print "Banner $banner does not exist\n";}
@@ -208,7 +208,7 @@ foreach my $file (@dlDir)
 				getstore($tvdbBanner, $banner);
 			}
 			# Get show background if doesn't exists
-			my $background = "$backgroundsPath\\$show.jpg";
+			my $background = "$backgroundsPath\/$show.jpg";
 			unless (-e $background)
 			{
 				if ($verbose >=1) {print "Background $background does not exist\n";}

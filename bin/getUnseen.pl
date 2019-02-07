@@ -254,7 +254,7 @@ foreach my $ep (@episodeToDownload)
 		$serie =~ s/'//;
 		
 		# Get show banner if doesn't exists
-		my $banner = "$bannersPath\\$serie.jpg";
+		my $banner = "$bannersPath\/$serie.jpg";
 		unless (-e $banner)
 		{
 			if ($verbose >=2) {print "$banner does not exist\n";}
@@ -263,7 +263,7 @@ foreach my $ep (@episodeToDownload)
 			getstore($tvdbBanner, $banner);
 		}
 		# Get show background if doesn't exists
-		my $background = "$backgroundsPath\\$serie.jpg";
+		my $background = "$backgroundsPath\/$serie.jpg";
 		unless (-e $background)
 		{
 			if ($verbose >=1) {print "Background $background does not exist\n";}

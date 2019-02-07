@@ -122,7 +122,6 @@ sub getBannerPath
 	{
 		my $tvdb = TVDB::API::new($apiKey, "en");
 		$tvdb->setBannerPath("");
-		print "$serie\n";
 		my $fanart = $tvdb->getSeriesFanart($serie);
 		$bannerPath = "http://thetvdb.com/banners/$fanart"
 	}
