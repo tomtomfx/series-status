@@ -33,7 +33,8 @@ downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
 # Site
 htmlPage=/home/tom/SubtitleManagement/bin/seriesStatus.html
 outputHtmlPage=/var/www/series/series.php
-bannersPath=/var/www/images
+bannersPath=/var/www/images/banners
+backgroundsPath=/var/www/images/backgrounds
 graphsPath=/var/www/highchart
 
 ###################################################################

@@ -22,8 +22,10 @@ my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $serieDatabasePath = "";
+my $tvdbKey = "";
 my $torrentUrl = "";
 my $bannersPath = "";
+my $backgroundsPath = "";
 
 # Database
 my $driver = "SQLite"; 
@@ -48,9 +50,11 @@ sub readConfigFile
 	    if ($_ =~ /unseenLogFile=(.*\.log)/){$logFile = $1;}
 		elsif ($_ =~ /databasePath=(.*)$/){$serieDatabasePath = $1;}
 		elsif ($_ =~ /bannersPath=(.*)$/){$bannersPath = $1;}
+		elsif ($_ =~ /backgroundsPath=(.*)$/){$backgroundsPath = $1;}
     	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
 		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
 		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
+		elsif ($_ =~ /tvdbApiKey=(.*)$/){$tvdbKey = $1;}
 	}
 }
 
@@ -205,7 +209,9 @@ if ($verbose >= 1)
 	# Print BetaSeries infos
 	print "BetaSeries login: $betaSeriesLogin\n";
 	print "BetaSeries key: $betaSeriesKey\n";
-	print "Banners path: $bannersPath\n";	
+	print "TVDB API key: $tvdbKey\n";
+	print "Banners path: $bannersPath\n";
+	print "Backgrounds path: $backgroundsPath\n";	
 	print "\n";
 }
 
@@ -255,6 +261,15 @@ foreach my $ep (@episodeToDownload)
 			my $tvdbBanner = tvdb::getBannerPath($verbose, $serie, "fr");
 			if ($verbose >=2) {print "$tvdbBanner\n";}
 			getstore($tvdbBanner, $banner);
+		}
+		# Get show background if doesn't exists
+		my $background = "$backgroundsPath\\$serie.jpg";
+		unless (-e $background)
+		{
+			if ($verbose >=1) {print "Background $background does not exist\n";}
+			my $tvdbBackground = tvdb::getBannerPath($verbose, $serie, "en", "background", $tvdbKey);
+			if ($verbose >=1) {print "$tvdbBackground\n";}
+			getstore($tvdbBackground, $background);
 		}
 		
 		# Get Torrent for this episode
