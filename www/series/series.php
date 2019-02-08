@@ -1,4 +1,4 @@
-﻿<?php
+﻿	<?php
 	include '../userManagement.php';
 	if (!$users->isloggedin())
 	{
@@ -45,9 +45,16 @@
 		<title>Shows status</title>
 <?php
 $image = getRandomBackground("../images/backgrounds");
+$img = imagecreatefromjpeg("../images/backgrounds/".urldecode($image));
+$size = getimagesize("../images/backgrounds/".urldecode($image));
+$rgb = imagecolorat($img, 0, $size[1]-1);
+$r = ($rgb >> 16) & 0xFF;
+$g = ($rgb >> 8) & 0xFF;
+$b = $rgb & 0xFF;
+
 echo'
 		<style>
-			body {background-image: url("../images/backgrounds/'.$image.'");background-repeat:no-repeat;background-size:contain;}
+			body {background-image: url("../images/backgrounds/'.$image.'");background-repeat:no-repeat;background-size:contain;background-color:rgb('.$r.', '.$g.', '.$b.');}
 		</style>
 ';
 ?>
