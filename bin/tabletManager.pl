@@ -181,6 +181,13 @@ foreach my $tablet (values %{$tablets})
 		if ($file =~ /(.*)\..*/)
 		{
 			my $id = $1;
+			$id =~ s/(\w+)/\u\L$1/g;
+			if ($id =~ /(.*) - s(\d*)e(\d*)/i) 
+			{
+				my $season = sprintf("%02d", $2);
+				$id = "$1 - S".$season."E$3";
+			}
+			if ($verbose >= 1){print "$id\n";}
 			my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
 			if ($verbose >= 2){print "$query\n";}
 			$sth = $dbh->prepare($query);
