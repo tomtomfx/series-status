@@ -258,7 +258,7 @@ foreach my $ep (@episodeToDownload)
 		unless (-e $banner)
 		{
 			if ($verbose >=2) {print "$banner does not exist\n";}
-			my $tvdbBanner = tvdb::getBannerPath($verbose, $serie, "fr");
+			my $tvdbBanner = tvdb::getBannerPath($verbose, $serie, "en", "banner", $tvdbKey);
 			if ($verbose >=2) {print "$tvdbBanner\n";}
 			getstore($tvdbBanner, $banner);
 		}
