@@ -271,7 +271,7 @@ sub archiveShow
 	my $ua = LWP::UserAgent->new;
 
 	# Archive show
-	my $show = "http://api.betaseries.com/shows/show?token=$token&id=$showId";
+	my $show = "http://api.betaseries.com/shows/archive?token=$token&id=$showId";
 	my $req = HTTP::Request->new(POST => "$show");
 	$req->header('X-BetaSeries-Version' => '2.2');
 	$req->header('Accept' => 'text/xml');
@@ -330,7 +330,7 @@ sub getSubtitles
 			foreach (@versions)
 			{
 				my $version = $_;
-				if ($version eq "AVS_SVA")
+				if ($version eq "AVS_SVA" || $version eq "AVS" || $version eq "SVA")
 				{
 					if ($filename =~ /SVA/i){$version = "SVA";}
 					elsif ($filename =~ /AVS/i){$version = "AVS";}
