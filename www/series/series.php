@@ -108,7 +108,7 @@ echo'
 				<div class="col-xs-12">
 					<div class="panel-group">
 <?php
-	printEpisodes($seriesManager);
+	printEpisodesToWatch($seriesManager);
 ?>
 					</div>
 				</div>
@@ -151,7 +151,7 @@ echo'
 						<form class="form-horizontal" method="POST" action="../cgi-bin/archive.cgi">
 							<div class="modal-body">
 <?php
-	formCombo("Show:", $seriesManager);
+	formComboToArchive("Show:", $seriesManager);
 ?>
 							</div>
 							<div class="modal-footer">

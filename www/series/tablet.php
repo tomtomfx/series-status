@@ -6,7 +6,7 @@
 		die();
 	}
 	$image = "";
-	include 'tabletManagement.php';
+	include 'seriesManagement.php';
 	
 	// Add tablet from informations
 	if (isset($_POST['tabletId']) AND isset($_POST['action']))
@@ -87,17 +87,16 @@ echo'
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="../#">Tomtomfx</a>
+					<a class="navbar-brand" href="../#">Home</a>
 				</div>
 				<div class="collapse navbar-collapse" id="menuCollapse">
 					<ul class="nav navbar-nav">
 						<li class="active dropdown-toggle" data-toggle="dropdown" id="navLogin">
-							<a href="./series.php#" id="navig"><span class="glyphicon glyphicon-film"></span> Series<span class="caret"></span></a>
+							<a href="./series.php#" id="navig"><span class="glyphicon glyphicon-film"></span> Shows<span class="caret"></span></a>
 						</li>
 						<ul class="dropdown-menu">
-							<li><a href="./series.php" data-toggle="modal"><span class="glyphicon glyphicon-film"></span> Series</a></li>
+							<li><a href="./series.php" data-toggle="modal"><span class="glyphicon glyphicon-film"></span> Shows</a></li>
 							<li><a href="./tablet.php"><span class="glyphicon glyphicon-phone"></span> Tablet</a></li>
-							<li><a href="./statistics.php"><span class="glyphicon glyphicon-stats"></span> Statistics</a></li>
 						</ul>
 						<li><a href="../photos/photos.php" id="navig"><span class="glyphicon glyphicon-camera"></span> Photos</a></li>
 						<li><a href="../home/home.php" id="navig"><span class="glyphicon glyphicon-home"></span> Home</a></li>
@@ -128,9 +127,9 @@ echo'
 					<div class="col-xs-offset-1 col-xs-11">
 						<div class="panel-group">
 <?php
-	printEpisodes("On tablet", $tabletManager);
-	printEpisodes("Copy requested", $tabletManager);
-	printEpisodes("Available", $tabletManager);
+	printEpisodesToCopy("On tablet", $tabletManager);
+	printEpisodesToCopy("Copy requested", $tabletManager);
+	printEpisodesToCopy("Available", $tabletManager);
 ?>
 						</div>
 					</div>
@@ -184,7 +183,7 @@ echo'
 						<form class="form-horizontal" method="POST" action="./tablet.php#">
 							<div class="modal-body">
 <?php
-	formCombo("Tablet", $tabletManager);
+	formComboToCopy("Tablet", $tabletManager);
 ?>
 								<input type="hidden" name="action" value="remove"/>
 							</div>
@@ -209,7 +208,7 @@ echo'
 							<div class="modal-body">
 <?php
 	formText("Episode", "episode", "success", urldecode($_GET['id']), "false");
-	formCombo("Tablet:", $tabletManager);
+	formComboToCopy("Tablet:", $tabletManager);
 ?>
 								<input type="hidden" name="action" value="copy"/>
 							</div>

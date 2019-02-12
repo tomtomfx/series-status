@@ -15,22 +15,6 @@ class seriesManagement {
 		$this->db = -1;	
 	}
 		
-	public function getEpisodesFromShow($show) {
-		$episodes = "";
-		$i = 0;
-		$q = "SELECT * FROM unseenEpisodes WHERE Show='$show'";
-		$queryRes = $this->db->query($q);
-		
-		while ($episode = $queryRes->fetchArray())
-		{
-			if (!isset($episode['Id'])) continue; 
-			
-			$episodes[$i] = $episode;
-			$i++;
-		}
-		return $episodes;
-	}
-
 	public function getEpisodes($removeArchived) {
 		$episodes = "";
 		$i = 0;
@@ -72,9 +56,120 @@ class seriesManagement {
 $seriesManager = new seriesManagement();
 $seriesManager->dbinit();
 
+class tabletManagement {
+
+	private $dbfile = "series.db";
+	private $db = -1;
+	
+	public function dbinit() {
+		if ($this->db == -1) 
+			$this->db = new SQLite3($this->dbfile);
+	}
+	
+	public function dbclose() {
+		$this->db->close();
+		$this->db = -1;	
+	}
+		
+	public function getEpisodesFromStatus($status, $removeArchived) {
+		$episodes = "";
+		$i = 0;
+		// Set where depending on the requested status
+		$where = "";
+		if ($status == "Available"){$where = "IsOnTablet='false' AND CopyRequested='false'";}
+		else if ($status == "On tablet"){$where = "IsOnTablet='true'";}
+		else if ($status == "Copy requested"){$where = "CopyRequested='true'";}
+		else return 0;
+		
+		$q = "SELECT * FROM unseenEpisodes WHERE ".$where." ORDER BY Show";
+		$queryRes = $this->db->query($q);
+		
+		while ($episode = $queryRes->fetchArray())
+		{
+			if (!isset($episode['Id'])) continue; 
+			if ($removeArchived == true and $episode['Archived'] == "TRUE") continue;
+			
+			$episodes[$i] = $episode;
+			$i++;
+		}
+		return $episodes;
+	}
+	
+	public function getShows($removeArchived) {
+		$shows = "";
+		$i = 0;
+		$q = 'SELECT Show, Archived FROM unseenEpisodes';
+		$queryRes = $this->db->query($q);
+			
+		while ($show = $queryRes->fetchArray())
+		{
+			if (!isset($show['Show'])) continue; 
+			
+			if ($removeArchived == true and $show['Archived'] == "TRUE") continue;
+			
+			$shows[$i] = $show['Show'];
+			$i++;
+		}
+		$shows = array_unique($shows, SORT_STRING);
+		return $shows;
+	}
+	
+	public function copyRequested($episodeId, $tablet, $doCopy) {
+		$q = "UPDATE unseenEpisodes SET CopyRequested='".$doCopy."', Tablet='".$tablet."' WHERE Id='".$episodeId."'";
+		// var_dump ($q);
+		$this->db->query($q);
+	}
+	
+	public function addTablet ($id, $ipAddr, $user, $password)
+	{
+		// Check if table Tablets exists. If not create it.
+		$q = "SELECT COUNT(*) FROM sqlite_master WHERE name='Tablets' and type='table'";
+		$queryRes = $this->db->query($q);
+		$tableExists = $queryRes->fetchArray();
+		if ($tableExists[0] == 0){
+			$this->db->exec('CREATE TABLE Tablets (id TEXT PRIMARY KEY, ip TEXT, ftpUser TEXT, ftpPassword TEXT, status TEXT)');
+		}
+		// Insert new tablet into database
+		// Check if id already exists
+		$q = "SELECT COUNT(id) FROM Tablets WHERE id='$id'";
+		$queryRes = $this->db->query($q);
+		$tabletExists = $queryRes->fetchArray();
+		if ($tabletExists[0] == 0){
+			$q = 'INSERT INTO Tablets (id, ip, ftpUser, ftpPassword) VALUES ("'.$id.'", "'.$ipAddr.'", "'.$user.'", "'.$password.'")';
+			$this->db->exec($q);
+		}
+	}
+	public function getTablets()
+	{
+		$tablets = "";
+		$i = 0;
+		$q = 'SELECT * FROM Tablets';
+		$queryRes = $this->db->query($q);
+		if ($queryRes != false)
+		{
+			while ($tablet = $queryRes->fetchArray())
+			{
+				$tablets[$i] = $tablet;
+				$i++;
+			}
+		}
+		else {$tablets = 0;}
+		return $tablets;
+	}
+	public function removeTablet ($id)
+	{
+		$q = 'DELETE FROM Tablets WHERE id=\''.$id.'\'';
+		$queryRes = $this->db->query($q);
+	}
+}
+
+$tabletManager = new tabletManagement();
+$tabletManager->dbinit();
+
+
 //**********************************************************************************************************************// fonctions PHP
 // Write all episodes 
-function printEpisodes ($seriesManager)
+function printEpisodesToWatch ($seriesManager)
 {
 
 	$episodes = $seriesManager->getEpisodes(true);
@@ -149,9 +244,33 @@ function printEpisodes ($seriesManager)
 }						
 
 // Form combo
-function formCombo ($label, $seriesManager)
+function formComboToCopy ($label, $tabletManager)
 {
-	$shows = $seriesManager->getShows(true);
+	$tablets = $tabletManager->getTablets();
+	echo'
+								<div class="row">
+									<div class="form-group">
+										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
+										<div class="col-xs-6">
+											<select name="tabletId" class="form-control">
+	';
+	foreach ($tablets as $tablet) {
+		echo'
+											<option>'.$tablet['id'].'</option>
+		';
+	}
+	echo'
+											</select>
+										</div>
+									</div>
+								</div>
+	';
+}
+
+// Form combo
+function formComboToArchive ($label, $manager)
+{
+	$shows = $manager->getShows(true);
 	echo'
 								<div class="row">
 									<div class="form-group">
@@ -198,6 +317,190 @@ function getRandomBackground($dir)
 	$img = str_replace("'", "\'", $img);
 	$img = str_replace(" ", "%20", $img);
 	return $img;
+}
+
+// Write all episodes from a status 
+function printEpisodesToCopy ($status, $tabletManager)
+{
+
+	$episodes = $tabletManager->getEpisodesFromStatus($status, true);
+	$nbEpisodes = count($episodes);
+	
+	$glyph = "glyphicon-folder-open";
+	if ($status == "On tablet"){$glyph = "glyphicon-phone";} 
+	elseif ($status == "Copy requested"){$glyph = "glyphicon-save";} 
+	
+	if (is_array($episodes) AND $status == "Available")
+	{
+		echo'
+			<div class="panel panel-default" id="panelGlobal">
+				<div class="panel-heading" id="panelHead">
+					<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>'.$status.'<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
+				</div>
+				<table class="table table-condensed">
+				<thead><tr>
+					<th class="col-xs-4">Show</th>
+					<th class="col-xs-1">Episode</th>
+					<th class="col-xs-6">Title</th>
+					<th class="col-xs-1">Actions</th>
+				</tr></thead>
+				<tbody>								
+		';
+		foreach ($episodes as $episode)
+		{
+			$show = $episode['Show'];
+			$episodeID = $episode['Id'];
+			preg_match("#.+ - (.+)#", $episodeID, $matches);
+			$episodeNumber = $matches[1];
+			$episodeTitle = '&nbsp;';
+			if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
+
+			$status = '&nbsp;';
+			$action = '<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';			
+			echo'
+						<tr>
+							<td class="col-xs-1">'.$show.'</td>
+							<td class="col-xs-2">'.$episodeNumber.'</td>
+							<td class="col-xs-6">'.$episodeTitle.'</td>
+							<td class="col-xs-1" text-align="center">'.$action.'</td>
+						</tr>
+			';
+		}
+		echo'
+					</tbody>
+				</table>
+			</div>
+		';
+	}
+
+	elseif (is_array($episodes) AND ($status == "On tablet" OR $status == "Copy requested"))
+	{
+		echo'
+			<div class="panel panel-default" id="panelGlobal">
+				<div class="panel-heading" id="panelHead">
+					<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>'.$status.'<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
+				</div>
+				<table class="table table-condensed">
+				<thead><tr>
+					<th class="col-xs-4">Show</th>
+					<th class="col-xs-1">Episode</th>
+					<th class="col-xs-4">Title</th>
+					<th class="col-xs-2">Tablet</th>
+					<th class="col-xs-1">Actions</th>
+				</tr></thead>
+				<tbody>								
+		';
+		foreach ($episodes as $episode)
+		{
+			$show = $episode['Show'];
+			$episodeID = $episode['Id'];
+			preg_match("#.+ - (.+)#", $episodeID, $matches);
+			$episodeNumber = $matches[1];
+			$tablet = $episode['Tablet'];
+			$episodeTitle = '&nbsp;';
+			if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
+
+			if ($episode['CopyRequested'] == "true")
+			{
+				$status = 'Copy requested';
+				$action = '<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=cancel" text-align="center"><span class="glyphicon glyphicon-remove"></span></a>';
+			}
+			else if ($episode['IsOnTablet'] == "true")
+			{
+				$status = 'Copied';
+				$action = '&nbsp;';
+			}
+			
+			echo'
+						<tr>
+							<td class="col-xs-4">'.$show.'</td>
+							<td class="col-xs-1">'.$episodeNumber.'</td>
+							<td class="col-xs-4">'.$episodeTitle.'</td>
+							<td class="col-xs-2">'.$tablet.'</td>
+							<td class="col-xs-1" text-align="center">'.$action.'</td>
+						</tr>
+			';
+		}
+		echo'
+					</tbody>
+				</table>
+			</div>
+		';
+	}
+}						
+
+// Write all episodes from a status 
+function printTablets ($tabletManager)
+{
+	$tablets = $tabletManager->getTablets();
+	if (is_array($tablets))
+	{
+		echo'
+			<div class="panel panel-default" id="panelGlobal">
+				<div class="panel-heading" id="panelHead">
+					<h2 class="panel-title" id="panelTitle"><span class="glyphicon glyphicon-phone" id="panelGlyph"></span>Tablets</h2>
+				</div>
+				<table class="table table-condensed">
+					<thead><tr>
+						<th class="col-xs-6">Name</th>
+						<th class="col-xs-6">Status</th>
+					</tr></thead>
+					<tbody>								
+		';
+		foreach ($tablets as $tablet)
+		{
+			$tabletName = $tablet['id'];
+			$tabletStatus = "<span class=\"label label-warning\">Connection lost</span>";
+			if ($tablet['status'] == 'OK'){$tabletStatus = "<span class=\"label label-success\">Available</span>";}
+			echo'
+						<tr>
+							<td class="col-xs-6">'.$tabletName.'</td>
+							<td class="col-xs-6">'.$tabletStatus.'</td>
+						</tr>
+			';
+		}
+		echo'
+					</tbody>
+				</table>
+			</div>
+		';
+	}
+}						
+
+// Form text 
+function formText ($label, $input, $status, $value, $editable)
+{
+	$formGroup = "form-group";
+	$inputField = '<input name="'.$input.'" type="text" class="form-control" value="'.$value.'">';
+	if ($editable == "false"){$inputField = '<input name="'.$input.'" type="text" class="form-control" value="'.$value.'" readonly>';}
+	if ($status == "failed" AND $value == ""){$formGroup = "form-group has-error";}
+	echo'
+								<div class="row">
+									<div class="'.$formGroup.'">
+										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.' </label>
+										<div class="col-xs-6">
+											'.$inputField.'
+										</div>
+									</div>
+								</div>
+	';
+}
+
+// Form password 
+function formPassword ($label, $input, $status, $value)
+{
+	$formGroup = "form-group";
+	if ($status == "failed" AND $value == ""){$formGroup = "form-group has-error";}
+	echo'
+								<div class="row">
+									<div class="'.$formGroup.'">
+										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.' </label>
+										<div class="col-xs-6">
+											<input name="'.$input.'" type="password" class="form-control" value="'.$value.'">
+										</div>
+									</div>
+								</div>
+	';
 }
 
 //**********************************************************************************************************************// fonctions PHP

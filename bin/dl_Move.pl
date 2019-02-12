@@ -118,7 +118,7 @@ if ($exists == 0)
 {
 	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
 	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
-	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT, Archived TEXT)");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT, Archived TEXT, Tablet TEXT, CopyRequested TEXT, IsOnTablet TEXT)");
 }
 
 # Get the episodes to download from betaSeries
@@ -302,14 +302,14 @@ foreach my $file (@dlDir)
 			{
 				if ($verbose >= 1){print "$dbId already exists\n";}
 				$dbh->do("UPDATE unseenEpisodes SET Status=\'$status\' WHERE Id=\'$dbId\'");
-				if ($outFilename ne ""){$dbh->do("UPDATE unseenEpisodes SET Location=\'$outFilename.$extension\' WHERE Id=\'$dbId\'");}
+				if ($outFilename ne ""){$dbh->do("UPDATE unseenEpisodes SET Location=\'$outFilename.$extension\', IsOnTablet=\'false\', CopyRequested=\'false\' WHERE Id=\'$dbId\'");}
 			}
 			else
 			{
 				# Add episode
 				my $episodeInfos = "";
-				if ($outFilename ne ""){$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'$outFilename.$extension\', \'\'";}
-				else {$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'\', \'\'";}
+				if ($outFilename ne ""){$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'$outFilename.$extension\', \'\', \'\', \'false\', \'false\'";}
+				else {$episodeInfos = "\'$dbId\', \'$show\', \'$title\', \'$epId\', \'$status\', \'\', \'\', \'\', \'\', \'\'";}
 				if ($verbose >= 1){print "$episodeInfos\n";}
 				$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
 			}

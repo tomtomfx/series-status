@@ -231,7 +231,7 @@ if ($exists == 0)
 {
 	if ($verbose >= 1){print ("No table \"unseenEpisodes\" available in this database. Creating...\n");}
 	$dbh->do("DROP TABLE IF EXISTS unseenEpisodes");
-	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT, Archived TEXT)");
+	$dbh->do("CREATE TABLE unseenEpisodes(Id TEXT PRIMARY KEY, Show TEXT, Title TEXT, IdBetaseries TEXT, Status TEXT, Location TEXT, Archived TEXT, Tablet TEXT, CopyRequested TEXT, IsOnTablet TEXT)");
 }
 
 # Create user agent for https
@@ -298,7 +298,7 @@ foreach my $ep (@episodeToDownload)
 		else
 		{
 			# Add episode
-			my $episodeInfos = "\'$serie - $episode\', \'$serie\', \'$title\', \'$id\', \'$status\', \'\', \'\'";
+			my $episodeInfos = "\'$serie - $episode\', \'$serie\', \'$title\', \'$id\', \'$status\', \'\', \'\', \'\', \'\', \'\'";
 			if ($verbose >= 1){print "$episodeInfos\n";}
 			$dbh->do("INSERT INTO unseenEpisodes VALUES($episodeInfos)");
 		}

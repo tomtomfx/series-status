@@ -16,9 +16,7 @@ my $verbose = 0;
 my $outDirectory = "";
 
 # Database variables
-my $seriesDatabasePath = "";
-my $dsnSerie = "";
-my $tabletDatabasePath = "";
+my $databasePath = "";
 my $dsn = "";
 my $driver = "SQLite"; 
 my $userid = "";
@@ -44,8 +42,7 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-		if ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
-		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
+		if ($_ =~ /databasePath=(.*)$/){$databasePath = $1;}
 		elsif ($_ =~ /outDirectory=(.*)$/){$outDirectory = $1;}
 	}
 }
@@ -63,7 +60,7 @@ readConfigFile($verbose);
 if ($verbose >= 1)
 {
 	# Print BetaSeries infos
-	print "Tablet database path: $tabletDatabasePath\n";
+	print "Database path: $databasePath\n";
 	print "Output directory: $outDirectory\n";
 	print "\n";
 }
@@ -73,7 +70,7 @@ my $time = localtime;
 my $date = "";
 
 # Connect to database
-$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
+$dsn = "DBI:$driver:dbname=$databasePath";
 my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
 if ($verbose >=1) {print "Database opened successfully\n";}	
 
@@ -101,7 +98,8 @@ $sth->finish();
 #########################################################################################
 # Get episodes with copy requested
 my @episodes;
-$query = "SELECT * FROM Episodes WHERE copyRequested=\"true\"";
+my %episodeLocation;
+$query = "SELECT * FROM unseenEpisodes WHERE CopyRequested=\"true\"";
 if ($verbose >= 2){print "$query\n";}
 $sth = $dbh->prepare($query);
 $sth->execute();
@@ -113,30 +111,10 @@ while(my $episode = $sth->fetchrow_hashref)
 }
 $sth->finish();
 
-#########################################################################################
-# Copy episodes with copy requested to tablet
-# Create a hash with ID and extension
-my %episodeLocation;
-# Get files to be read from series database
-$dsnSerie = "DBI:$driver:dbname=$seriesDatabasePath";
-my $dbhSerie = DBI->connect($dsnSerie, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
-$query = "SELECT * FROM unseenEpisodes";
-if ($verbose >= 2){print "$query\n";}
-$sth = $dbhSerie->prepare($query);
-$sth->execute();
-while(my $episode = $sth->fetchrow_hashref)
-{
-	$episodeLocation{$episode->{"Id"}} = $episode->{"Location"};
-}
-$sth->finish();
-$dbhSerie->disconnect();
-
-# print Dumper (%episodeLocation);
-
 # Copy all files that have copy requested
 foreach my $episode (@episodes)
 {
-	my $tabletId = $episode->{"tablet"};
+	my $tabletId = $episode->{"Tablet"};
 	my $tabletInfo = $tablets->{$tabletId};
 	# Connect to tablet through FTP
 	my $ftp = Net::FTP->new($tabletInfo->{"ip"}, Port => $tabletPort, Timeout => 120, Debug => 0, Passive => 1);
@@ -147,10 +125,10 @@ foreach my $episode (@episodes)
 		# Set binary and passive mode
 		$ftp->binary();
 		# print ("$episodeLocation{$episode->{\"Id\"}}\n");
-		if (-f $episodeLocation{$episode->{"Id"}})
-			{$ftp->put($episodeLocation{$episode->{"Id"}});}
+		if (-f $episode->{"Location"})
+			{$ftp->put($episode->{"Location"});}
 		$ftp->binary();
-		my $srtLocation = $episodeLocation{$episode->{"Id"}};
+		my $srtLocation = $episode->{"Location"};
 		$srtLocation =~ s/\..{3}/\.srt/;
 		# print "$srtLocation\n";
 		if (-f $srtLocation)
@@ -188,15 +166,15 @@ foreach my $tablet (values %{$tablets})
 				$id = "$1 - S".$season."E$3";
 			}
 			if ($verbose >= 1){print "$id\n";}
-			my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
+			my $query = "SELECT COUNT(*) FROM unseenEpisodes WHERE Id=?";
 			if ($verbose >= 2){print "$query\n";}
 			$sth = $dbh->prepare($query);
 			$sth->execute($id);
 			if ($sth->fetch()->[0]) 
 			{
-				$dbh->do("UPDATE Episodes SET isOnTablet=\'true\' WHERE Id=\'$id\'");
-				$dbh->do("UPDATE Episodes SET copyRequested=\'false\' WHERE Id=\'$id\'");
-				$dbh->do("UPDATE Episodes SET tablet=\'$tabletInfo->{\"id\"}\' WHERE Id=\'$id\'");
+				$dbh->do("UPDATE unseenEpisodes SET IsOnTablet=\'true\' WHERE Id=\'$id\'");
+				$dbh->do("UPDATE unseenEpisodes SET CopyRequested=\'false\' WHERE Id=\'$id\'");
+				$dbh->do("UPDATE unseenEpisodes SET Tablet=\'$tabletInfo->{\"id\"}\' WHERE Id=\'$id\'");
 			}
 		}
 		$sth->finish();
