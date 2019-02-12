@@ -52,8 +52,7 @@ sub readConfigFile
 				next;
 			}
 		}
-		if ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
-		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
+		if ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
 	}
 }
 
@@ -84,7 +83,6 @@ if ($verbose >= 1)
 {
 	# Print configuration infos
 	print "Send email: $sendMail\n";
-	print "Tablet database path: $tabletDatabasePath\n";
 	print "\n";
 }
 
@@ -160,45 +158,7 @@ foreach my $serie (@keys)
 			$label = $1;
 			$epStatus = $2;
 		}
-		if ($ep =~ /.* - (.*)/){$epRef = $1;}
-						
-		#########################################################################################
-		# Add episode available to be watched in the database
-		if ($epStatus eq "To be watched")
-		{
-			# Connect to database
-			$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
-			my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
-			if ($verbose >=1) {print "Database opened successfully\n";}	
-			# Check table exists
-			my $exists = does_table_exist($dbh, "Episodes");
-			if ($exists == 1){if ($verbose >= 1){print ("Table Episodes already exists\n");}}
-			else
-			{
-				if ($verbose >= 1){print ("Episodes table does not exists. Creating one.\n");}
-				$dbh->do("DROP TABLE IF EXISTS Episodes");
-				$dbh->do("CREATE TABLE Episodes(Id TEXT PRIMARY KEY, SerieName TEXT, EpisodeNumber TEXT, EpisodeTitle TEXT, tablet TEXT, copyRequested BOOL, isOnTablet BOOL)");
-			}
-			# Query to check if the episode already exists
-			my $query = "SELECT COUNT(*) FROM Episodes WHERE Id=?";
-			if ($verbose >= 2){print "$query\n";}
-			my $sth = $dbh->prepare($query);
-			$sth->execute("$serie - $epRef");
-			if ($sth->fetch()->[0]) 
-			{
-				if ($verbose >= 1){print "$serie - $epRef already exists\n";}
-			}
-			else
-			{
-				# Add episode
-				$title =~ s/\'/ /g;
-				my $episodeInfos = "\'$serie - $epRef\', \'$serie\', \'$epRef\', \'$title\', \'\', \'false\', \'false\'";
-				if ($verbose >= 1){print "$episodeInfos\n";}
-				$dbh->do("INSERT INTO Episodes VALUES($episodeInfos)");
-			}
-			$sth->finish();
-			$dbh->disconnect();
-		}
+		if ($ep =~ /.* - (.*)/){$epRef = $1;}				
 	}
 }
 
