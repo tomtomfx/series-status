@@ -135,7 +135,7 @@
 		{
 			echo "
 						<div class=\"form-group\">
-							<label for=\"texte\" class=\"col-xs-offset-1 col-xs-2 control-label\">Username: </label>
+							<label for=\"texte\" class=\"col-xs-offset-1 col-xs-2 control-label\" style=color:white>Username: </label>
 							<div class=\"col-xs-7\">
 								<input name=\"user\" type=\"text\" class=\"form-control\" value=\"".$user."\">
 							</div>";
@@ -158,7 +158,7 @@
 		{
 			echo'
 						<div class="form-group">
-							<label for="texte" class="col-xs-offset-1 col-xs-2 control-label">Password: </label>
+							<label for="texte" class="col-xs-offset-1 col-xs-2 control-label" style=color:white>Password: </label>
 							<div class="col-xs-7">
 								<input name="pass" type="password" class="form-control">
 							</div>';

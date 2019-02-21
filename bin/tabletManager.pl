@@ -156,9 +156,13 @@ foreach my $tablet (values %{$tablets})
 	}
 	foreach my $file (@fileList)
 	{
-		if ($file =~ /(.*)\..*/)
+		if ($file =~ /(.*)\..{3}$/)
 		{
 			my $id = $1;
+			
+			# Specific for Marvel
+			$id =~ s/marvels/marvel/i;
+			
 			$id =~ s/(\w+)/\u\L$1/g;
 			if ($id =~ /(.*) - s(\d*)e(\d*)/i) 
 			{

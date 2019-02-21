@@ -81,7 +81,7 @@ class tabletManagement {
 		else if ($status == "Copy requested"){$where = "CopyRequested='true'";}
 		else return 0;
 		
-		$q = "SELECT * FROM unseenEpisodes WHERE ".$where." ORDER BY Show";
+		$q = "SELECT * FROM unseenEpisodes WHERE ".$where." ORDER BY Show, Id";
 		$queryRes = $this->db->query($q);
 		
 		while ($episode = $queryRes->fetchArray())

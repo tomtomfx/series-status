@@ -198,47 +198,50 @@ foreach my $file (@dlDir)
 			$title =~ s/'//;
 			$show =~ s/'//;
 			
-			# Get show banner if doesn't exists
-			my $banner = "$bannersPath\/$show.jpg";
-			unless (-e $banner)
+			if ($show ne "")
 			{
-				if ($verbose >=1) {print "Banner $banner does not exist\n";}
-				my $tvdbBanner = tvdb::getBannerPath($verbose, $show, "en", "banner", $tvdbKey);
-				if ($verbose >=1) {print "$tvdbBanner\n";}
-				getstore($tvdbBanner, $banner);
+				# Get show banner if doesn't exists
+				my $banner = "$bannersPath\/$show.jpg";
+				unless (-e $banner)
+				{
+					if ($verbose >=1) {print "Banner $banner does not exist\n";}
+					my $tvdbBanner = tvdb::getBannerPath($verbose, $show, "en", "banner", $tvdbKey);
+					if ($verbose >=1) {print "$tvdbBanner\n";}
+					getstore($tvdbBanner, $banner);
+				}
+				# Get show background if doesn't exists
+				my $background = "$backgroundsPath\/$show.jpg";
+				unless (-e $background)
+				{
+					if ($verbose >=1) {print "Background $background does not exist\n";}
+					my $tvdbBackground = tvdb::getBannerPath($verbose, $show, "en", "background", $tvdbKey);
+					if ($verbose >=1) {print "$tvdbBackground\n";}
+					getstore($tvdbBackground, $background);
+				}
+				
+				# Remove year if any
+				$serie =~ s/ \(\d{4}\)//;
+				# Specific for Marvel's agents of S.H.I.E.L.D.
+				$serie =~ s/marvel\'s/marvel/i;
+				# Specific for DC's legends of tomorrow
+				$serie =~ s/dcs/dc/i;
+				$serie =~ s/dc\'s/dc/i;
+				# Remove (US)
+				$serie =~ s/ \(US\)//;
+				# Specific for Mr. Robot
+				$serie =~ s/mr\./mr/i;
+				# Specific for the blacklist: redemption
+				$serie =~ s/blacklist: redemption/blacklist redemption/i;
+				
+				# if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
+				if ($infos[0] =~ /$serie/i && $infos[1] == $saison && $infos[2] == $ep)
+				{
+					if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
+					if ($verbose >= 1) {print "Episode found\n"}; 
+					last;
+				}
+				else {$epId = "";}
 			}
-			# Get show background if doesn't exists
-			my $background = "$backgroundsPath\/$show.jpg";
-			unless (-e $background)
-			{
-				if ($verbose >=1) {print "Background $background does not exist\n";}
-				my $tvdbBackground = tvdb::getBannerPath($verbose, $show, "en", "background", $tvdbKey);
-				if ($verbose >=1) {print "$tvdbBackground\n";}
-				getstore($tvdbBackground, $background);
-			}
-			
-			# Remove year if any
-			$serie =~ s/ \(\d{4}\)//;
-			# Specific for Marvel's agents of S.H.I.E.L.D.
-			$serie =~ s/marvel\'s/marvel/i;
-			# Specific for DC's legends of tomorrow
-			$serie =~ s/dcs/dc/i;
-			$serie =~ s/dc\'s/dc/i;
-			# Remove (US)
-			$serie =~ s/ \(US\)//;
-			# Specific for Mr. Robot
-			$serie =~ s/mr\./mr/i;
-			# Specific for the blacklist: redemption
-			$serie =~ s/blacklist: redemption/blacklist redemption/i;
-			
-			# if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
-			if ($infos[0] =~ /$serie/i && $infos[1] == $saison && $infos[2] == $ep)
-			{
-				if ($verbose >= 1) {print "$serie - $saison - $ep - $epId\n$infos[0] - $infos[1] - $infos[2]\n";}
-				if ($verbose >= 1) {print "Episode found\n"}; 
-				last;
-			}
-			else {$epId = "";}
 		}
 		if ($epId ne "")
 		{
