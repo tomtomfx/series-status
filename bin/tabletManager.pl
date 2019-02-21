@@ -161,7 +161,7 @@ foreach my $tablet (values %{$tablets})
 			my $id = $1;
 			
 			# Specific for Marvel
-			$id =~ s/marvels/marvel/i;
+			if ($id =~ /(?!marvels)/) {$id =~ s/marvel/marvels/i;}
 			
 			$id =~ s/(\w+)/\u\L$1/g;
 			if ($id =~ /(.*) - s(\d*)e(\d*)/i) 
