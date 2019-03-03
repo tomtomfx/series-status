@@ -22,10 +22,8 @@ my $betaSeriesPassword = "";
 my $outputDir = "";
 
 # Database variables
-my $tabletDatabasePath = "";
 my $serieDsn = "";
 my $seriesDatabasePath = "";
-my $dsn = "";
 my $driver = "SQLite"; 
 my $userid = "";
 my $password = "";
@@ -52,7 +50,6 @@ sub readConfigFile
 		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
 		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
 		elsif ($_ =~ /outDirectory=(.*)$/){$outputDir = $1;}
-		elsif ($_ =~ /tabletDatabasePath=(.*)$/){$tabletDatabasePath = $1;}
 		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
 		elsif ($_ =~ /useKodi=(.*)$/){$useKodi = $1;}
 		elsif ($_ =~ /kodiIpAddress=(.*)$/){$kodiIpAddress = $1;}
@@ -131,16 +128,6 @@ my $serieDbh = DBI->connect($serieDsn, $userid, $password, { RaiseError => 1 }) 
 if ($verbose >= 1){print "$episodeId\n";}
 $serieDbh->do("DELETE FROM unseenEpisodes WHERE id=($episodeId)");
 $serieDbh->disconnect();
-
-#########################################################################################
-# Remove episode from the tablet database
-# Connect to database
-$dsn = "DBI:$driver:dbname=$tabletDatabasePath";
-my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
-# Remove episode
-if ($verbose >= 1){print "$episodeId\n";}
-$dbh->do("DELETE FROM Episodes WHERE id=($episodeId)");
-$dbh->disconnect();
 
 #########################################################################################
 # Mark episode as watched in Kodi
