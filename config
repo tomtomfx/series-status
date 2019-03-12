@@ -4,35 +4,27 @@
 
 ###################################################################
 # Log files
-downloadLogFile=/home/tom/SubtitleManagement/logs/downloadSubs.log
-copyLogFile=/home/tom/SubtitleManagement/logs/copy.log
-copyUnseenLogFile=/home/tom/SubtitleManagement/logs/copyUnseen.log
-unseenLogFile=/home/tom/SubtitleManagement/logs/unseen.log
+downloadLogFile=scriptsDir/logs/downloadSubs.log
+copyLogFile=scriptsDir/logs/copy.log
+copyUnseenLogFile=scriptsDir/logs/copyUnseen.log
+unseenLogFile=scriptsDir/logs/unseen.log
 seenLogFile=/var/log/apache2/seen.log
-databaseLogFile=/home/tom/SubtitleManagement/logs/database.log
+databaseLogFile=scriptsDir/logs/database.log
 
 ###################################################################
 # In and out directories
 inDirectory=/media/divers/Downloads
 outDirectory=/media/divers/Videos/Series
-copyDirectory=/media/others/Videos
-nfsDirectory=/media/nfs/Videos/Series
 
 ###################################################################
 # Photos management
 photosDirectory=/media/divers/Photos/albums
 photosHTTPDirectory=../albums
 photosDatabasePath=/var/www/photos.db
-photosDatabaseLogFile=/home/tom/SubtitleManagement/logs/photosDatabase.log
-
-###################################################################
-# Downloads list file
-downloadsListFile=/home/tom/SubtitleManagement/logs/downloads.list
+photosDatabaseLogFile=scriptsDir/logs/photosDatabase.log
 
 ###################################################################
 # Site
-htmlPage=/home/tom/SubtitleManagement/bin/seriesStatus.html
-outputHtmlPage=/var/www/series/series.php
 bannersPath=/var/www/images/banners
 backgroundsPath=/var/www/images/backgrounds
 graphsPath=/var/www/highchart

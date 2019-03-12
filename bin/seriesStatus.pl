@@ -15,7 +15,7 @@ use betaSeries;
 use tvdb;
  
 my @tvShows;
-my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $config = "scriptsDir\/bin\/config";
 my $verbose = 0;
 my $sendMail = 0;
 

@@ -11,7 +11,7 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
 
-my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $config = "scriptsDir\/bin\/config";
 my $logFile = "";
 my $verbose = 0;
 my $betaSeriesKey = "";

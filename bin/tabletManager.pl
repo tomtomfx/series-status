@@ -10,7 +10,7 @@ use lib "$FindBin::Bin/../lib";
 use utils;
  
 my @tvShows;
-my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $config = "scriptsDir\/bin\/config";
 my $verbose = 0;
 
 my $outDirectory = "";

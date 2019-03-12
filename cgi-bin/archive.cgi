@@ -15,7 +15,7 @@ use betaSeries;
 
 my $req = new CGI;
 my $serie = "";
-my $config = "\/home\/tom\/SubtitleManagement\/bin\/config";
+my $config = "scriptsDir\/bin\/config";
 my $logFile = "";
 my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
