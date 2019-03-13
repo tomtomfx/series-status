@@ -48,8 +48,8 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-	    if ($_ =~ /shows/){$readingShows = 1;next;}
-		if ($_ =~ /\/shows/){$readingShows = 0;next;}
+	    if ($_ =~ /shows$/){$readingShows = 1;next;}
+		if ($_ =~ /\/shows$/){$readingShows = 0;next;}
 		if ($readingShows == 1)
 		{
 			if ($_ =~ /(.*),/) 
@@ -95,7 +95,7 @@ readConfigFile($verbose);
 if ($verbose >= 1)
 {
 	# Print available shows
-	print "logFile: $logFile\nbetaSeriesLogin: $betaSeriesLogin\nbetaSeriesKey: $betaSeriesKey\nbetaSeriesPassword: $betaSeriesPassword\ndownloadDir: $downloadDir\noutputDir: outputDir";
+	print "logFile: $logFile\nbetaSeriesLogin: $betaSeriesLogin\nbetaSeriesKey: $betaSeriesKey\nbetaSeriesPassword: $betaSeriesPassword\ndownloadDir: $downloadDir\noutputDir: $outputDir\n";
 	print "TVDB API key: $tvdbKey\n";
 	print "Banners path: $bannersPath\n";
 	print "Backgrounds path: $backgroundsPath\n";

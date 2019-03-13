@@ -42,8 +42,8 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-		if ($_ =~ /shows/){$readingShows = 1;next;}
-		if ($_ =~ /\/shows/){$readingShows = 0;next;}
+		if ($_ =~ /shows$/){$readingShows = 1;next;}
+		if ($_ =~ /\/shows$/){$readingShows = 0;next;}
 		if ($readingShows == 1)
 		{
 			if ($_ =~ /(.*),/) 
