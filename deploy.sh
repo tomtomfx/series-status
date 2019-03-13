@@ -40,7 +40,6 @@ echo "Install directory will be ${targetDir}"
 mkdir -p ${targetDir}
 mkdir -p ${targetDir}/logs
 echo "$targetDir created ==> success"
-
 # Copy all files to the target directory
 echo -n "Copy all files and directory to ${targetDir}"
 cp -R ./bin/ "${targetDir}/."
@@ -56,7 +55,6 @@ for file in ${targetDir}/bin/*.pl; do
 	sed -i "s:scriptsDir:${escapedTargetDir}:g" "$file"
 	echo " ==> OK"
 done
-
 # Config management
 # Copy config to bin folder
 echo -n "Copy config to ${targetDir}/bin and update file location"
@@ -64,7 +62,6 @@ cp config "${targetDir}/bin/."
 # Change scripts directory by target directory
 sed -i "s:scriptsDir:${targetDir}:g" "${targetDir}/bin/config"
 echo " ==> success"
-
 # Change user to the requested user
 chown -R $user:$user ${targetDir}
 
@@ -90,7 +87,18 @@ echo " ==> success"
 
 ###########################################################
 # Update cron jobs for specified user
-
+echo "Update cron jobs"
+crontab -u ${user} -l > cron.tmp
+grep 'getUnseen.pl' cron.tmp || echo "0 8,10,16 * * * perl ${targetDir}/bin/getUnseen.pl" >> cron.tmp
+grep 'dl_Move.pl' cron.tmp || echo "30 7,9,12,15,18 * * * perl ${targetDir}/bin/dl_Move.pl" >> cron.tmp
+grep 'removeDownloads.pl' cron.tmp || echo "15,35,55 * * * * perl ${targetDir}/bin/removeDownloads.pl" >> cron.tmp
+grep 'seriesStatus.pl' cron.tmp || echo "0 19 * * * perl ${targetDir}/bin/seriesStatus.pl 1" >> cron.tmp
+grep '*.log' cron.tmp || echo "0 3 * * 0 rm ${targetDir}/logs/*.log" >> cron.tmp
+grep 'tabletManager.pl' cron.tmp || echo "4 * * * * perl ${targetDir}/bin/tabletManager.pl" >> cron.tmp
+crontab -u ${user} cron.tmp
+rm cron.tmp
+systemctl restart cron
+echo "Crontab update ==> success"
 
 exit 0
 
