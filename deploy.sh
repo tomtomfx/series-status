@@ -68,5 +68,29 @@ echo " ==> success"
 # Change user to the requested user
 chown -R $user:$user ${targetDir}
 
+###########################################################
+# Copy files for website
+echo -n "Copy website files to local path (/var/www)"
+# Create directory if does not exist
+if [ ! -d "/var/www" ]; then
+	mkdir -p "/var/www"
+fi
+# Copy php files to directory
+cp www/*.php /var/www/.
+cp www/*.css /var/www/.
+cp -R www/series /var/www/.
+# Copy CGI files
+cp -R cgi-bin /var/www/.
+cp lib/betaSeries.pm /var/www/cgi-bin/.
+# Change owner and rights
+chown -R www-data:www-data /var/www
+chmod ug+rw /var/www/series/*.php
+chmod ug+rwx /var/www/cgi-bin/*.cgi
+echo " ==> success"
+
+###########################################################
+# Update cron jobs for specified user
+
+
 exit 0
 
