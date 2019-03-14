@@ -14,6 +14,6 @@ if ($ENV{'REQUEST_METHOD'} eq "GET")
 # Split information into name/value pairs
 ($name, $ep) = split(/=/, $buffer);
 
-system("perl \/home\/tom\/SubtitleManagement\/bin\/episodeSeen.pl $ep");
+system("perl scriptsDir\/bin\/episodeSeen.pl $ep");
 
 print CGI::redirect("..\/series\/series.php");

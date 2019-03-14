@@ -35,26 +35,11 @@ sub readConfigFile
 	{
 	    chomp($_);
 	    if ($_ =~ /^#/) {next;}			
-	    if ($_ =~ /addSerieLogFile=(.*)$/)
-	    {
-		    $logFile = $1;
-    	}
-    	elsif ($_ =~ /betaSeriesKey=(.*)$/)
-		{
-			$betaSeriesKey = $1;
-		}
-		elsif ($_ =~ /betaSeriesLogin=(.*)$/)
-		{
-			$betaSeriesLogin = $1;
-		}
-		elsif ($_ =~ /betaSeriesPassword=(.*)$/)
-		{
-			$betaSeriesPassword = $1;
-		}
-		elsif ($_ =~ /fullConfig=(.*)$/)
-		{
-			$fullConfig = $1;
-		}
+	    if ($_ =~ /addSerieLogFile=(.*)$/){$logFile = $1;}
+    	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
+		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
+		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
+		elsif ($_ =~ /fullConfig=(.*)$/){$fullConfig = $1;}
 	}
 }
 

@@ -67,7 +67,7 @@ chown -R $user:$user ${targetDir}
 
 ###########################################################
 # Copy files for website
-echo -n "Copy website files to local path (/var/www)"
+echo "Copy website files to local path (/var/www)"
 # Create directory if does not exist
 if [ ! -d "/var/www" ]; then
 	mkdir -p "/var/www"
@@ -79,11 +79,17 @@ cp -R www/series /var/www/.
 # Copy CGI files
 cp -R cgi-bin /var/www/.
 cp lib/betaSeries.pm /var/www/cgi-bin/.
+for file in /var/www/cgi-bin/*.cgi; do
+	echo -n ${file}
+	escapedTargetDir=${targetDir//\//\\\\\\\/}
+	sed -i "s:scriptsDir:${escapedTargetDir}:g" "$file"
+	echo " ==> OK"
+done
+
 # Change owner and rights
 chown -R www-data:www-data /var/www
 chmod ug+rw /var/www/series/*.php
 chmod ug+rwx /var/www/cgi-bin/*.cgi
-echo " ==> success"
 
 ###########################################################
 # Update cron jobs for specified user
