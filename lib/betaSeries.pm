@@ -223,9 +223,11 @@ sub searchSerie
 	my %shows = %{$result->{shows}->{show}};
 	if ($verbose >= 1) {print Dumper %shows;}
 	my $serieId = 0;
+	my $showName = "";
 	my $titleLength = 100;
 	if (exists $shows{"thetvdb_id"}){
 		$serieId = $shows{"id"};
+		$showName = $shows{"title"};
 	}
 	else
 	{
@@ -241,12 +243,13 @@ sub searchSerie
 				{
 					$titleLength = length($serieTitle) - length($title);
 					$serieId = $show;
+					$showName = $serieTitle;
 				}
 			}
 			else {next;}
 		}
 	}	
-	return $serieId;
+	return ($serieId, $showName);
 }
 
 sub addShow

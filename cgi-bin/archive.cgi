@@ -91,7 +91,7 @@ if ($req->request_method() eq "POST")
 		# Connection to betaseries.com
 		my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 		# Get serie ID from title
-		my $serieId = &betaSeries::searchSerie($verbose, $token, $betaSeriesKey, $serie);
+		my ($serieId, $showName) = &betaSeries::searchSerie($verbose, $token, $betaSeriesKey, $serie);
 		if ($serieId != 0)
 		{
 			# Add serie to the followed shows on betaseries

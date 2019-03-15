@@ -11,6 +11,7 @@ use Data::Dumper;
 use Sys::Hostname;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI qw(standard);
+use DBI;
 use betaSeries;
 
 my $req = new CGI;
@@ -23,6 +24,12 @@ my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $verbose = 0;
 my $time = localtime;
+
+my $driver = "SQLite"; 
+my $userid = "";
+my $password = "";
+my $serieDsn = "";
+my $seriesDatabasePath = "";
 
 # Read config file 
 sub readConfigFile
@@ -40,6 +47,7 @@ sub readConfigFile
 		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
 		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
 		elsif ($_ =~ /fullConfig=(.*)$/){$fullConfig = $1;}
+		elsif ($_ =~ /databasePath=(.*)$/){$seriesDatabasePath = $1;}
 	}
 }
 
@@ -84,12 +92,29 @@ if ($req->request_method() eq "POST")
 		# Connection to betaseries.com
 		my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 		# Get serie ID from title
-		my $serieId = &betaSeries::searchSerie($verbose, $token, $betaSeriesKey, $serie);
+		my ($serieId, $showName) = &betaSeries::searchSerie($verbose, $token, $betaSeriesKey, $serie);
 		if ($serieId != 0)
 		{
 			# Add serie to the followed shows on betaseries
 			&betaSeries::addShow($verbose, $token, $betaSeriesKey, $serieId);
 			print $LOG "[$time] $host AddSerie INFO Serie $serie found and added on betaSeries\n";
+
+			# check if episodes exist in the database (show previously archived)
+			# Connect to database
+			$serieDsn = "DBI:$driver:dbname=$seriesDatabasePath";
+			my $serieDbh = DBI->connect($serieDsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+			# Query to get all episodes from the show
+			my $query = "SELECT * FROM unseenEpisodes WHERE Show=?";
+			if ($verbose >= 2){print "$query\n";}
+			my $sth = $serieDbh->prepare($query);
+			$sth->execute("$showName");
+			while(my $episode = $sth->fetchrow_hashref)
+			{
+				if ($verbose >= 1){print ("$episode->{'Id'}\n");}
+				$serieDbh->do("UPDATE unseenEpisodes SET Archived=\'FALSE\' WHERE Id=\'$episode->{'Id'}\'");
+			}
+			$sth->finish();
+			$serieDbh->disconnect();
 
 			# Add the serie to the config file
 			# Ensure it is lower case
