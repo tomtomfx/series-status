@@ -61,7 +61,9 @@ echo -n "Copy config to ${targetDir}/bin and update file location"
 cp config "${targetDir}/bin/."
 # Change scripts directory by target directory
 sed -i "s:scriptsDir:${targetDir}:g" "${targetDir}/bin/config"
+chmod ugo+rw ${targetDir}/bin/config
 echo " ==> success"
+
 # Change user to the requested user
 chown -R $user:$user ${targetDir}
 

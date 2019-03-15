@@ -10,6 +10,7 @@ copyUnseenLogFile=scriptsDir/logs/copyUnseen.log
 unseenLogFile=scriptsDir/logs/unseen.log
 seenLogFile=/var/log/apache2/seen.log
 databaseLogFile=scriptsDir/logs/database.log
+addSerieLogFile=/var/www/addSerie.log
 
 ###################################################################
 # In and out directories
