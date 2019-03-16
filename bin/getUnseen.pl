@@ -86,13 +86,15 @@ sub getTorrentUrl
 		sleep(5);
 		$search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
 	}
-	foreach my $res (@{$search})
+	if (ref $search ne "ARRAY")
 	{
-		my $title = $res->{'title'};
-		if ($title =~ /1080/){next;}
-		$rarbg = $res->{'download'};
+		foreach my $res (@{$search})
+		{
+			my $title = $res->{'title'};
+			if ($title =~ /1080/){next;}
+			$rarbg = $res->{'download'};
+		}
 	}
-	
 	# Get torrent URL from 1337.to
 	if ($verbose >= 1) {print "http://1337x.to/search/$serie+$episodes+x264/1/\n";}
 	my $response = $ua->get("http://1337x.to/search/$serie+$episodes+x264/1/");
