@@ -88,13 +88,21 @@ cp -R www/home /var/www/.
 cp -R www/images /var/www/.
 
 # Copy website options config if does not exists
-if [ -e "/var/www/configWeb" ]
+mkdir -p /var/www/secure/
+cp www/secure/.htaccess /var/www/secure/.
+if [ -e "/var/www/secure/configWeb" ]
 then
 	echo -n "Website options config already exists, not copied"
 else
-	echo -n "Copying website options config to /var/www/."
-	cp www/configWeb "/var/www/."
+	echo -n "Copying website options config to /var/www/secure/."
+	cp www/configWeb "/var/www/secure/."
+	# Add betaSeries infos
+	echo "" >> /var/www/secure/configWeb
+	echo "# betaSeries info" >> /var/www/secure/configWeb
+	cat config | grep betaSeries >> /var/www/secure/configWeb
 fi
+chmod ug+rw /var/www/secure/.htaccess
+chmod ug+rw /var/www/secure/configWeb
 
 # Copy CGI files
 cp -R cgi-bin /var/www/.
