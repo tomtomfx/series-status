@@ -4,7 +4,7 @@
 		private $config;
 
 		public function configInit() {
-			$configFile = file("./configWeb", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+			$configFile = file("./secure/configWeb", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 			foreach ($configFile as $option)
 			{
 				preg_match("/(.+)=(.+)/", $option, $matches);
