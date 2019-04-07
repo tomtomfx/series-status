@@ -57,8 +57,13 @@ for file in ${targetDir}/bin/*.pl; do
 done
 # Config management
 # Copy config to bin folder
-echo -n "Copy config to ${targetDir}/bin and update file location"
-cp config "${targetDir}/bin/."
+if [ -e "${targetDir}/bin/config" ]
+then
+	echo -n "Config already exists, not copied"
+else
+	echo -n "Copy config to ${targetDir}/bin and update file location"
+	cp config "${targetDir}/bin/."
+fi
 # Change scripts directory by target directory
 sed -i "s:scriptsDir:${targetDir}:g" "${targetDir}/bin/config"
 chmod ugo+rw ${targetDir}/bin/config
@@ -78,6 +83,19 @@ fi
 cp www/*.php /var/www/.
 cp www/*.css /var/www/.
 cp -R www/series /var/www/.
+cp -R www/photos /var/www/.
+cp -R www/home /var/www/.
+cp -R www/images /var/www/.
+
+# Copy website options config if does not exists
+if [ -e "/var/www/configWeb" ]
+then
+	echo -n "Website options config already exists, not copied"
+else
+	echo -n "Copying website options config to /var/www/."
+	cp www/configWeb "/var/www/."
+fi
+
 # Copy CGI files
 cp -R cgi-bin /var/www/.
 cp lib/betaSeries.pm /var/www/cgi-bin/.
@@ -91,7 +109,10 @@ done
 # Change owner and rights
 chown -R www-data:www-data /var/www
 chmod ug+rw /var/www/series/*.php
+chmod ug+rw /var/www/photos/*.php
+chmod ug+rw /var/www/home/*.php
 chmod ug+rwx /var/www/cgi-bin/*.cgi
+chmod -R ug+rw /var/www/images/
 
 ###########################################################
 # Update cron jobs for specified user
@@ -109,4 +130,3 @@ systemctl restart cron
 echo "Crontab update ==> success"
 
 exit 0
-
