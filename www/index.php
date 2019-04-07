@@ -6,6 +6,8 @@
 	// Uncomment to create default user
 	//$users->newUser("Tom", true);
 	
+	include './menuManagement.php';
+
 	$user = "";
 	$pass = "";
 	if (!$users->isloggedin())
@@ -58,10 +60,17 @@
 					<a class="navbar-brand" href="./#">Home</a>
 				</div>
 				<div class="collapse navbar-collapse" id="menuCollapse">
-					<ul class="nav navbar-nav">
-						<li><a href="./series/series.php" id="navig"><span class="glyphicon glyphicon-film"></span> Series</a></li>
-						<li><a href="./photos/photos.php" id="navig"><span class="glyphicon glyphicon-camera"></span> Photos</a></li>
-						<li><a href="./home/home.php" id="navig"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+					<ul class="nav navbar-nav">';
+		if ($menuManager->getOptionFromConfig('shows') == 'true'){
+			echo 		'<li><a href="./series/series.php" id="navig"><span class="glyphicon glyphicon-film"></span> Shows</a></li>';
+		}
+		if ($menuManager->getOptionFromConfig('photos') == 'true'){
+			echo 		'<li><a href="./photos/photos.php" id="navig"><span class="glyphicon glyphicon-camera"></span> Photos</a></li>';
+		}
+		if ($menuManager->getOptionFromConfig('home') == 'true'){
+			echo 		'<li><a href="./home/home.php" id="navig"><span class="glyphicon glyphicon-home"></span> Home</a></li>';
+		}
+		echo'			
 					</ul>
 					<div class="nav navbar-nav navbar-right">
 						<li class="dropdown-toggle" data-toggle="dropdown" id="navLogin">
@@ -175,18 +184,29 @@
 	{
 		echo '
 			<section class="row">
-				<!-- Applications -->
+				<!-- Applications -->';
+		if ($menuManager->getOptionFromConfig('shows') == 'true'){
+			echo'
 				<!-- Series -->
 				<div class="col-sm-4 col-xs-6">
 					<a href="./series/series.php"><img src="./images/seriesTV_512.png" class="img img-thumbnail img-responsive" id="presImg"/></a>
-				</div> 
+				</div>';
+		}
+		if ($menuManager->getOptionFromConfig('photos') == 'true'){
+			echo'
 				<!-- Photos -->
 				<div class="col-sm-4 col-xs-6"> 
 					<a href="./photos/photos.php"><img src="./images/photo3_512.png" class="img img-thumbnail img-responsive" id="presImg"/></a>
-				</div>
+				</div>';
+		}
+		if ($menuManager->getOptionFromConfig('home') == 'true'){
+			echo'
+				<!-- Home -->
 				<div class="col-sm-4 col-xs-6"> 
 					<a href="./home/home.php"><img src="./images/home_512.png" class="img img-thumbnail img-responsive" id="presImg"/></a>
-				</div>
+				</div>';
+		}
+		echo'
 			</section>';
 	}
 ?>

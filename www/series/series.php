@@ -80,10 +80,22 @@ echo'
 						</li>
 						<ul class="dropdown-menu">
 							<li><a href="./series.php" data-toggle="modal"><span class="glyphicon glyphicon-film"></span> Shows</a></li>
-							<li><a href="./tablet.php"><span class="glyphicon glyphicon-phone"></span> Tablet</a></li>
+<?php
+if ($seriesManager->getOptionFromConfig('tablet') == 'true'){
+	echo 				   '<li><a href="./tablet.php"><span class="glyphicon glyphicon-phone"></span> Tablet</a></li>';
+}
+?>
 						</ul>
-						<li><a href="../photos/photos.php" id="navig"><span class="glyphicon glyphicon-camera"></span> Photos</a></li>
-						<li><a href="../home/home.php" id="navig"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+<?php
+if ($seriesManager->getOptionFromConfig('photos') == 'true'){
+	echo					'<li><a href="../photos/photos.php" id="navig"><span class="glyphicon glyphicon-camera"></span> Photos</a></li>';
+}
+?>
+<?php
+if ($seriesManager->getOptionFromConfig('home') == 'true'){
+	echo					'<li><a href="../home/home.php" id="navig"><span class="glyphicon glyphicon-home"></span> Home</a></li>';
+}
+?>
 					</ul>
 					<div class="nav navbar-nav navbar-right">
 						<li class="dropdown-toggle" data-toggle="dropdown" id="navLogin">
