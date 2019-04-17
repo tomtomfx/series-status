@@ -214,9 +214,9 @@ foreach my $file (@dlDir)
 				unless (-e $background)
 				{
 					if ($verbose >=1) {print "Background $background does not exist\n";}
-					my $tvdbBackground = tvdb::getBannerPath($verbose, $show, "en", "background", $tvdbKey);
-					if ($verbose >=1) {print "$tvdbBackground\n";}
-					getstore($tvdbBackground, $background);
+					my $betaBackground = &betaSeries::getShowBackground($verbose, $token, $betaSeriesKey, $epId);
+					if ($verbose >=1) {print "$betaBackground\n";}
+					getstore($betaBackground, $background);
 				}
 				
 				# Remove year if any

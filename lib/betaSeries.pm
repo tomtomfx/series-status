@@ -3,13 +3,14 @@ package betaSeries;
 use LWP::UserAgent;
 use LWP::Simple;
 use XML::Simple;
+use JSON;
 use Time::localtime;
 use Data::Dumper;
 use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie addShow archiveShow getSubtitles/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getShowBackground addShow archiveShow getSubtitles/;
 
 sub sendRequest
 {
@@ -26,6 +27,60 @@ sub sendRequest
 		print "HTTP POST error message: ", $resp->message, "\n";
 		return 0;
 	}
+}
+
+sub getShowNameFromId
+{
+	my ($verbose, $token, $betaSeriesKey, $id) = @_;
+	
+	my $ua = LWP::UserAgent->new;
+
+	# Get show name from show Id
+	my $showReq = "http://api.betaseries.com/shows/display?token=$token&id=$id";
+	#print "request = $showReq\n";
+	my $req = HTTP::Request->new(GET => "$showReq");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	my $show = decode_json($message);
+	my $showName = $show->{show}->{title};
+	#print Dumper ($showName);
+	return $showName;
+}
+
+sub getShowBackground
+{
+	my ($verbose, $token, $betaSeriesKey, $id) = @_;
+	
+	my $ua = LWP::UserAgent->new;
+
+	# Get show name from show Id
+	my $epReq = "http://api.betaseries.com/episodes/display?token=$token&thetvdb_id=$id";
+	#print "request = $epReq\n";
+	my $req = HTTP::Request->new(GET => "$epReq");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+	my $message = sendRequest($ua, $req);
+	my $episode = decode_json($message);
+
+	my $showId = $episode->{episode}->{show}->{id};
+
+	my $showReq = "http://api.betaseries.com/shows/pictures?token=$token&id=$showId&format=hd&order=-date";
+	#print "request = $showReq\n";
+	$req = HTTP::Request->new(GET => "$showReq");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+	my $message = sendRequest($ua, $req);
+	my $pictures = decode_json($message);
+	#print Dumper ($pictures->{pictures}[0]->{url});
+
+	my $backgroundURL = $pictures->{pictures}[0]->{url};
+
+	return $backgroundURL;
 }
 
 sub getEpisodeToDownload

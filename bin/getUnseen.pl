@@ -269,9 +269,9 @@ foreach my $ep (@episodeToDownload)
 		unless (-e $background)
 		{
 			if ($verbose >=1) {print "Background $background does not exist\n";}
-			my $tvdbBackground = tvdb::getBannerPath($verbose, $serie, "en", "background", $tvdbKey);
-			if ($verbose >=1) {print "$tvdbBackground\n";}
-			getstore($tvdbBackground, $background);
+			my $betaBackground = &betaSeries::getShowBackground($verbose, $token, $betaSeriesKey, $epId);
+			if ($verbose >=1) {print "$betaBackground\n";}
+			getstore($betaBackground, $background);
 		}
 		
 		# Get Torrent for this episode
