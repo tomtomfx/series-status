@@ -286,9 +286,8 @@ function formComboToCopy ($label, $tabletManager)
 }
 
 // Form combo
-function formComboToArchive ($label, $manager)
+function formComboToArchive ($label, $showsFound)
 {
-	$shows = $manager->getShows(true);
 	echo'
 								<div class="row">
 									<div class="form-group">
@@ -296,9 +295,9 @@ function formComboToArchive ($label, $manager)
 										<div class="col-xs-6">
 											<select name="showId" class="form-control">
 	';
-	foreach ($shows as $show) {
+	foreach ($showsFound as $key => $id) {
 		echo'
-											<option>'.$show.'</option>
+											<option value="'.$id.'">'.$key.'</option>
 		';
 	}
 	echo'
@@ -515,6 +514,126 @@ function formPassword ($label, $input, $status, $value)
 										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.' </label>
 										<div class="col-xs-6">
 											<input name="'.$input.'" type="password" class="form-control" value="'.$value.'">
+										</div>
+									</div>
+								</div>
+	';
+}
+
+// BetaSeries authentication
+function betaSeriesAuthenticate ($seriesManager)
+{
+	$betaSeriesKey = $seriesManager->getOptionFromConfig('betaSeriesKey');
+	$betaSeriesLogin = $seriesManager->getOptionFromConfig('betaSeriesLogin');
+	$betaSeriesPassword = $seriesManager->getOptionFromConfig('betaSeriesPassword');
+	$url = "http://api.betaseries.com";
+	$auth = "$url/members/auth?login=$betaSeriesLogin&password=$betaSeriesPassword";
+	$token = "";
+
+	$options = array(
+		'http' => array(
+			'method'  => 'POST',
+			'header'  => array(
+				"Accept: application/json",
+				"X-BetaSeries-Version: 2.2",
+				"X-BetaSeries-Key: $betaSeriesKey"
+			)
+		)
+	);	
+
+	$context  = stream_context_create($options);
+	$result = file_get_contents($auth, false, $context);
+
+	preg_match ("#\"token\": \"(.+)\"#", $result, $matches);
+	if (isset($matches[1]) && $matches[1] !== null){
+		return $matches[1];
+	}
+	else {return 0;}
+}
+
+// Get list of shows from the search
+function getShowList ($searchShow, $seriesManager)
+{
+	$showsFound;
+	$betaSeriesKey = $seriesManager->getOptionFromConfig('betaSeriesKey');
+	$url = "http://api.betaseries.com";
+	$token = betaSeriesAuthenticate ($seriesManager);
+	$searchShow = urlencode($searchShow);
+	$search = "$url/shows/search?title=$searchShow&summary=true&token=$token";
+	$options = array(
+		'http' => array(
+			'method'  => 'GET',
+			'header'  => array(
+				"Accept: application/json",
+				"X-BetaSeries-Version: 3.0",
+				"X-BetaSeries-Key: $betaSeriesKey"
+			)
+		)
+	);
+
+	$context  = stream_context_create($options);
+	$result = file_get_contents($search, false, $context);
+	$shows = json_decode($result, true);
+	foreach ($shows['shows'] as $show)
+	{
+		$showsFound[$show['title']] = $show['id'];
+	}
+	if (isset($showsFound)){
+		return($showsFound);	
+	}
+	return(0);
+}
+
+// Get list of shows followed
+function getCurrentShowList ($seriesManager)
+{
+	$showsFound;
+	$betaSeriesKey = $seriesManager->getOptionFromConfig('betaSeriesKey');
+	$url = "http://api.betaseries.com";
+	$token = betaSeriesAuthenticate ($seriesManager);
+	$search = "$url/shows/member?status=active&token=$token";
+	$options = array(
+		'http' => array(
+			'method'  => 'GET',
+			'header'  => array(
+				"Accept: application/json",
+				"X-BetaSeries-Version: 3.0",
+				"X-BetaSeries-Key: $betaSeriesKey"
+			)
+		)
+	);
+
+	$context  = stream_context_create($options);
+	$result = file_get_contents($search, false, $context);
+	$shows = json_decode($result, true);
+	
+	foreach ($shows['shows'] as $show)
+	{
+		$showsFound[$show['title']] = $show['id'];
+	}
+	if (isset($showsFound)){
+		return($showsFound);	
+	}
+	return(0);
+}
+
+// Form combo
+function formComboToAdd ($label, $showsFound)
+{
+	echo'
+								<div class="row">
+									<div class="form-group">
+										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
+										<div class="col-xs-6">
+											<select name="showId" class="form-control">
+	';
+	foreach ($showsFound as $key => $id) {
+		echo'
+											<option value="'.$id.'">'.$key.'</option>
+		';
+	}
+	echo'
+											</select>
 										</div>
 									</div>
 								</div>

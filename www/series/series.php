@@ -5,7 +5,13 @@
 		header('Location: ../#', true, 302);
 		die();
 	}
+	
+	include 'seriesManagement.php';
+
 	$status = "";
+	$searchShow = "";
+	$showsFound;
+	$showsList;
 	$type = "";
 	$image = "";
 	if (isset($_GET['status']))
@@ -16,7 +22,11 @@
 	{
 		$type = $_GET['type'];
 	}
-	include 'seriesManagement.php';
+	if (isset($_POST['serieName']))
+	{
+		$searchShow = $_POST['serieName'];
+		$showsFound = getShowList ($searchShow, $seriesManager);
+	}
 ?>
 
 <!DOCTYPE html>
@@ -39,6 +49,15 @@
 			});
 		</script>';
 		}
+		if (isset($_POST['serieName']))
+		{
+		echo'
+		<script type="text/javascript">
+			$(window).load(function(){
+				$("#searchShow").modal("show");
+			});
+		</script>';
+		}
 ?>
 		<link href="../style_bootstrap.css" rel="stylesheet">
 		<link rel="shortcut icon" href="favicon.ico">
@@ -54,7 +73,7 @@ $b = $rgb & 0xFF;
 
 echo'
 		<style>
-			body {background-image: url("../images/backgrounds/'.$image.'");background-repeat:no-repeat;background-size:contain;background-color:rgb('.$r.', '.$g.', '.$b.');}
+			body {background-image: url("../images/backgrounds/'.$image.'");background-repeat:no-repeat;background-size:cover;background-color:rgb('.$r.', '.$g.', '.$b.');}
 		</style>
 ';
 ?>
@@ -134,7 +153,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 							<h3 class="modal-title" id="addSerieLabel">Add a show</h3>
 						</div>
-						<form class="form-horizontal" method="POST" action="../cgi-bin/add.cgi">
+						<form class="form-horizontal" method="POST" action="#">
 							<div class="modal-body">
 								<div class="form-group">
 									<label for="serie_name" class="col-xs-3 control-label">Show name:</label>
@@ -142,6 +161,29 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 										<input name="serieName" type="text" class="form-control" id="serie_name">
 									</div>
 								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="submit" class="pull-right btn btn-default">Add</button>
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<!-- Modal add 2nd step -->
+			<div class="modal fade" id="searchShow" tabindex="-1" role="dialog" aria-labelledby="searchShowLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h3 class="modal-title" id="addSerieLabel">Choose a show to add</h3>
+						</div>
+						<form class="form-horizontal" method="POST" action="../cgi-bin/add.cgi">
+							<div class="modal-body">
+<?php
+	formComboToAdd("Show:", $showsFound);
+?>
 							</div>
 							<div class="modal-footer">
 								<button type="submit" class="pull-right btn btn-default">Add</button>
@@ -163,7 +205,8 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						<form class="form-horizontal" method="POST" action="../cgi-bin/archive.cgi">
 							<div class="modal-body">
 <?php
-	formComboToArchive("Show:", $seriesManager);
+	$showsList = getCurrentShowList ($seriesManager);
+	formComboToArchive("Show:", $showsList);
 ?>
 							</div>
 							<div class="modal-footer">
