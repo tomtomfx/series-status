@@ -37,7 +37,7 @@ sub getShowNameFromId
 
 	# Get show name from show Id
 	my $showReq = "http://api.betaseries.com/shows/display?token=$token&id=$id";
-	#print "request = $showReq\n";
+	# print "request = $showReq\n";
 	my $req = HTTP::Request->new(GET => "$showReq");
 	$req->header('X-BetaSeries-Version' => '3.0');
 	$req->header('Accept' => 'text/json');
@@ -46,7 +46,7 @@ sub getShowNameFromId
 	my $message = sendRequest($ua, $req);
 	my $show = decode_json($message);
 	my $showName = $show->{show}->{title};
-	#print Dumper ($showName);
+	# print Dumper ($showName);
 	return $showName;
 }
 

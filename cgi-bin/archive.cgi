@@ -14,7 +14,8 @@ use CGI;
 use betaSeries;
 
 my $req = new CGI;
-my $serie = "";
+my $serieId = "";
+my $showName = "";
 my $config = "scriptsDir\/bin\/config";
 my $logFile = "";
 my $betaSeriesKey = "";
@@ -50,7 +51,7 @@ sub readConfigFile
 
 sub sendRequest
 {
-	my $ua = $_[0]; my $req = $_[1];
+	my $ua = $_[0]; my $req = $_[1]; 
 	my $resp = $ua->request($req);
 	if ($resp->is_success) 
 	{
@@ -85,45 +86,38 @@ if ($req->request_method() eq "POST")
 	}
 	else
 	{
-		$serie = $req->param('showId');
-		print $LOG "[$time] $host ArchiveShow INFO Serie to archive: $serie\n";
+		$serieId = $req->param('showId');
+		print $LOG "[$time] $host ArchiveShow INFO Serie to archive: $serieId\n";
 		
 		# Connection to betaseries.com
 		my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 		# Get serie ID from title
-		my ($serieId, $showName) = &betaSeries::searchSerie($verbose, $token, $betaSeriesKey, $serie);
-		if ($serieId != 0)
-		{
-			# Add serie to the followed shows on betaseries
-			&betaSeries::archiveShow($verbose, $token, $betaSeriesKey, $serieId);
-			print $LOG "[$time] $host ArchiveShow INFO Serie $serie found and archived on betaSeries\n";
+		$showName = &betaSeries::getShowNameFromId($verbose, $token, $betaSeriesKey, $serieId);
 
-			#########################################################################################
-			# Mark all episodes in the series database as archived
-			# Connect to database
-			$serieDsn = "DBI:$driver:dbname=$seriesDatabasePath";
-			my $serieDbh = DBI->connect($serieDsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
-			# Query to get all episodes from a show
-			my $query = "SELECT * FROM unseenEpisodes WHERE Show=?";
-			if ($verbose >= 2){print "$query\n";}
-			my $sth = $serieDbh->prepare($query);
-			$sth->execute("$serie");
-			while(my $episode = $sth->fetchrow_hashref)
-			{
-				if ($verbose >= 1){print ("$episode->{'Id'}\n");}
-				$serieDbh->do("UPDATE unseenEpisodes SET Archived=\'TRUE\' WHERE Id=\'$episode->{'Id'}\'");
-			}
-			$sth->finish();
-			$serieDbh->disconnect();
+		# Add serie to the followed shows on betaseries
+		&betaSeries::archiveShow($verbose, $token, $betaSeriesKey, $serieId);
+		print $LOG "[$time] $host ArchiveShow INFO Serie $showName found and archived on betaSeries\n";
 
-			print $LOG "[$time] $host ArchiveShow INFO All episodes from $serie have been set to archived\n";
-			print $req->redirect('../series/series.php?status=success&type=archive');
-		}
-		else
+		#########################################################################################
+		# Mark all episodes in the series database as archived
+		# Connect to database
+		$serieDsn = "DBI:$driver:dbname=$seriesDatabasePath";
+		my $serieDbh = DBI->connect($serieDsn, $userid, $password, { RaiseError => 1 }) or die $DBI::errstr;
+		# Query to get all episodes from a show
+		my $query = "SELECT * FROM unseenEpisodes WHERE Show=?";
+		if ($verbose >= 2){print $LOG "$query\n";}
+		my $sth = $serieDbh->prepare($query);
+		$sth->execute("$showName");
+		while(my $episode = $sth->fetchrow_hashref)
 		{
-			print $LOG "[$time] $host ArchiveShow ERROR $serie cannot be found on betaSeries\n";
-			print $req->redirect('../series/series.php?status=failed&type=archive');
+			if ($verbose >= 1){print $LOG "$episode->{'Id'}\n";}
+			$serieDbh->do("UPDATE unseenEpisodes SET Archived=\'TRUE\' WHERE Id=\'$episode->{'Id'}\'");
 		}
+		$sth->finish();
+		$serieDbh->disconnect();
+
+		print $LOG "[$time] $host ArchiveShow INFO All episodes from $showName have been set to archived\n";
+		print $req->redirect('../series/series.php?status=success&type=archive');
 	}
 }
 close $LOG;
