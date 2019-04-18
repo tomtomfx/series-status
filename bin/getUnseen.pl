@@ -269,7 +269,7 @@ foreach my $ep (@episodeToDownload)
 		unless (-e $background)
 		{
 			if ($verbose >=1) {print "Background $background does not exist\n";}
-			my $betaBackground = &betaSeries::getShowBackground($verbose, $token, $betaSeriesKey, $epId);
+			my $betaBackground = &betaSeries::getShowBackground($verbose, $token, $betaSeriesKey, $id);
 			if ($verbose >=1) {print "$betaBackground\n";}
 			getstore($betaBackground, $background);
 		}
