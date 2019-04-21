@@ -591,6 +591,8 @@ function getCurrentShowList ($seriesManager)
 	$betaSeriesKey = $seriesManager->getOptionFromConfig('betaSeriesKey');
 	$url = "http://api.betaseries.com";
 	$token = betaSeriesAuthenticate ($seriesManager);
+
+	# Get active shows
 	$search = "$url/shows/member?status=active&token=$token";
 	$options = array(
 		'http' => array(
@@ -602,16 +604,36 @@ function getCurrentShowList ($seriesManager)
 			)
 		)
 	);
-
 	$context  = stream_context_create($options);
 	$result = file_get_contents($search, false, $context);
 	$shows = json_decode($result, true);
-	
 	foreach ($shows['shows'] as $show)
 	{
 		$showsFound[$show['title']] = $show['id'];
 	}
+
+	# Get current shows
+	$search = "$url/shows/member?status=current&token=$token";
+	$options = array(
+		'http' => array(
+			'method'  => 'GET',
+			'header'  => array(
+				"Accept: application/json",
+				"X-BetaSeries-Version: 3.0",
+				"X-BetaSeries-Key: $betaSeriesKey"
+			)
+		)
+	);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($search, false, $context);
+	$shows = json_decode($result, true);
+	foreach ($shows['shows'] as $show)
+	{
+		$showsFound[$show['title']] = $show['id'];
+	}
+
 	if (isset($showsFound)){
+		ksort($showsFound);
 		return($showsFound);	
 	}
 	return(0);

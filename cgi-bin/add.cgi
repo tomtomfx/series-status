@@ -93,8 +93,19 @@ if ($req->request_method() eq "POST")
 		# Connection to betaseries.com
 		my $token = &betaSeries::authentification($verbose, $betaSeriesKey, $betaSeriesLogin, $betaSeriesPassword);
 		
-		# Add serie to the followed shows on betaseries
-		&betaSeries::addShow($verbose, $token, $betaSeriesKey, $serieId);
+		# check if show is already added and has been archived
+		my $isArchived = &betaSeries::isArchived($verbose, $token, $betaSeriesKey, $serieId);
+		print $LOG "isArcihved = $isArchived\n";
+		if ($isArchived == 1){
+			# Remove show from the archived ones
+			&betaSeries::unarchiveShow($verbose, $token, $betaSeriesKey, $serieId);
+		}
+		else{
+			# Add serie to the followed shows on betaseries
+			&betaSeries::addShow($verbose, $token, $betaSeriesKey, $serieId);
+		}
+
+		# Retreive exact show name
 		$showName = &betaSeries::getShowNameFromId($verbose, $token, $betaSeriesKey, $serieId);
 		print $LOG "[$time] $host AddSerie INFO Serie $showName found and added on betaSeries\n";
 

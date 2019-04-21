@@ -10,7 +10,7 @@ use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getShowBackground addShow archiveShow getSubtitles/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getShowBackground addShow archiveShow unarchiveShow isArchived getSubtitles/;
 
 sub sendRequest
 {
@@ -315,8 +315,42 @@ sub addShow
 	# Add show
 	my $show = "http://api.betaseries.com/shows/show?token=$token&id=$showId";
 	my $req = HTTP::Request->new(POST => "$show");
-	$req->header('X-BetaSeries-Version' => '2.2');
-	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	# print Dumper $message;
+}
+
+sub isArchived
+{
+	my ($verbose, $token, $betaSeriesKey, $showId) = @_;
+	my $ua = LWP::UserAgent->new;
+
+	# Archive show
+	my $show = "http://api.betaseries.com/shows/display?token=$token&id=$showId";
+	my $req = HTTP::Request->new(GET => "$show");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	my $show = decode_json($message);
+	# print Dumper $show;
+	return $show->{show}->{user}->{archived};
+}
+
+sub unarchiveShow
+{
+	my ($verbose, $token, $betaSeriesKey, $showId) = @_;
+	my $ua = LWP::UserAgent->new;
+
+	# Archive show
+	my $show = "http://api.betaseries.com/shows/archive?token=$token&id=$showId";
+	my $req = HTTP::Request->new(DELETE => "$show");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
 	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
 
 	my $message = sendRequest($ua, $req);
@@ -331,8 +365,8 @@ sub archiveShow
 	# Archive show
 	my $show = "http://api.betaseries.com/shows/archive?token=$token&id=$showId";
 	my $req = HTTP::Request->new(POST => "$show");
-	$req->header('X-BetaSeries-Version' => '2.2');
-	$req->header('Accept' => 'text/xml');
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
 	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
 
 	my $message = sendRequest($ua, $req);
