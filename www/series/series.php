@@ -182,7 +182,9 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						<form class="form-horizontal" method="POST" action="../cgi-bin/add.cgi">
 							<div class="modal-body">
 <?php
-	formComboToAdd("Show:", $showsFound);
+	if (isset ($showsFound)){
+		formComboToAdd("Show:", $showsFound);
+	}
 ?>
 							</div>
 							<div class="modal-footer">

@@ -215,7 +215,9 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 						<form class="form-horizontal" method="POST" action="./tablet.php#">
 							<div class="modal-body">
 <?php
-	formText("Episode", "episode", "success", urldecode($_GET['id']), "false");
+	if (isset($_GET['id'])){
+		formText("Episode", "episode", "success", urldecode($_GET['id']), "false");
+	}
 	formComboToCopy("Tablet:", $tabletManager);
 ?>
 								<input type="hidden" name="action" value="copy"/>
