@@ -33,7 +33,7 @@ class seriesManagement {
 	}
 		
 	public function getEpisodes($removeArchived) {
-		$episodes = "";
+		$episodes;
 		$i = 0;
 		
 		$q = "SELECT * FROM unseenEpisodes ORDER BY Show, Id";
@@ -90,7 +90,7 @@ class tabletManagement {
 	}
 		
 	public function getEpisodesFromStatus($status, $removeArchived) {
-		$episodes = "";
+		$episodes;
 		$i = 0;
 		// Set where depending on the requested status
 		$where = "";
@@ -110,7 +110,10 @@ class tabletManagement {
 			$episodes[$i] = $episode;
 			$i++;
 		}
-		return $episodes;
+		if (isset($episodes)){
+			return $episodes;	
+		}
+		return null;
 	}
 	
 	public function getShows($removeArchived) {
@@ -159,7 +162,7 @@ class tabletManagement {
 	}
 	public function getTablets()
 	{
-		$tablets = "";
+		$tablets;
 		$i = 0;
 		$q = 'SELECT * FROM Tablets';
 		$queryRes = $this->db->query($q);
@@ -172,7 +175,10 @@ class tabletManagement {
 			}
 		}
 		else {$tablets = 0;}
-		return $tablets;
+		if (isset($tablets)){
+			return $tablets;	
+		}
+		return null;
 	}
 	public function removeTablet ($id)
 	{
@@ -341,7 +347,10 @@ function printEpisodesToCopy ($status, $tabletManager)
 {
 
 	$episodes = $tabletManager->getEpisodesFromStatus($status, true);
-	$nbEpisodes = count($episodes);
+	if (!empty($episodes)){
+		$nbEpisodes = count($episodes);
+	}
+	else{$nbEpisodes = 0;}
 	
 	$glyph = "glyphicon-folder-open";
 	if ($status == "On tablet"){$glyph = "glyphicon-phone";} 
