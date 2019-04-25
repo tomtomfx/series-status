@@ -11,7 +11,6 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
 use betaSeries;
-use tvdb;
 
 my @tvShows;
 my $config = "scriptsDir\/bin\/config";
@@ -205,9 +204,9 @@ foreach my $file (@dlDir)
 				unless (-e $banner)
 				{
 					if ($verbose >=1) {print "Banner $banner does not exist\n";}
-					my $tvdbBanner = tvdb::getBannerPath($verbose, $show, "en", "banner", $tvdbKey);
-					if ($verbose >=1) {print "$tvdbBanner\n";}
-					getstore($tvdbBanner, $banner);
+					my $betaBanner = &betaSeries::getBannerPath($verbose, $token, $betaSeriesKey, $epId);
+					if ($verbose >=1) {print "$betaBanner\n";}
+					getstore($betaBanner, $banner);
 				}
 				# Get show background if doesn't exists
 				my $background = "$backgroundsPath\/$show.jpg";

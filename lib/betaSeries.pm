@@ -10,7 +10,7 @@ use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getShowBackground addShow archiveShow unarchiveShow isArchived getSubtitles/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getBannerPath getShowBackground addShow archiveShow unarchiveShow isArchived getSubtitles/;
 
 sub sendRequest
 {
@@ -49,7 +49,38 @@ sub getShowNameFromId
 	# print Dumper ($showName);
 	return $showName;
 }
+sub getBannerPath
+{
+	my ($verbose, $token, $betaSeriesKey, $id) = @_;
+	
+	my $ua = LWP::UserAgent->new;
 
+	# Get show name from show Id
+	my $epReq = "http://api.betaseries.com/episodes/display?token=$token&thetvdb_id=$id";
+	#print "request = $epReq\n";
+	my $req = HTTP::Request->new(GET => "$epReq");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+	my $message = sendRequest($ua, $req);
+	my $episode = decode_json($message);
+
+	my $showId = $episode->{episode}->{show}->{id};
+
+	my $showReq = "http://api.betaseries.com/shows/display?token=$token&id=$showId";
+	#print "request = $showReq\n";
+	$req = HTTP::Request->new(GET => "$showReq");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+	my $message = sendRequest($ua, $req);
+	my $show = decode_json($message);
+	#print Dumper ($show->{show});
+
+	my $bannerURL = $show->{show}->{images}->{banner};
+
+	return $bannerURL;
+}
 sub getShowBackground
 {
 	my ($verbose, $token, $betaSeriesKey, $id) = @_;

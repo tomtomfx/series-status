@@ -13,7 +13,6 @@ use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
-use tvdb;
 
 my $config = "scriptsDir\/bin\/config";
 my $logFile = "";
@@ -260,9 +259,9 @@ foreach my $ep (@episodeToDownload)
 		unless (-e $banner)
 		{
 			if ($verbose >=2) {print "$banner does not exist\n";}
-			my $tvdbBanner = tvdb::getBannerPath($verbose, $serie, "en", "banner", $tvdbKey);
-			if ($verbose >=2) {print "$tvdbBanner\n";}
-			getstore($tvdbBanner, $banner);
+			my $betaBanner = &betaSeries::getBannerPath($verbose, $token, $betaSeriesKey, $id);
+			if ($verbose >=1) {print "$betaBanner\n";}
+			getstore($betaBanner, $banner);
 		}
 		# Get show background if doesn't exists
 		my $background = "$backgroundsPath\/$serie.jpg";

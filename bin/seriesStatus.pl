@@ -12,7 +12,6 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use utils;
 use betaSeries;
-use tvdb;
  
 my @tvShows;
 my $config = "scriptsDir\/bin\/config";
