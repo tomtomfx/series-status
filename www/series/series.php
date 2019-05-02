@@ -27,6 +27,10 @@
 		$searchShow = $_POST['serieName'];
 		$showsFound = getShowList ($searchShow, $seriesManager);
 	}
+	if (isset($_FILES['subFile']))
+	{
+		storeSubFile($seriesManager, $_FILES['subFile']);
+	}
 ?>
 
 <!DOCTYPE html>
@@ -123,6 +127,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						<ul class="dropdown-menu">
 							<li><a href="#addSerie" data-toggle="modal"><span class="glyphicon glyphicon-plus"></span> Add a show</a></li>
 							<li><a href="#archiveSerie" data-toggle="modal"><span class="glyphicon glyphicon-minus"></span> Archive a show</a></li>
+							<li><a href="#uploadSubtitlesFile" data-toggle="modal"><span class="glyphicon glyphicon-upload"></span> Upload subtitles</a></li>
 							<li><a href="../logout.php"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
 						</ul>
 					</div>
@@ -213,6 +218,40 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 							</div>
 							<div class="modal-footer">
 								<button type="submit" class="pull-right btn btn-default">Archive</button>
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<!-- Modal upload subtitles file -->
+			<div class="modal fade" id="uploadSubtitlesFile" tabindex="-1" role="dialog" aria-labelledby="uploadSubtitlesFileLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h3 class="modal-title" >Upload subtitles file</h3>
+						</div>
+						<form class="form-horizontal" method="POST" action="#" enctype="multipart/form-data">
+							<div class="modal-body">
+								<h4>Episodes with missing subtitles:<h4>
+								<ul id="fileList">
+<?php
+	$files = getFilesMissingSubtitles($seriesManager);
+	foreach ($files as $file) 
+	{
+		echo '<li>'.$file.'</li>';
+	}
+?>  							
+								</ul>
+								<div class="form-group">
+									<input type="file" name="subFile" class="form-control" id="customFileSub">
+  								</div>
+								<!-- <input name="Subtitles file" type="file" class="form-control" name="subFile"> -->
+							</div>
+							<div class="modal-footer">
+								<button type="submit" class="pull-right btn btn-default">Upload</button>
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 							</div>
 						</form>

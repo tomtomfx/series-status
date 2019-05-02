@@ -249,7 +249,7 @@ function printEpisodesToWatch ($seriesManager)
 		{
 			$action = '<a id="epAction" href="../cgi-bin/update.cgi?ep='.$serieNameUnderscore.'-'.$episodeNumber.'-'.$IdBetaseries.'"><span class="glyphicon glyphicon-eye-open"></span></a>';
 			// $action = $action.'<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';
-		}			
+		}
 		echo'
 					<tr>
 						<td id="show" class="col-xs-2"><img id="banniere2" class="img-responsive" src="../images/banners/'.$serieName.'" alt="'.$serieName.'"></td>
@@ -671,7 +671,44 @@ function formComboToAdd ($label, $showsFound)
 	';
 }
 
-//**********************************************************************************************************************// fonctions PHP
+function getFilesMissingSubtitles($seriesManager)
+{
+	$downloadFolder = $seriesManager->getOptionFromConfig('downloadFolder');
+	$files = scandir($downloadFolder);
+	// Remove not video files
+	$extensions_valid = array('mkv', 'mp4', 'avi');
+	foreach ($files as $filename)
+	{
+		$fileExtension = strtolower(substr(strrchr($filename, '.') ,1));
+		if (!in_array($fileExtension,$extensions_valid)){$files = \array_diff($files, [$filename]);}
+	}
+	return($files);
+}
+
+function storeSubFile ($seriesManager, $subFile)
+{
+	$downloadFolder = $seriesManager->getOptionFromConfig('downloadFolder');
+	$maxsize = 500000;
+	$error = 0;
+	// Check extension
+	$extensions_valid = array( 'srt');
+	$extension_upload = strtolower(substr(strrchr($subFile['name'], '.') ,1));
+	if (!in_array($extension_upload,$extensions_valid)) {$error = "Incorrect extension";}
+	// Check transfer status
+	elseif ($subFile['error'] > 0) {$error = "Error during transfert ".$_FILES['icone']['error'];}
+	// Check file size
+	elseif ($subFile['size'] > $maxsize) {$error = "File size is too big";}
+	else 
+	{
+		$filename = $downloadFolder.$subFile['name'];
+		$result = move_uploaded_file($subFile['tmp_name'],$filename);
+		if ($result) {$error="success";}
+		else {$error="transfer failed";}
+	}
+	return $error;
+}
+
+//**********************************************************************************************************************// functions PHP
 
 
 	

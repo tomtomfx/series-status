@@ -284,3 +284,8 @@ footer{
     color: #334A59;
 	text-align: center;
 }
+#fileList{
+	padding-bottom: 20px;
+	font-size: 15px;
+}
+

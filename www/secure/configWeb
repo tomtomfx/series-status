@@ -3,3 +3,6 @@ shows=true
 tablet=true
 home=false
 photos=false
+
+# Subtitles folder
+downloadFolder=/media/divers/Downloads/
