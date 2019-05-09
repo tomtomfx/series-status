@@ -251,8 +251,8 @@ foreach my $ep (@episodeToDownload)
 		my @torrentUrl;
 		my $result = 0;
 		my $serie = $1; my $episode = $2; my $title = $3; my $id = $4;
-		$title =~ s/'//;
-		$serie =~ s/'//;
+		$title =~ s/'//g;
+		$serie =~ s/'//g;
 		
 		# Get show banner if doesn't exists
 		my $banner = "$bannersPath\/$serie.jpg";

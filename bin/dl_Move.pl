@@ -194,8 +194,8 @@ foreach my $file (@dlDir)
 		{
 			if ($_ =~ /(.*) - S(\d*)E(\d*) - (.*) - (\d*)/){$show = $1; $saison = $2; $ep = $3; $title = $4; $epId = $5}
 			my $serie = $show;
-			$title =~ s/'//;
-			$show =~ s/'//;
+			$title =~ s/'//g;
+			$show =~ s/'//g;
 			
 			if ($show ne "")
 			{
