@@ -85,7 +85,7 @@ sub getTorrentUrl
 		sleep(5);
 		$search = $tapi->search({search_string => "$serie $episodes", category => '18;41', min_seeders => 20});
 	}
-	if (ref $search ne "ARRAY")
+	if (ref $search eq "ARRAY")
 	{
 		foreach my $res (@{$search})
 		{
