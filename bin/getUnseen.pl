@@ -79,11 +79,11 @@ sub getTorrentUrl
 	if ($verbose >= 1) {print "Looking on Rarbg\n";}
 	my $tapi = Rarbg::torrentapi->new();
 	sleep(5);
-	my $search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
+	my $search = $tapi->search({search_string => "$serie $episodes", category => '18;41', min_seeders => 20});
 	if (ref $search ne "ARRAY")
 	{
 		sleep(5);
-		$search = $tapi->search({search_string => "$serie $episodes x264", category => '18;41', min_seeders => 20});
+		$search = $tapi->search({search_string => "$serie $episodes", category => '18;41', min_seeders => 20});
 	}
 	if (ref $search ne "ARRAY")
 	{
