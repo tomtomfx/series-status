@@ -39,8 +39,7 @@ class Episodes{
 		{
             if (!isset($episode['Location'])) continue; 
             $download = str_replace("/media/divers/Videos/Series/", "http://".$_SERVER['HTTP_HOST']."/downloads/", $episode['Location']);
-            $download = urlencode($download);
-			$episodes[$episode['Id']] = $download;
+            $episodes[$episode['Id']] = $download;
         }
         if (isset($episodes)){return $episodes;}
         else{return 0;}
