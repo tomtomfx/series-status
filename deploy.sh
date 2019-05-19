@@ -86,6 +86,7 @@ cp -R www/series /var/www/.
 cp -R www/photos /var/www/.
 cp -R www/home /var/www/.
 cp -R www/images /var/www/.
+cp -R www/api /var/www/.
 
 # Copy website options config if does not exists
 mkdir -p /var/www/secure/
