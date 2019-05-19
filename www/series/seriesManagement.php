@@ -600,7 +600,7 @@ function getCurrentShowList ($seriesManager)
 	$betaSeriesKey = $seriesManager->getOptionFromConfig('betaSeriesKey');
 	$url = "http://api.betaseries.com";
 	$token = betaSeriesAuthenticate ($seriesManager);
-
+	
 	# Get active shows
 	$search = "$url/shows/member?status=active&token=$token";
 	$options = array(
