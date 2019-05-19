@@ -13,7 +13,7 @@ class Episodes{
     public function getEpisodesToSee()
     {
         $episodes;
-        $q = "SELECT Id, Status, IdBetaseries, Archived FROM unseenEpisodes";
+        $q = "SELECT Id, Status, IdBetaseries, Archived FROM unseenEpisodes ORDER BY Id";
 		$queryRes = $this->db->query($q);
 			
 		while ($episode = $queryRes->fetchArray())
@@ -32,7 +32,7 @@ class Episodes{
     public function getEpisodesToDownload($tabletId)
     {
         $episodes;
-        $q = "SELECT Id, Location FROM unseenEpisodes WHERE Tablet=\"".$tabletId."\" AND CopyRequested=\"true\"";
+        $q = "SELECT Id, Location FROM unseenEpisodes WHERE Tablet=\"".$tabletId."\" AND CopyRequested=\"true\" ORDER BY Id";
 		$queryRes = $this->db->query($q);
 			
 		while ($episode = $queryRes->fetchArray())
@@ -49,7 +49,7 @@ class Episodes{
     {
         $episodes;
         $i = 0;
-        $q = "SELECT Id FROM unseenEpisodes WHERE Tablet=\"".$tabletId."\" AND IsOnTablet=\"true\"";
+        $q = "SELECT Id FROM unseenEpisodes WHERE Tablet=\"".$tabletId."\" AND IsOnTablet=\"true\" ORDER BY Id";
 		$queryRes = $this->db->query($q);
 			
 		while ($episode = $queryRes->fetchArray())
