@@ -38,8 +38,13 @@ class Episodes{
 		while ($episode = $queryRes->fetchArray())
 		{
             if (!isset($episode['Location'])) continue; 
-            $download = str_replace("/media/divers/Videos/Series/", "http://".$_SERVER['HTTP_HOST']."/downloads/", $episode['Location']);
-            $episodes[$episode['Id']] = $download;
+            $video = str_replace("/media/divers/Videos/Series/", "http://".$_SERVER['HTTP_HOST']."/downloads/", $episode['Location']);
+            $subtitles = preg_replace('/(.*)\..{3}$/', "$1.srt", $video);
+            $data = [
+                "Video" => $video,
+                "Subtitles" => $subtitles
+            ];
+			$episodes[$episode['Id']] = $data;
         }
         if (isset($episodes)){return $episodes;}
         else{return 0;}
