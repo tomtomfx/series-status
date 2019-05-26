@@ -221,6 +221,7 @@ function printEpisodesToWatch ($seriesManager)
 		$serieNameUnderscore = preg_replace('/ /', '_', $serieName);
 		$serieNameUnderscore = preg_replace('/\(/', '\(', $serieNameUnderscore);
 		$serieNameUnderscore = preg_replace('/\)/', '\)', $serieNameUnderscore);
+		$serieNameUnderscore = preg_replace('/&/', '*', $serieNameUnderscore);
 		$episodeID = $episode['Id'];
 		$IdBetaseries = $episode['IdBetaseries'];
 		preg_match("#.+ - (.+)#", $episodeID, $matches);

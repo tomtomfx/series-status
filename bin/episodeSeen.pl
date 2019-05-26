@@ -86,6 +86,7 @@ if ($ARGV[0] =~ /(.*)-(.*)-(.*)/)
 {
 	$serie = $1; $episode = $2; $epId = $3;
 	$serie =~ s/_/ /ig;
+	$serie =~ s/\*/&/ig;
 	if ($episode =~ /s(\d+)e(\d+)/i){$season = $1; $epNumber = $2;}
 	if ($verbose >= 1) {print "$serie - $episode - $epId\n";}
 }
