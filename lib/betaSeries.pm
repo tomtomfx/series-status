@@ -160,6 +160,7 @@ sub getEpisodeToDownload
 			{
 				$epNumber = $eps{$ep}->{code};
 				$title = $eps{$ep}->{title};
+				$title =~ s/-//ig;
 				$id = $eps{$ep}->{thetvdb_id};
 				#if ($verbose >= 1) {print ("$serie - $epNumber - $id\n");}
 				if ($eps{$ep}->{user}->{downloaded} != 1)
