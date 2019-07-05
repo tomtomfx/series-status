@@ -77,7 +77,7 @@ $b = $rgb & 0xFF;
 
 echo'
 		<style>
-			body {background-image: url("../images/backgrounds/'.$image.'");background-repeat:no-repeat;background-size:contain;background-color:rgb('.$r.', '.$g.', '.$b.');}
+			body {background-image: url("../images/backgrounds/'.$image.'");background-repeat:no-repeat;background-size:cover;background-color:rgb('.$r.', '.$g.', '.$b.');}
 		</style>
 ';
 ?>
