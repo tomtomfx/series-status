@@ -274,7 +274,9 @@ foreach my $ep (@episodeToDownload)
 		}
 		
 		# Get Torrent for this episode
-		push (@torrentUrl, getTorrentUrl($serie, $episode, $ua,$verbose));
+		my $searchSerie = $serie;
+		$searchSerie =~ s/&/and/ig;
+		push (@torrentUrl, getTorrentUrl($searchSerie, $episode, $ua,$verbose));
 		if ($torrentUrl[0] eq "") {$result = 1;}
 		if ($verbose >= 1) {print "$torrentUrl[0]\n";}
 		print $LOG "[$time] $host Download INFO \"$serie - $episode\" $torrentUrl[0]\n";

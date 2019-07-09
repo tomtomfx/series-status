@@ -85,6 +85,8 @@ sub GetInfos
 		$ep = $sn."x".$ep;
 		$file =~ s/$1/$ep/;
 	}
+	# Specific Blood & treasure
+	if ($file =~ /blood/i and $file =~ /treasure/i){$file =~ s/and/&/ig;}
 	
 	foreach my $show (@shows)
 	{
