@@ -99,17 +99,17 @@ sub getShowBackground
 
 	my $showId = $episode->{episode}->{show}->{id};
 
-	my $showReq = "http://api.betaseries.com/shows/pictures?token=$token&id=$showId&format=hd&order=-date";
+	my $showReq = "http://api.betaseries.com/shows/display?token=$token&id=$showId";
 	#print "request = $showReq\n";
 	$req = HTTP::Request->new(GET => "$showReq");
 	$req->header('X-BetaSeries-Version' => '3.0');
 	$req->header('Accept' => 'text/json');
 	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
 	my $message = sendRequest($ua, $req);
-	my $pictures = decode_json($message);
-	#print Dumper ($pictures->{pictures}[0]->{url});
+	my $show = decode_json($message);
+	#print Dumper ($show->{show});
 
-	my $backgroundURL = $pictures->{pictures}[0]->{url};
+	my $backgroundURL = $show->{show}->{images}->{show};
 
 	return $backgroundURL;
 }
