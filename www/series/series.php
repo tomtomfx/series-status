@@ -314,7 +314,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 			<!-- Footer -->
 			<footer>
 				<div class="row">
-					<img class="col-xs-2" src="../images/Tomtomfx_bot.png" alt="Powered by Tomtomfx">
+					<!-- <img class="col-xs-2" src="../images/Tomtomfx_bot.png" alt="Powered by Tomtomfx"> -->
 				</div>
 			</footer>
 		</div>	

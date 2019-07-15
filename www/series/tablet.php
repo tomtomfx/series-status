@@ -12,7 +12,7 @@
 	if (isset($_POST['tabletId']) AND isset($_POST['action']))
 	{
 		if ($_POST['action'] == "add"){
-			$tabletManager->addTablet($_POST['tabletId'], $_POST['tabletIp'], $_POST['ftpUser'], $_POST['ftpPassword']);
+			$tabletManager->addTablet($_POST['tabletId'], $_POST['tabletIp']);
 		}
 		elseif ($_POST['action'] == "remove"){
 			$tabletManager->removeTablet($_POST['tabletId']);
@@ -166,8 +166,6 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 <?php
 	formText("Tablet id:", "tabletId", "success", "", "true");
 	formText("Tablet IP address:", "tabletIp", "success", "", "true");
-	formText("FTP user:", "ftpUser", "success", "", "true");
-	formPassword("FTP password", "ftpPassword", "success", "");
 ?>
 								<input type="hidden" name="action" value="add"/>
 							</div>
@@ -234,7 +232,7 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 			<!-- Footer -->
 			<footer>
 				<div class="row">
-					<img class="col-xs-2" src="../images/Tomtomfx_bot.png" alt="Powered by Tomtomfx">
+					<!-- <img class="col-xs-2" src="../images/Tomtomfx_bot.png" alt="Powered by Tomtomfx"> -->
 				</div>
 			</footer>
 		</div>	

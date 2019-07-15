@@ -141,22 +141,15 @@ class tabletManagement {
 		$this->db->query($q);
 	}
 	
-	public function addTablet ($id, $ipAddr, $user, $password)
+	public function addTablet ($id, $ipAddr)
 	{
-		// Check if table Tablets exists. If not create it.
-		$q = "SELECT COUNT(*) FROM sqlite_master WHERE name='Tablets' and type='table'";
-		$queryRes = $this->db->query($q);
-		$tableExists = $queryRes->fetchArray();
-		if ($tableExists[0] == 0){
-			$this->db->exec('CREATE TABLE Tablets (id TEXT PRIMARY KEY, ip TEXT, ftpUser TEXT, ftpPassword TEXT, status TEXT)');
-		}
 		// Insert new tablet into database
 		// Check if id already exists
 		$q = "SELECT COUNT(id) FROM Tablets WHERE id='$id'";
 		$queryRes = $this->db->query($q);
 		$tabletExists = $queryRes->fetchArray();
 		if ($tabletExists[0] == 0){
-			$q = 'INSERT INTO Tablets (id, ip, ftpUser, ftpPassword) VALUES ("'.$id.'", "'.$ipAddr.'", "'.$user.'", "'.$password.'")';
+			$q = 'INSERT INTO Tablets (id, ip) VALUES ("'.$id.'", "'.$ipAddr.'")';
 			$this->db->exec($q);
 		}
 	}
@@ -164,17 +157,20 @@ class tabletManagement {
 	{
 		$tablets;
 		$i = 0;
+		// Check if table Tablets exists. If not create it.
+		$q = "SELECT COUNT(*) FROM sqlite_master WHERE name='Tablets' and type='table'";
+		$queryRes = $this->db->query($q);
+		$tableExists = $queryRes->fetchArray();
+		if ($tableExists[0] == 0){
+			$this->db->exec('CREATE TABLE Tablets (id TEXT PRIMARY KEY, ip TEXT, lastConnection TEXT)');
+		}
 		$q = 'SELECT * FROM Tablets';
 		$queryRes = $this->db->query($q);
-		if ($queryRes != false)
+		while ($tablet = $queryRes->fetchArray())
 		{
-			while ($tablet = $queryRes->fetchArray())
-			{
-				$tablets[$i] = $tablet;
-				$i++;
-			}
+			$tablets[$i] = $tablet;
+			$i++;
 		}
-		else {$tablets = 0;}
 		if (isset($tablets)){
 			return $tablets;	
 		}
@@ -470,15 +466,18 @@ function printTablets ($tabletManager)
 				<table class="table table-condensed">
 					<thead><tr>
 						<th class="col-xs-6">Name</th>
-						<th class="col-xs-6">Status</th>
+						<th class="col-xs-6">Last connection</th>
 					</tr></thead>
 					<tbody>								
 		';
 		foreach ($tablets as $tablet)
 		{
 			$tabletName = $tablet['id'];
-			$tabletStatus = "<span class=\"label label-warning\">Connection lost</span>";
-			if ($tablet['status'] == 'OK'){$tabletStatus = "<span class=\"label label-success\">Available</span>";}
+			$tabletStatus = "<span class=\"label label-warning\">Never</span>";
+			if ($tablet['lastConnection'] != null){
+				$lastConnection = $tablet['lastConnection'];
+				$tabletStatus = "<span class=\"label label-success\">".$lastConnection."</span>";
+			}
 			echo'
 						<tr>
 							<td class="col-xs-6">'.$tabletName.'</td>
