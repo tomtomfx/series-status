@@ -166,11 +166,14 @@ class tabletManagement {
 		}
 		$q = 'SELECT * FROM Tablets';
 		$queryRes = $this->db->query($q);
-		while ($tablet = $queryRes->fetchArray())
-		{
-			$tablets[$i] = $tablet;
-			$i++;
+		if ($queryRes != false){
+			while ($tablet = $queryRes->fetchArray())
+			{
+				$tablets[$i] = $tablet;
+				$i++;
+			}
 		}
+		else {$tablets = 0;}
 		if (isset($tablets)){
 			return $tablets;	
 		}
