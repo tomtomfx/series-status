@@ -198,22 +198,25 @@ function printEpisodesToWatch ($seriesManager)
 	$episodes = $seriesManager->getEpisodes(true);
 	$nbEpisodes = count($episodes);
 	
-	$glyph = "glyphicon-folder-open";	
-	echo'
-		<div class="panel panel-default" id="panelGlobal">
-			<div class="panel-heading" id="panelHead">
-				<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>Episodes to see<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
-			</div>
-			<table class="table table-hover">
-			<thead><tr>
-				<th class="col-xs-2">Show</th>
-				<th class="col-xs-1">Episode</th>
-				<th class="col-xs-4">Title</th>
-				<th class="col-xs-2">Status</th>
-				<th id="CenteredTitle" class="col-xs-2">Actions</th>
-			</tr></thead>
-			<tbody>								
-	';
+	if ($nbEpisodes != 0)
+	{
+		$glyph = "glyphicon-folder-open";	
+		echo'
+			<div class="panel panel-default" id="panelGlobal">
+				<div class="panel-heading" id="panelHead">
+					<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>Episodes to see<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
+				</div>
+				<table class="table table-hover">
+				<thead><tr>
+					<th class="col-xs-2">Show</th>
+					<th class="col-xs-1">Episode</th>
+					<th class="col-xs-4">Title</th>
+					<th class="col-xs-2">Status</th>
+					<th id="CenteredTitle" class="col-xs-2">Actions</th>
+				</tr></thead>
+				<tbody>								
+		';
+	}
 	foreach ($episodes as $episode)
 	{
 		$serieName = $episode['Show'];
