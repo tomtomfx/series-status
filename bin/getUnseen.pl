@@ -121,17 +121,17 @@ sub getTorrentUrl
 	}
 	
 	# Get torrent URL from thehiddenbay
-	if ($verbose >= 1) {print "https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0\n";}
-	$response = $ua->get("https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0");
-	my @pirate2 = split("\n", $response->decoded_content);
-	foreach (@pirate2)
-	{
-		if ($_ =~ /<a href=\"(magnet:.*)\" title=\"Download this torrent using magnet\"/)
-		{
-			$pirate2 = $1;
-			last;
-		}
-	}
+	# if ($verbose >= 1) {print "https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0\n";}
+	# $response = $ua->get("https://thehiddenbay.info/search/$serie+$episodes+x26*/0/99/0");
+	# my @pirate2 = split("\n", $response->decoded_content);
+	# foreach (@pirate2)
+	# {
+		# if ($_ =~ /<a href=\"(magnet:.*)\" title=\"Download this torrent using magnet\"/)
+		# {
+			# $pirate2 = $1;
+			# last;
+		# }
+	# }
 	
 	# Get torrent URL from kickass
 	if ($verbose >= 1) {print "http://kickass.cd/search.php?q=$serie+$episodes+x264\n";}
@@ -283,7 +283,7 @@ foreach my $ep (@episodeToDownload)
 		if ($torrentUrl[0] ne "")
 		{
 			my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.5/RPC2');
-			$result = $xmlrpc->call("load_start", @torrentUrl);
+			$result = $xmlrpc->call("load.start", "", @torrentUrl);
 		}
 		if ($result eq "0"){$status = "Download launched";}
 		
