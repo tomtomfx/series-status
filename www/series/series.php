@@ -235,7 +235,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						</div>
 						<form class="form-horizontal" method="POST" action="#" enctype="multipart/form-data">
 							<div class="modal-body">
-								<h4>Episodes with missing subtitles:<h4>
+								<h4>Episodes with missing subtitles:</h4>
 								<ul id="fileList">
 <?php
 	$files = getFilesMissingSubtitles($seriesManager);

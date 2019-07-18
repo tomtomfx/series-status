@@ -135,7 +135,7 @@
 			echo "
 						<div class=\"form-group has-error\">
 							<label for=\"texte\" class=\"col-xs-offset-1 col-xs-2 control-label\" for=\"idError\">Username: </label>
-							<div class=\"col-xs-7\">
+							<div class=\"col-xs-offset-1 col-xs-7\">
 								<input name=\"user\" type=\"text\" class=\"form-control\" id=\"idError\" value=\"".$user."\">
 								<span class=\"help-block\">You must enter a username</span>
 							</div>";
@@ -145,7 +145,7 @@
 			echo "
 						<div class=\"form-group\">
 							<label for=\"texte\" class=\"col-xs-offset-1 col-xs-2 control-label\" style=color:white>Username: </label>
-							<div class=\"col-xs-7\">
+							<div class=\"col-xs-offset-1 col-xs-7\">
 								<input name=\"user\" type=\"text\" class=\"form-control\" value=\"".$user."\">
 							</div>";
 		}
@@ -158,7 +158,7 @@
 			echo'
 						<div class="form-group has-error">
 							<label for="texte" class="col-xs-offset-1 col-xs-2 control-label" for="idError">Password: </label>
-							<div class="col-xs-7">
+							<div class="col-xs-offset-1 col-xs-7">
 								<input name="pass" type="password" class="form-control" id="idError">
 								<span class="help-block">You must enter a password</span>
 							</div>';
@@ -168,7 +168,7 @@
 			echo'
 						<div class="form-group">
 							<label for="texte" class="col-xs-offset-1 col-xs-2 control-label" style=color:white>Password: </label>
-							<div class="col-xs-7">
+							<div class="col-xs-offset-1 col-xs-7">
 								<input name="pass" type="password" class="form-control">
 							</div>';
 		}

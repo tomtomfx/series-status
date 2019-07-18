@@ -33,7 +33,7 @@ class seriesManagement {
 	}
 		
 	public function getEpisodes($removeArchived) {
-		$episodes;
+		$episodes = null;
 		$i = 0;
 		
 		$q = "SELECT * FROM unseenEpisodes ORDER BY Show, Id";
@@ -196,7 +196,8 @@ function printEpisodesToWatch ($seriesManager)
 {
 
 	$episodes = $seriesManager->getEpisodes(true);
-	$nbEpisodes = count($episodes);
+	if ($episodes != null){$nbEpisodes = count($episodes);}
+	else {$nbEpisodes = 0;}
 	
 	if ($nbEpisodes != 0)
 	{
@@ -210,64 +211,64 @@ function printEpisodesToWatch ($seriesManager)
 				<thead><tr>
 					<th class="col-xs-2">Show</th>
 					<th class="col-xs-1">Episode</th>
-					<th class="col-xs-4">Title</th>
+					<th class="col-xs-5">Title</th>
 					<th class="col-xs-2">Status</th>
 					<th id="CenteredTitle" class="col-xs-2">Actions</th>
 				</tr></thead>
 				<tbody>								
 		';
-	}
-	foreach ($episodes as $episode)
-	{
-		$serieName = $episode['Show'];
-		$serieNameUnderscore = preg_replace('/ /', '_', $serieName);
-		$serieNameUnderscore = preg_replace('/\(/', '\(', $serieNameUnderscore);
-		$serieNameUnderscore = preg_replace('/\)/', '\)', $serieNameUnderscore);
-		$serieNameUnderscore = preg_replace('/&/', '*', $serieNameUnderscore);
-		$episodeID = $episode['Id'];
-		$IdBetaseries = $episode['IdBetaseries'];
-		preg_match("#.+ - (.+)#", $episodeID, $matches);
-		$episodeNumber = $matches[1];
-		$episodeTitle = '&nbsp;';
-		if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
-		$epStatus = $episode['Status'];
-		$label = "info";
-		switch ($epStatus)
+		foreach ($episodes as $episode)
 		{
-			case "To be watched":
-				$label = "success";
-				break;
-			case "No subtitles found":
-				$label = "warning";
-				break;
-			case "Download launched":
-				$label = "info";
-				break;
-			case "Download failed":
-				$label = "danger";
-				break;
-		}
-		$action = "";
-		if ($label == "success")
-		{
-			$action = '<a id="epAction" href="../cgi-bin/update.cgi?ep='.$serieNameUnderscore.'-'.$episodeNumber.'-'.$IdBetaseries.'"><span class="glyphicon glyphicon-eye-open"></span></a>';
-			// $action = $action.'<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';
+			$serieName = $episode['Show'];
+			$serieNameUnderscore = preg_replace('/ /', '_', $serieName);
+			$serieNameUnderscore = preg_replace('/\(/', '\(', $serieNameUnderscore);
+			$serieNameUnderscore = preg_replace('/\)/', '\)', $serieNameUnderscore);
+			$serieNameUnderscore = preg_replace('/&/', '*', $serieNameUnderscore);
+			$episodeID = $episode['Id'];
+			$IdBetaseries = $episode['IdBetaseries'];
+			preg_match("#.+ - (.+)#", $episodeID, $matches);
+			$episodeNumber = $matches[1];
+			$episodeTitle = '&nbsp;';
+			if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
+			$epStatus = $episode['Status'];
+			$label = "info";
+			switch ($epStatus)
+			{
+				case "To be watched":
+					$label = "success";
+					break;
+				case "No subtitles found":
+					$label = "warning";
+					break;
+				case "Download launched":
+					$label = "info";
+					break;
+				case "Download failed":
+					$label = "danger";
+					break;
+			}
+			$action = "";
+			if ($label == "success")
+			{
+				$action = '<a id="epAction" href="../cgi-bin/update.cgi?ep='.$serieNameUnderscore.'-'.$episodeNumber.'-'.$IdBetaseries.'"><span class="glyphicon glyphicon-eye-open"></span></a>';
+				// $action = $action.'<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';
+			}
+			echo'
+						<tr>
+							<td id="show" class="col-xs-2"><img id="banniere" class="img-responsive" src="../images/banners/'.$serieName.'" alt="'.$serieName.'"></td>
+							<td id="epNumber" class="col-xs-1">'.$episodeNumber.'</td>
+							<td id="epTitle" class="col-xs-5">'.$episodeTitle.'</td>
+							<td id="epStatus" class="col-xs-2"><span class="label label-'.$label.'">'.$epStatus.'</span></td>
+							<td id="epNext" class="col-xs-2" text-align="center">'.$action.'</td>
+						</tr>
+			';
 		}
 		echo'
-					<tr>
-						<td id="show" class="col-xs-2"><img id="banniere2" class="img-responsive" src="../images/banners/'.$serieName.'" alt="'.$serieName.'"></td>
-						<td id="epNumber" class="col-xs-1">'.$episodeNumber.'</td>
-						<td id="epTitle" class="col-xs-4">'.$episodeTitle.'</td>
-						<td id="epStatus" class="col-xs-2"><span class="label label-'.$label.'">'.$epStatus.'</span></td>
-						<td id="epNext" class="col-xs-2" text-align="center">'.$action.'</td>
-					</tr>
+					</tbody>
+				</table>
+			</div>
 		';
 	}
-	echo'
-				</tbody>
-			</table>
-		</div>
-	';
 }						
 
 // Form combo
@@ -297,24 +298,27 @@ function formComboToCopy ($label, $tabletManager)
 // Form combo
 function formComboToArchive ($label, $showsFound)
 {
-	echo'
-								<div class="row">
-									<div class="form-group">
-										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
-										<div class="col-xs-6">
-											<select name="showId" class="form-control">
-	';
-	foreach ($showsFound as $key => $id) {
+	if ($showsFound != null)
+	{
 		echo'
-											<option value="'.$id.'">'.$key.'</option>
+									<div class="row">
+										<div class="form-group">
+											<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
+											<div class="col-xs-6">
+												<select name="showId" class="form-control">
 		';
-	}
-	echo'
-											</select>
+		foreach ($showsFound as $key => $id) {
+			echo'
+												<option value="'.$id.'">'.$key.'</option>
+			';
+		}
+		echo'
+												</select>
+											</div>
 										</div>
 									</div>
-								</div>
-	';
+		';
+	}
 }
 
 // Get a random image to diplay it as background
@@ -602,7 +606,7 @@ function getShowList ($searchShow, $seriesManager)
 // Get list of shows followed
 function getCurrentShowList ($seriesManager)
 {
-	$showsFound;
+	$showsFound = null;
 	$betaSeriesKey = $seriesManager->getOptionFromConfig('betaSeriesKey');
 	$url = "http://api.betaseries.com";
 	$token = betaSeriesAuthenticate ($seriesManager);
@@ -647,11 +651,11 @@ function getCurrentShowList ($seriesManager)
 		$showsFound[$show['title']] = $show['id'];
 	}
 
-	if (isset($showsFound)){
+	if (isset($showsFound) && $showsFound != null){
 		ksort($showsFound);
 		return($showsFound);	
 	}
-	return(0);
+	return(null);
 }
 
 // Form combo
