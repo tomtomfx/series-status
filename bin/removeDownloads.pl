@@ -19,8 +19,8 @@ foreach my $arg (@ARGV)
 my $xmlrpc = Frontier::Client->new('url' => 'http://192.168.1.5/RPC2');
 
 # Get completed downloads
-my @parameters = ("complete", "d.get_hash=");
-my @torrents = $xmlrpc->call('d.multicall', @parameters);
+my @parameters = ("complete", "d.hash=");
+my @torrents = $xmlrpc->call('d.multicall2', "", @parameters);
 if ($verbose >= 1) {print Dumper @torrents;}
 
 # Remove finished
