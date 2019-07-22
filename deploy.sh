@@ -117,6 +117,7 @@ done
 
 # Change owner and rights
 chown -R www-data:www-data /var/www
+chmod -R ug+rw /var/www/series
 chmod ug+rw /var/www/series/*.php
 chmod ug+rw /var/www/photos/*.php
 chmod ug+rw /var/www/home/*.php
