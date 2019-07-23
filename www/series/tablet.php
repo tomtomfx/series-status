@@ -132,7 +132,7 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 			<!-- Series / Episodes -->
 			<section class="row" id="episodes">
 				<div class="col-xs-8">
-					<div class="col-xs-12">
+					<div class="col-xs-12" style="padding: 0px;">
 						<div class="panel-group">
 <?php
 	printEpisodesToCopy("On tablet", $tabletManager);
@@ -143,7 +143,7 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 					</div>
 				</div>
 				<div class="col-xs-4">
-					<div class="col-xs-12">
+					<div class="col-xs-12" style="padding: 0px;">
 						<div class="panel-group">
 <?php
 	printTablets($tabletManager);

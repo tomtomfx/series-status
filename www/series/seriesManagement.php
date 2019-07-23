@@ -372,8 +372,8 @@ function printEpisodesToCopy ($status, $tabletManager)
 				</div>
 				<table class="table table-condensed">
 				<thead><tr>
-					<th class="col-xs-4">Show</th>
-					<th class="col-xs-1">Episode</th>
+					<th class="col-xs-3">Show</th>
+					<th class="col-xs-2">Episode</th>
 					<th class="col-xs-6">Title</th>
 					<th class="col-xs-1">Actions</th>
 				</tr></thead>
@@ -392,7 +392,7 @@ function printEpisodesToCopy ($status, $tabletManager)
 			$action = '<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';			
 			echo'
 						<tr>
-							<td class="col-xs-1">'.$show.'</td>
+							<td class="col-xs-3">'.$show.'</td>
 							<td class="col-xs-2">'.$episodeNumber.'</td>
 							<td class="col-xs-6">'.$episodeTitle.'</td>
 							<td class="col-xs-1" text-align="center">'.$action.'</td>
@@ -415,8 +415,8 @@ function printEpisodesToCopy ($status, $tabletManager)
 				</div>
 				<table class="table table-condensed">
 				<thead><tr>
-					<th class="col-xs-4">Show</th>
-					<th class="col-xs-1">Episode</th>
+					<th class="col-xs-3">Show</th>
+					<th class="col-xs-2">Episode</th>
 					<th class="col-xs-4">Title</th>
 					<th class="col-xs-2">Tablet</th>
 					<th class="col-xs-1">Actions</th>
@@ -446,8 +446,8 @@ function printEpisodesToCopy ($status, $tabletManager)
 			
 			echo'
 						<tr>
-							<td class="col-xs-4">'.$show.'</td>
-							<td class="col-xs-1">'.$episodeNumber.'</td>
+							<td class="col-xs-3">'.$show.'</td>
+							<td class="col-xs-2">'.$episodeNumber.'</td>
 							<td class="col-xs-4">'.$episodeTitle.'</td>
 							<td class="col-xs-2">'.$tablet.'</td>
 							<td class="col-xs-1" text-align="center">'.$action.'</td>
