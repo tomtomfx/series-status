@@ -53,12 +53,13 @@
 		
 		//Returns false if username is taken
 		public function newUser($username, $password, $isAdmin) {
+			$userlist = null;
 			$user = $this->db->escapeString($username);
 			$pass = md5($this->salt.$password);
 			$time = time();
 			$checkuser = $this->db->query("SELECT id FROM users WHERE username = '$user'");
 			$userlist = $checkuser->fetchArray();
-			if (count($userlist) > 1)
+			if ($userlist != null && count($userlist) > 1)
 			{
 				return false;
 			}
