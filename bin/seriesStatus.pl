@@ -119,6 +119,7 @@ $dbhSerie->disconnect();
 # Process files in the database
 foreach (@episodes)
 {
+	if ($_->{'Archived'} eq "TRUE") {next;}
 	$shows{$_->{'Show'}}{$_->{'Id'}}{'IdBetaseries'} = $_->{'IdBetaseries'};
 	$shows{$_->{'Show'}}{$_->{'Id'}}{'Title'} = $_->{'Title'};
 	$shows{$_->{'Show'}}{$_->{'Id'}}{'Location'} = $_->{'Location'};
@@ -165,7 +166,7 @@ foreach my $serie (@keys)
 if ($sendMail && @keys)
 {
 	# Create email content
-	my $mailContent = "Bonjour Thomas,\nVoici le résumé \"séries\" du jour:\n\n";
+	my $mailContent = "Bonjour Thomas,\nVoici le rï¿½sumï¿½ \"sï¿½ries\" du jour:\n\n";
 	foreach my $serie (sort keys %shows)
 	{
 		my @episodes = sort keys %{$shows{$serie}};
@@ -178,7 +179,7 @@ if ($sendMail && @keys)
 			$mailContent = $mailContent."\t$episode --> $shows{$serie}{$episode}{'Status'}\n";
 		}
 	}
-	$mailContent = $mailContent."\nBonne soirée.\n";
+	$mailContent = $mailContent."\nBonne soirï¿½e.\n";
 	if ($verbose >= 1) {print $mailContent;}
 
 	# Send email
