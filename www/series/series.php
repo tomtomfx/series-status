@@ -8,10 +8,14 @@
 	
 	include 'seriesManagement.php';
 
+	$seriesManager = new seriesManagement();
+	$seriesManager->configInit("../secure/configWeb");
+	$seriesManager->dbinit("./series.db");
+
 	$status = "";
 	$searchShow = "";
-	$showsFound;
-	$showsList;
+	$showsFound = null;
+	$showsList = null;
 	$type = "";
 	$image = "";
 	if (isset($_GET['status']))
@@ -43,6 +47,7 @@
 		<link href="../bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
 		<script type="text/javascript" src="../bootstrap-3.3.6-dist/js/jquery.min.js"></script>
 		<script type="text/javascript" src="../bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="./js/series.js"></script>
 <?php
 		if (isset($_GET['status']))
 		{
@@ -126,7 +131,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						</li>
 						<ul class="dropdown-menu">
 							<li><a href="#addSerie" data-toggle="modal"><span class="glyphicon glyphicon-plus"></span> Add a show</a></li>
-							<li><a href="#archiveSerie" data-toggle="modal"><span class="glyphicon glyphicon-minus"></span> Archive a show</a></li>
+							<li><a href="#" onclick="createArchiveShowList();return false;" data-toggle="modal"><span class="glyphicon glyphicon-minus"></span> Archive a show</a></li>
 							<li><a href="#uploadSubtitlesFile" data-toggle="modal"><span class="glyphicon glyphicon-upload"></span> Upload subtitles</a></li>
 							<li><a href="../logout.php"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
 						</ul>
@@ -144,7 +149,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 				<div class="col-xs-12">
 					<div class="panel-group">
 <?php
-	printEpisodesToWatch($seriesManager);
+	echo(printEpisodesToWatch($seriesManager));
 ?>
 					</div>
 				</div>
@@ -158,7 +163,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 							<h3 class="modal-title" id="addSerieLabel">Add a show</h3>
 						</div>
-						<form class="form-horizontal" method="POST" action="#">
+						<form class="form-horizontal" action="#" onsubmit="getShowList();return false;">
 							<div class="modal-body">
 								<div class="form-group">
 									<label for="serie_name" class="col-xs-3 control-label">Show name:</label>
@@ -168,7 +173,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 								</div>
 							</div>
 							<div class="modal-footer">
-								<button type="submit" class="pull-right btn btn-default">Add</button>
+								<button type="submit" class="pull-right btn btn-default">Search</button>
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 							</div>
 						</form>
@@ -187,9 +192,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						<form class="form-horizontal" method="POST" action="../cgi-bin/add.cgi">
 							<div class="modal-body">
 <?php
-	if (isset ($showsFound)){
-		formComboToAdd("Show:", $showsFound);
-	}
+	echo(formComboToAdd("Show:", $showsFound));
 ?>
 							</div>
 							<div class="modal-footer">
@@ -212,8 +215,7 @@ if ($seriesManager->getOptionFromConfig('home') == 'true'){
 						<form class="form-horizontal" method="POST" action="../cgi-bin/archive.cgi">
 							<div class="modal-body">
 <?php
-	$showsList = getCurrentShowList ($seriesManager);
-	formComboToArchive("Show:", $showsList);
+	echo(formComboToArchive("Show:", $showsList));
 ?>
 							</div>
 							<div class="modal-footer">

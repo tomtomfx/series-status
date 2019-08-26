@@ -1,14 +1,13 @@
 <?php
 
-class seriesManagement {
+class seriesManagement{
 
-	private $dbfile = "series.db";
 	private $db = -1;
 	private $config;
 
-	public function configInit() {
+	public function configInit($configPath) {
 		# Website config
-		$configFile = file("../secure/configWeb", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$configFile = file($configPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		foreach ($configFile as $option)
 		{
 			preg_match("/(.+)=(.+)/", $option, $matches);
@@ -22,9 +21,9 @@ class seriesManagement {
 		return $this->config[$option];
 	}
 
-	public function dbinit() {
+	public function dbinit($dbPath) {
 		if ($this->db == -1) 
-			$this->db = new SQLite3($this->dbfile);
+			$this->db = new SQLite3($dbPath);
 	}
 	
 	public function dbclose() {
@@ -70,18 +69,13 @@ class seriesManagement {
 	}
 }
 
-$seriesManager = new seriesManagement();
-$seriesManager->configInit();
-$seriesManager->dbinit();
-
 class tabletManagement {
 
-	private $dbfile = "series.db";
 	private $db = -1;
 	
-	public function dbinit() {
+	public function dbinit($dbPath) {
 		if ($this->db == -1) 
-			$this->db = new SQLite3($this->dbfile);
+			$this->db = new SQLite3($dbPath);
 	}
 	
 	public function dbclose() {
@@ -186,15 +180,11 @@ class tabletManagement {
 	}
 }
 
-$tabletManager = new tabletManagement();
-$tabletManager->dbinit();
-
-
 //**********************************************************************************************************************// fonctions PHP
 // Write all episodes 
 function printEpisodesToWatch ($seriesManager)
 {
-
+	$content="";
 	$episodes = $seriesManager->getEpisodes(true);
 	if ($episodes != null){$nbEpisodes = count($episodes);}
 	else {$nbEpisodes = 0;}
@@ -202,7 +192,7 @@ function printEpisodesToWatch ($seriesManager)
 	if ($nbEpisodes != 0)
 	{
 		$glyph = "glyphicon-folder-open";	
-		echo'
+		$content = $content.'
 			<div class="panel panel-default" id="panelGlobal">
 				<div class="panel-heading" id="panelHead">
 					<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>Episodes to see<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
@@ -253,7 +243,7 @@ function printEpisodesToWatch ($seriesManager)
 				$action = '<a id="epAction" href="../cgi-bin/update.cgi?ep='.$serieNameUnderscore.'-'.$episodeNumber.'-'.$IdBetaseries.'"><span class="glyphicon glyphicon-eye-open"></span></a>';
 				// $action = $action.'<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';
 			}
-			echo'
+			$content = $content.'
 						<tr>
 							<td id="show" class="col-xs-2"><img id="banniere" class="img-responsive" src="../images/banners/'.$serieName.'" alt="'.$serieName.'"></td>
 							<td id="epNumber" class="col-xs-1">'.$episodeNumber.'</td>
@@ -263,62 +253,66 @@ function printEpisodesToWatch ($seriesManager)
 						</tr>
 			';
 		}
-		echo'
+		$content = $content.'
 					</tbody>
 				</table>
 			</div>
 		';
 	}
+	return $content;
 }						
 
 // Form combo
-function formComboToCopy ($label, $tabletManager)
+function formComboToCopy ($label, $tabletManager, $id)
 {
+	$content="";
 	$tablets = $tabletManager->getTablets();
-	echo'
-								<div class="row">
+	$content = $content.'
+								<div class="row" id="'.$id.'Combo">
 									<div class="form-group">
 										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
 										<div class="col-xs-6">
-											<select name="tabletId" class="form-control">
+											<select name="tabletId" class="form-control" id="'.$id.'">
 	';
 	foreach ($tablets as $tablet) {
-		echo'
+		$content = $content.'
 											<option>'.$tablet['id'].'</option>
 		';
 	}
-	echo'
+	$content = $content.'
 											</select>
 										</div>
 									</div>
 								</div>
 	';
+	return $content;
 }
 
 // Form combo
 function formComboToArchive ($label, $showsFound)
 {
+	$content = "";
+	$content = $content.'<div class="row" id="archiveShowList">';
 	if ($showsFound != null)
 	{
-		echo'
-									<div class="row">
-										<div class="form-group">
-											<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
-											<div class="col-xs-6">
-												<select name="showId" class="form-control">
+		$content = $content.'
+									<div class="form-group">
+										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
+										<div class="col-xs-6">
+											<select name="showId" class="form-control" id="archiveShowId">
 		';
 		foreach ($showsFound as $key => $id) {
-			echo'
-												<option value="'.$id.'">'.$key.'</option>
+			$content = $content.'
+											<option value="'.$id.'">'.$key.'</option>
 			';
 		}
-		echo'
-												</select>
-											</div>
+		$content = $content.'
+											</select>
 										</div>
-									</div>
-		';
+									</div>';
 	}
+	$content = $content.'</div>';
+	return $content;
 }
 
 // Get a random image to diplay it as background
@@ -350,9 +344,9 @@ function getRandomBackground($dir)
 }
 
 // Write all episodes from a status 
-function printEpisodesToCopy ($status, $tabletManager)
+function printEpisodesToCopy ($status, $tabletManager, $panelId)
 {
-
+	$table = "";
 	$episodes = $tabletManager->getEpisodesFromStatus($status, true);
 	if (!empty($episodes)){
 		$nbEpisodes = count($episodes);
@@ -363,10 +357,10 @@ function printEpisodesToCopy ($status, $tabletManager)
 	if ($status == "On tablet"){$glyph = "glyphicon-phone";} 
 	elseif ($status == "Copy requested"){$glyph = "glyphicon-save";} 
 	
-	if (is_array($episodes) AND $status == "Available")
+	if ($status == "Available")
 	{
-		echo'
-			<div class="panel panel-default" id="panelGlobal">
+		$table = $table.'
+			<div class="panel panel-default" id="panelGlobal'.$panelId.'">
 				<div class="panel-heading" id="panelHead">
 					<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>'.$status.'<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
 				</div>
@@ -376,110 +370,107 @@ function printEpisodesToCopy ($status, $tabletManager)
 					<th class="col-xs-2">Episode</th>
 					<th class="col-xs-6">Title</th>
 					<th class="col-xs-1">Actions</th>
-				</tr></thead>
-				<tbody>								
-		';
-		foreach ($episodes as $episode)
-		{
-			$show = $episode['Show'];
-			$episodeID = $episode['Id'];
-			preg_match("#.+ - (.+)#", $episodeID, $matches);
-			$episodeNumber = $matches[1];
-			$episodeTitle = '&nbsp;';
-			if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
+				</tr></thead>';
+		if(is_array($episodes)){
+			$table = $table.'<tbody>';
+			foreach ($episodes as $episode)
+			{
+				$show = $episode['Show'];
+				$episodeID = $episode['Id'];
+				preg_match("#.+ - (.+)#", $episodeID, $matches);
+				$episodeNumber = $matches[1];
+				$episodeTitle = '&nbsp;';
+				if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
 
-			$status = '&nbsp;';
-			$action = '<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=copy"><span class="glyphicon glyphicon-plus"></span></a>';			
-			echo'
-						<tr>
-							<td class="col-xs-3">'.$show.'</td>
-							<td class="col-xs-2">'.$episodeNumber.'</td>
-							<td class="col-xs-6">'.$episodeTitle.'</td>
-							<td class="col-xs-1" text-align="center">'.$action.'</td>
-						</tr>
-			';
+				$status = '&nbsp;';
+				$action = '<a id="epAction" href="#" onclick="showRequestCopy(\''.$episode['Id'].'\');return false;"><span class="glyphicon glyphicon-plus"></span></a>';			
+				$table = $table.'
+							<tr>
+								<td class="col-xs-3">'.$show.'</td>
+								<td class="col-xs-2">'.$episodeNumber.'</td>
+								<td class="col-xs-6">'.$episodeTitle.'</td>
+								<td class="col-xs-1" text-align="center">'.$action.'</td>
+							</tr>
+				';
+			}
+			$table = $table.'</tbody>';
 		}
-		echo'
-					</tbody>
-				</table>
-			</div>
-		';
+		$table = $table.'</table></div>';
 	}
 
-	elseif (is_array($episodes) AND ($status == "On tablet" OR $status == "Copy requested"))
+	elseif ($status == "On tablet" OR $status == "Copy requested")
 	{
-		echo'
-			<div class="panel panel-default" id="panelGlobal">
-				<div class="panel-heading" id="panelHead">
-					<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>'.$status.'<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
-				</div>
-				<table class="table table-condensed">
-				<thead><tr>
-					<th class="col-xs-3">Show</th>
-					<th class="col-xs-2">Episode</th>
-					<th class="col-xs-4">Title</th>
-					<th class="col-xs-2">Tablet</th>
-					<th class="col-xs-1">Actions</th>
-				</tr></thead>
-				<tbody>								
-		';
-		foreach ($episodes as $episode)
-		{
-			$show = $episode['Show'];
-			$episodeID = $episode['Id'];
-			preg_match("#.+ - (.+)#", $episodeID, $matches);
-			$episodeNumber = $matches[1];
-			$tablet = $episode['Tablet'];
-			$episodeTitle = '&nbsp;';
-			if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
+		$table = $table.'<div class="panel panel-default" id="panelGlobal'.$panelId.'">
+					<div class="panel-heading" id="panelHead">
+						<h2 class="panel-title" id="panelTitle"><span class="glyphicon '.$glyph.'" id="panelGlyph"></span>'.$status.'<span class="badge badge-primary" id="nbEpBadge">'.$nbEpisodes.'</span></h2>
+					</div>
+					<table class="table table-condensed">
+					<thead><tr>
+						<th class="col-xs-3">Show</th>
+						<th class="col-xs-2">Episode</th>
+						<th class="col-xs-4">Title</th>
+						<th class="col-xs-2">Tablet</th>
+						<th class="col-xs-1">Actions</th>
+					</tr></thead>';
+		if(is_array($episodes)){
+			$table = $table.'<tbody>';
+			foreach ($episodes as $episode)
+			{
+				$show = $episode['Show'];
+				$episodeID = $episode['Id'];
+				preg_match("#.+ - (.+)#", $episodeID, $matches);
+				$episodeNumber = $matches[1];
+				$tablet = $episode['Tablet'];
+				$episodeTitle = '&nbsp;';
+				if (isset($episode['Title'])) $episodeTitle = $episode['Title'];
 
-			if ($episode['CopyRequested'] == "true")
-			{
-				$status = 'Copy requested';
-				$action = '<a id="epAction" href="./tablet.php?id='.urlencode($episode['Id']).'&action=cancel" text-align="center"><span class="glyphicon glyphicon-remove"></span></a>';
+				if ($episode['CopyRequested'] == "true")
+				{
+					$status = 'Copy requested';
+					$action = '<a id="epAction" href="#" onclick="cancelCopy(\''.$episode['Id'].'\');return false;" text-align="center"><span class="glyphicon glyphicon-remove"></span></a>';
+				}
+				else if ($episode['IsOnTablet'] == "true")
+				{
+					$status = 'Copied';
+					$action = '&nbsp;';
+				}
+				
+				$table = $table.'
+							<tr>
+								<td class="col-xs-3">'.$show.'</td>
+								<td class="col-xs-2">'.$episodeNumber.'</td>
+								<td class="col-xs-4">'.$episodeTitle.'</td>
+								<td class="col-xs-2">'.$tablet.'</td>
+								<td class="col-xs-1" text-align="center">'.$action.'</td>
+							</tr>
+				';
 			}
-			else if ($episode['IsOnTablet'] == "true")
-			{
-				$status = 'Copied';
-				$action = '&nbsp;';
-			}
-			
-			echo'
-						<tr>
-							<td class="col-xs-3">'.$show.'</td>
-							<td class="col-xs-2">'.$episodeNumber.'</td>
-							<td class="col-xs-4">'.$episodeTitle.'</td>
-							<td class="col-xs-2">'.$tablet.'</td>
-							<td class="col-xs-1" text-align="center">'.$action.'</td>
-						</tr>
-			';
+			$table = $table.'</tbody>';
 		}
-		echo'
-					</tbody>
-				</table>
-			</div>
-		';
+		$table = $table.'</table></div>';
 	}
+	return $table;
 }						
 
 // Write all episodes from a status 
 function printTablets ($tabletManager)
 {
+	$table = "";
 	$tablets = $tabletManager->getTablets();
+	
+	$table = $table.'
+		<div class="panel panel-default" id="panelGlobalTablets">
+			<div class="panel-heading" id="panelHead">
+				<h2 class="panel-title" id="panelTitle"><span class="glyphicon glyphicon-phone" id="panelGlyph"></span>Tablets</h2>
+			</div>
+			<table class="table table-condensed">
+				<thead><tr>
+					<th class="col-xs-6">Name</th>
+					<th class="col-xs-6">Last connection</th>
+				</tr></thead>';
 	if (is_array($tablets))
 	{
-		echo'
-			<div class="panel panel-default" id="panelGlobal">
-				<div class="panel-heading" id="panelHead">
-					<h2 class="panel-title" id="panelTitle"><span class="glyphicon glyphicon-phone" id="panelGlyph"></span>Tablets</h2>
-				</div>
-				<table class="table table-condensed">
-					<thead><tr>
-						<th class="col-xs-6">Name</th>
-						<th class="col-xs-6">Last connection</th>
-					</tr></thead>
-					<tbody>								
-		';
+		$table = $table.'<tbody>';
 		foreach ($tablets as $tablet)
 		{
 			$tabletName = $tablet['id'];
@@ -488,27 +479,25 @@ function printTablets ($tabletManager)
 				$lastConnection = $tablet['lastConnection'];
 				$tabletStatus = "<span class=\"label label-success\">".$lastConnection."</span>";
 			}
-			echo'
+			$table = $table.'
 						<tr>
 							<td class="col-xs-6">'.$tabletName.'</td>
 							<td class="col-xs-6">'.$tabletStatus.'</td>
 						</tr>
 			';
 		}
-		echo'
-					</tbody>
-				</table>
-			</div>
-		';
+		$table = $table.'</tbody>';
 	}
+	$table = $table.'</table></div>';
+	return $table;
 }						
 
 // Form text 
-function formText ($label, $input, $status, $value, $editable)
+function formText ($label, $input, $status, $value, $editable, $id)
 {
 	$formGroup = "form-group";
-	$inputField = '<input name="'.$input.'" type="text" class="form-control" value="'.$value.'">';
-	if ($editable == "false"){$inputField = '<input name="'.$input.'" type="text" class="form-control" value="'.$value.'" readonly>';}
+	$inputField = '<input id="'.$id.'" name="'.$input.'" type="text" class="form-control" value="'.$value.'">';
+	if ($editable == "false"){$inputField = '<input id="'.$id.'" name="'.$input.'" type="text" class="form-control" value="'.$value.'" readonly>';}
 	if ($status == "failed" AND $value == ""){$formGroup = "form-group has-error";}
 	echo'
 								<div class="row">
@@ -653,7 +642,7 @@ function getCurrentShowList ($seriesManager)
 
 	if (isset($showsFound) && $showsFound != null){
 		ksort($showsFound);
-		return($showsFound);	
+		return($showsFound);
 	}
 	return(null);
 }
@@ -661,24 +650,24 @@ function getCurrentShowList ($seriesManager)
 // Form combo
 function formComboToAdd ($label, $showsFound)
 {
-	echo'
-								<div class="row">
-									<div class="form-group">
-										<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
-										<div class="col-xs-6">
-											<select name="showId" class="form-control">
-	';
-	foreach ($showsFound as $key => $id) {
-		echo'
-											<option value="'.$id.'">'.$key.'</option>
-		';
-	}
-	echo'
-											</select>
-										</div>
-									</div>
+	$content = "";
+	$content = $content.'<div class="row" id="searchShowCombo">';
+	if ($showsFound != null)
+	{
+		$content = $content.'<div class="form-group">
+								<label class="col-xs-offset-1 col-xs-3 control-label">'.$label.'</label>
+								<div class="col-xs-6">
+									<select name="showId" class="form-control">';
+		foreach ($showsFound as $key => $id) {
+		$content = $content.'<option value="'.$id.'">'.$key.'</option>';
+		}
+		$content = $content.'
+									</select>
 								</div>
-	';
+							</div>';
+	}
+	$content = $content.'</div>';
+	return $content;
 }
 
 function getFilesMissingSubtitles($seriesManager)

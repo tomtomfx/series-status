@@ -94,7 +94,7 @@ h5, h6{
 .panel-group{
 	margin-bottom: 0px;
 }
-#panelGlobal{
+#panelGlobal, #panelGlobal1, #panelGlobal2, #panelGlobal3{
 	background: white;
 	opacity: 0.85;
 	padding: 0px;

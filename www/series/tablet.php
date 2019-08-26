@@ -8,27 +8,11 @@
 	$image = "";
 	include 'seriesManagement.php';
 	
-	// Add tablet from informations
-	if (isset($_POST['tabletId']) AND isset($_POST['action']))
-	{
-		if ($_POST['action'] == "add"){
-			$tabletManager->addTablet($_POST['tabletId'], $_POST['tabletIp']);
-		}
-		elseif ($_POST['action'] == "remove"){
-			$tabletManager->removeTablet($_POST['tabletId']);
-		}
-		elseif ($_POST['action'] == "copy"){
-			$tabletManager->copyRequested($_POST['episode'], $_POST['tabletId'], "true");
-		}
-	}
+	$tabletManager = new tabletManagement();
+	$tabletManager->dbinit("./series.db");
+	$seriesManager = new seriesManagement();
+	$seriesManager->configInit("../secure/configWeb");
 
-	if (isset($_GET['id']) AND isset($_GET['action']))
-	{
-		if ($_GET['action'] == "cancel"){
-			$tabletManager->copyRequested(urldecode($_GET['id']), "", "false");
-			header('Location: http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
-		}
-	}
 ?>
 
 <!DOCTYPE html>
@@ -41,21 +25,7 @@
 		<link href="../bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet">
 		<script type="text/javascript" src="../bootstrap-3.3.6-dist/js/jquery.min.js"></script>
 		<script type="text/javascript" src="../bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
-<?php	
-		if (isset($_GET['id']) AND isset($_GET['action']))
-		{
-			if ($_GET['action'] == "copy")
-			{
-				echo'
-					<script type="text/javascript">
-						$(window).load(function(){
-							$("#copyTablet").modal("show");
-						});
-					</script>
-				';
-			}
-		}
-?>
+		<script type="text/javascript" src="./js/series.js"></script>
 		<link href="../style_bootstrap.css" rel="stylesheet">
 		<link rel="shortcut icon" href="favicon.ico">
 		<title>Tablet management</title>
@@ -135,9 +105,9 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 					<div class="col-xs-12" style="padding: 0px;">
 						<div class="panel-group">
 <?php
-	printEpisodesToCopy("On tablet", $tabletManager);
-	printEpisodesToCopy("Copy requested", $tabletManager);
-	printEpisodesToCopy("Available", $tabletManager);
+	echo(printEpisodesToCopy("On tablet", $tabletManager, "1"));
+	echo(printEpisodesToCopy("Copy requested", $tabletManager, "2"));
+	echo(printEpisodesToCopy("Available", $tabletManager, "3"));
 ?>
 						</div>
 					</div>
@@ -146,7 +116,7 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 					<div class="col-xs-12" style="padding: 0px;">
 						<div class="panel-group">
 <?php
-	printTablets($tabletManager);
+	echo(printTablets($tabletManager));
 ?>
 						</div>
 					</div>
@@ -161,13 +131,12 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 							<h3 class="modal-title" id="addSerieLabel">Add a tablet</h3>
 						</div>
-						<form class="form-horizontal" method="POST" action="./tablet.php#">
+						<form class="form-horizontal" action="#" onsubmit="addTablet();return false;">
 							<div class="modal-body">
 <?php
-	formText("Tablet id:", "tabletId", "success", "", "true");
-	formText("Tablet IP address:", "tabletIp", "success", "", "true");
+	formText("Tablet id:", "tabletId", "success", "", "true", "tabletId");
+	formText("Tablet IP address:", "tabletIp", "success", "", "true", "tabletIP");
 ?>
-								<input type="hidden" name="action" value="add"/>
 							</div>
 							<div class="modal-footer">
 								<button type="submit" class="pull-right btn btn-default">Add</button>
@@ -186,12 +155,11 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 							<h3 class="modal-title" id="removeTabletLabel">Remove a tablet</h3>
 						</div>
-						<form class="form-horizontal" method="POST" action="./tablet.php#">
+						<form class="form-horizontal" action="#" onsubmit="removeTablet();return false;">
 							<div class="modal-body">
 <?php
-	formComboToCopy("Tablet", $tabletManager);
+	echo(formComboToCopy("Tablet", $tabletManager, "removeTabletId"));
 ?>
-								<input type="hidden" name="action" value="remove"/>
 							</div>
 							<div class="modal-footer">
 								<button type="submit" class="pull-right btn btn-default">Remove</button>
@@ -210,13 +178,11 @@ if ($seriesManager->getOptionFromConfig('photos') == 'true'){
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 							<h3 class="modal-title" id="copyTabletLabel">Copy episode to tablet</h3>
 						</div>
-						<form class="form-horizontal" method="POST" action="./tablet.php#">
+						<form class="form-horizontal" action="#" onsubmit="requestCopy();return false;">
 							<div class="modal-body">
 <?php
-	if (isset($_GET['id'])){
-		formText("Episode", "episode", "success", urldecode($_GET['id']), "false");
-	}
-	formComboToCopy("Tablet:", $tabletManager);
+	formText("Episode", "episode", "success", "", "false", "episodeToCopy");
+	echo(formComboToCopy("Tablet:", $tabletManager, "copyToTablet"));
 ?>
 								<input type="hidden" name="action" value="copy"/>
 							</div>
