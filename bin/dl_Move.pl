@@ -139,7 +139,7 @@ foreach my $file (@dlDir)
 {
 	$time = localtime;
 	my $serieDir = "$downloadDir\/$file";
-	if (-d $serieDir && $file ne '.' && $file ne '..' && $file ne 'Config' && $file ne 'Films' && $file ne 'Series' && $file ne 'Temp' && $file ne 'Torrents')
+	if (-d $serieDir && $file ne '.' && $file ne '..' && $file ne 'Config' && $file ne 'Films' && $file ne 'Series' && $file ne 'Temp' && $file ne 'Torrents' && $file ne 'log')
 	{
 		my $doNotRemove = 0;
 		opendir(DL, $serieDir);
