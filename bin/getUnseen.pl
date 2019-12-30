@@ -13,6 +13,7 @@ use DBI;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use betaSeries;
+use tvdb;
 
 my $config = "scriptsDir\/bin\/config";
 my $logFile = "";
@@ -21,7 +22,9 @@ my $betaSeriesKey = "";
 my $betaSeriesLogin = "";
 my $betaSeriesPassword = "";
 my $serieDatabasePath = "";
-my $tvdbKey = "";
+my $tvdbApiKey = "";
+my $tvdbUser = "";
+my $tvdbUserKey = "";
 my $torrentUrl = "";
 my $bannersPath = "";
 my $backgroundsPath = "";
@@ -53,7 +56,9 @@ sub readConfigFile
     	elsif ($_ =~ /betaSeriesKey=(.*)$/){$betaSeriesKey = $1;}
 		elsif ($_ =~ /betaSeriesLogin=(.*)$/){$betaSeriesLogin = $1;}
 		elsif ($_ =~ /betaSeriesPassword=(.*)$/){$betaSeriesPassword = $1;}
-		elsif ($_ =~ /tvdbApiKey=(.*)$/){$tvdbKey = $1;}
+		elsif ($_ =~ /tvdbApiKey=(.*)$/){$tvdbApiKey = $1;}
+		elsif ($_ =~ /tvdbUser=(.*)$/){$tvdbUser = $1;}
+		elsif ($_ =~ /tvdbUserKey=(.*)$/){$tvdbUserKey = $1;}
 	}
 }
 
@@ -210,7 +215,8 @@ if ($verbose >= 1)
 	# Print BetaSeries infos
 	print "BetaSeries login: $betaSeriesLogin\n";
 	print "BetaSeries key: $betaSeriesKey\n";
-	print "TVDB API key: $tvdbKey\n";
+	print "tvdbUser login: $tvdbUser\n";
+	print "tvdbApiKey key: $tvdbApiKey\n";
 	print "Banners path: $bannersPath\n";
 	print "Backgrounds path: $backgroundsPath\n";	
 	print "\n";
@@ -254,23 +260,27 @@ foreach my $ep (@episodeToDownload)
 		$title =~ s/'//g;
 		$serie =~ s/'//g;
 		
+		# Get TVDB authentication token
+		my $tvdbToken = &tvdb::authentication($verbose, $tvdbApiKey, $tvdbUser, $tvdbUserKey);
+		# Get TVDB show ID
+		my $tvdbShowId = &betaSeries::getShowTvdbIdFromEpisodeId($verbose, $token, $betaSeriesKey, $id);
 		# Get show banner if doesn't exists
 		my $banner = "$bannersPath\/$serie.jpg";
 		unless (-e $banner)
 		{
-			if ($verbose >=2) {print "$banner does not exist\n";}
-			my $betaBanner = &betaSeries::getBannerPath($verbose, $token, $betaSeriesKey, $id);
-			if ($verbose >=1) {print "$betaBanner\n";}
-			getstore($betaBanner, $banner);
+			if ($verbose >=1) {print "Banner $banner does not exist\n";}
+			my $tvdbBanner = &tvdb::getShowImage($verbose, $tvdbToken, $tvdbShowId, "series");
+			if ($verbose >=1) {print "$tvdbBanner\n";}
+			getstore($tvdbBanner, $banner);
 		}
 		# Get show background if doesn't exists
 		my $background = "$backgroundsPath\/$serie.jpg";
 		unless (-e $background)
 		{
 			if ($verbose >=1) {print "Background $background does not exist\n";}
-			my $betaBackground = &betaSeries::getShowBackground($verbose, $token, $betaSeriesKey, $id);
-			if ($verbose >=1) {print "$betaBackground\n";}
-			getstore($betaBackground, $background);
+			my $tvdbBackground = &tvdb::getShowImage($verbose, $tvdbToken, $tvdbShowId, "fanart");
+			if ($verbose >=1) {print "$tvdbBackground\n";}
+			getstore($tvdbBackground, $background);
 		}
 		
 		# Get Torrent for this episode

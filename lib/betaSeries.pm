@@ -10,7 +10,7 @@ use strict;
 
 require Exporter;
 my @ISA = qw/Exporter/;
-my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getBannerPath getShowBackground addShow archiveShow unarchiveShow isArchived getSubtitles/;
+my @EXPORT = qw/getEpisodeToDownload authentification setDownloaded getEpisodesToSee setEpisodeSeen searchSerie getShowNameFromId getBannerPath getShowBackground addShow archiveShow unarchiveShow isArchived getSubtitles getShowTvdbIdFromEpisodeId/;
 
 sub sendRequest
 {
@@ -27,6 +27,25 @@ sub sendRequest
 		print "HTTP POST error message: ", $resp->message, "\n";
 		return 0;
 	}
+}
+
+sub getShowTvdbIdFromEpisodeId
+{
+	my ($verbose, $token, $betaSeriesKey, $epId) = @_;
+	
+	my $ua = LWP::UserAgent->new;
+	# Get show name from show Id
+	my $showReq = "http://api.betaseries.com/episodes/display?token=$token&thetvdb_id=$epId";
+	# print "request = $showReq\n";
+	my $req = HTTP::Request->new(GET => "$showReq");
+	$req->header('X-BetaSeries-Version' => '3.0');
+	$req->header('Accept' => 'text/json');
+	$req->header('X-BetaSeries-Key' => $betaSeriesKey);
+
+	my $message = sendRequest($ua, $req);
+	my $episode = decode_json($message);
+	my $showTvdbId = $episode->{episode}->{show}->{thetvdb_id};
+	return $showTvdbId;
 }
 
 sub getShowNameFromId

@@ -133,7 +133,7 @@ grep 'dl_Move.pl' cron.tmp || echo "30 7,9,12,15,18 * * * perl ${targetDir}/bin/
 grep 'removeDownloads.pl' cron.tmp || echo "15,35,55 * * * * perl ${targetDir}/bin/removeDownloads.pl >> /opt/shows/logs/cron.log 2>&1" >> cron.tmp
 grep 'seriesStatus.pl' cron.tmp || echo "0 19 * * * perl ${targetDir}/bin/seriesStatus.pl 1 >> /opt/shows/logs/cron.log 2>&1" >> cron.tmp
 grep '*.log' cron.tmp || echo "0 3 * * 0 rm ${targetDir}/logs/*.log" >> cron.tmp
-grep 'tabletManager.pl' cron.tmp || echo "4 * * * * perl ${targetDir}/bin/tabletManager.pl >> /opt/shows/logs/cron.log 2>&1" >> cron.tmp
+grep 'save.sh' cron.tmp || echo "0 4 * * 0 /home/tom/save.sh" >> cron.tmp
 crontab -u ${user} cron.tmp
 rm cron.tmp
 systemctl restart cron
